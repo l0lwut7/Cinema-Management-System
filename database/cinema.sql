@@ -179,6 +179,12 @@ CREATE TABLE SCREENING (
     FOREIGN KEY (theater_id, saloon_number) REFERENCES SALOON(theater_id, number) ON DELETE CASCADE
 );
 
+CREATE INDEX idx_screening_theater_saloon_start_time
+    ON SCREENING(theater_id, saloon_number, start_time);
+
+CREATE INDEX idx_screening_movie_start_time
+    ON SCREENING(movie_id, start_time);
+
 CREATE TABLE BOOKING (
     booking_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -188,6 +194,9 @@ CREATE TABLE BOOKING (
     FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id) ON DELETE CASCADE,
     FOREIGN KEY (deal_id) REFERENCES DEAL(deal_id) ON DELETE SET NULL
 );
+
+CREATE INDEX idx_booking_user_timestamp
+    ON BOOKING(user_id, timestamp);
 
 CREATE TABLE TICKET (
     ticket_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -208,6 +217,9 @@ CREATE TABLE TICKET (
     -- UNIQUE CONSTRAINT: Prevents double-booking the exact same seat for the exact same screening!
     UNIQUE (screening_id, theater_id, saloon_number, row_letter, seat_number)
 );
+
+CREATE INDEX idx_ticket_booking_id
+    ON TICKET(booking_id);
 
 CREATE TABLE PAYMENT (
     payment_id INT AUTO_INCREMENT PRIMARY KEY,
