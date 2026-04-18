@@ -133,6 +133,9 @@ erDiagram
     TICKET {
         int ticket_id PK
         int booking_id FK
+        int screening_id FK
+        int seat_row_letter
+        int seat_number
         string ticket_type
     }
     PAYMENT {

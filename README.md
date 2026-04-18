@@ -18,7 +18,7 @@ The system was built to demonstrate advanced SQL concepts including **Weak Entit
 ## 🛠️ Tech Stack
 * **Database:** MySQL Community Server 8.0
 * **Backend:** TBD (backend framework has not been finalized in this document)
-* **Frontend:** HTML5, Bootstrap 5 (Server-Side Rendered)
+* **Frontend:** HTML5, Tailwind CSS (Server-Side Rendered)
 * **Design/Architecture:** draw.io, dbdiagram.io
 
 ## 🚀 How to Run the Project Locally
