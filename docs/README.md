@@ -25,7 +25,6 @@ The system was built to demonstrate advanced SQL concepts including **Weak Entit
 
 > At present, the documented setup covers the database layer. If a backend service is added later, its framework choice and startup steps should be documented here.
 ### 1. Database Setup
-1. Open **MySQL Workbench** or your preferred SQL terminal.
-2. Run the schema creation script to build the tables:
+1. Open **MySQL Workbench** or start a MySQL client session from your shell:
    ```bash
-   source database/schema.sql
+   mysql -u <username> -p
