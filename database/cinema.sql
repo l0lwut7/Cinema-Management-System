@@ -220,7 +220,7 @@ CREATE TABLE PAYMENT (
 CREATE TABLE BOOKING_CONSUMABLE (
     booking_id INT,
     consumable_id INT,
-    quantity INT NOT NULL DEFAULT 1,
+    quantity INT NOT NULL DEFAULT 1 CHECK (quantity > 0),
     PRIMARY KEY (booking_id, consumable_id),
     FOREIGN KEY (booking_id) REFERENCES BOOKING(booking_id) ON DELETE CASCADE,
     FOREIGN KEY (consumable_id) REFERENCES CONSUMABLE(consumable_id) ON DELETE CASCADE
