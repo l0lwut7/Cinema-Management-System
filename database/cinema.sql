@@ -130,6 +130,7 @@ CREATE TABLE MOVIE_RUN (
     movie_id INT NOT NULL,
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
+    CONSTRAINT chk_movie_run_dates CHECK (end_date >= start_date),
     FOREIGN KEY (movie_id) REFERENCES MOVIE(movie_id) ON DELETE CASCADE
 );
 
