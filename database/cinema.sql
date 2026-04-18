@@ -6,6 +6,10 @@
 -- Select the target database before running it (for example, via your SQL client,
 -- connection configuration, or a separate local-development reset script).
 
+DROP DATABASE IF EXISTS cinema_db;
+CREATE DATABASE cinema_db;
+USE cinema_db;
+
 -- ------------------------------------------------------------------------------
 -- 1. INDEPENDENT ENTITIES & ISA HIERARCHY
 -- ------------------------------------------------------------------------------
@@ -25,7 +29,7 @@ CREATE TABLE IF NOT EXISTS CUSTOMER (
     user_id INT PRIMARY KEY,
     birth_date DATE,
     loyalty_points INT DEFAULT 0,
-    membership_tier VARCHAR(50) DEFAULT 'standard',
+    membership_tier VARCHAR(50) DEFAULT 'Standard',
     FOREIGN KEY (user_id) REFERENCES USER(user_id) ON DELETE CASCADE
 );
 
@@ -41,7 +45,7 @@ CREATE TABLE IF NOT EXISTS EMPLOYEE (
     user_id INT PRIMARY KEY,
     role VARCHAR(100) NOT NULL,
     salary DECIMAL(10,2),
-    account_status VARCHAR(50) DEFAULT 'active',
+    account_status VARCHAR(50) DEFAULT 'Active',
     auth_level INT DEFAULT 1,
     work_shift VARCHAR(100),
     theater_id INT,
@@ -69,7 +73,7 @@ CREATE TABLE IF NOT EXISTS SEAT (
     saloon_number INT NOT NULL,
     row_letter VARCHAR(1) NOT NULL,
     number INT NOT NULL,
-    type VARCHAR(50) DEFAULT 'standard',
+    type VARCHAR(50) DEFAULT 'Standard',
     PRIMARY KEY (theater_id, saloon_number, row_letter, number),
     FOREIGN KEY (theater_id, saloon_number) REFERENCES SALOON(theater_id, number) ON DELETE CASCADE
 );
@@ -78,7 +82,7 @@ CREATE TABLE IF NOT EXISTS SEAT (
 -- 3. MOVIE CATALOG & METADATA
 -- ------------------------------------------------------------------------------
 
-CREATE TABLE MOVIE (
+CREATE TABLE IF NOT EXISTS MOVIE (
     movie_id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     director VARCHAR(255),
@@ -89,20 +93,20 @@ CREATE TABLE MOVIE (
 );
 
 -- The MOVIE_CAST table allows for a many-to-many relationship between movies and their cast members, as a movie can have multiple cast members and a cast member can be in multiple movies. The cast_name is stored as a VARCHAR, but in a more complex system, you might want to have a separate CAST_MEMBER table with its own unique ID and additional attributes (like date of birth, biography, etc.) for better data management and integrity.
-CREATE TABLE MOVIE_CAST (
+CREATE TABLE IF NOT EXISTS MOVIE_CAST (
     movie_id INT,
     cast_name VARCHAR(255),
     PRIMARY KEY (movie_id, cast_name),
     FOREIGN KEY (movie_id) REFERENCES MOVIE(movie_id) ON DELETE CASCADE
 );
 
-CREATE TABLE GENRE (
+CREATE TABLE IF NOT EXISTS GENRE (
     genre_id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL UNIQUE
 );
 
 -- The MOVIE_GENRE table allows for a many-to-many relationship between movies and genres, as a movie can belong to multiple genres and a genre can be associated with multiple movies. This design provides flexibility in categorizing movies and allows for more complex queries (e.g., finding all movies in a specific genre or all genres associated with a specific movie).
-CREATE TABLE MOVIE_GENRE (
+CREATE TABLE IF NOT EXISTS MOVIE_GENRE (
     movie_id INT,
     genre_id INT,
     PRIMARY KEY (movie_id, genre_id),
@@ -110,13 +114,13 @@ CREATE TABLE MOVIE_GENRE (
     FOREIGN KEY (genre_id) REFERENCES GENRE(genre_id) ON DELETE CASCADE
 );
 
-CREATE TABLE FORMAT (
+CREATE TABLE IF NOT EXISTS FORMAT (
     format_id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(50) NOT NULL UNIQUE
 );
 
 -- The MOVIE_FORMAT table allows for a many-to-many relationship between movies and formats, as a movie can be available in multiple formats (e.g., 2D, 3D, IMAX) and a format can be associated with multiple movies. This design provides flexibility in categorizing movies by their available formats and allows for more complex queries (e.g., finding all movies available in a specific format or all formats associated with a specific movie).
-CREATE TABLE MOVIE_FORMAT (
+CREATE TABLE IF NOT EXISTS MOVIE_FORMAT (
     movie_id INT,
     format_id INT,
     PRIMARY KEY (movie_id, format_id),
@@ -125,7 +129,7 @@ CREATE TABLE MOVIE_FORMAT (
 );
 
 -- The MOVIE_RUN table captures the scheduling of movies in the theater, allowing for multiple runs of the same movie with different start and end dates. This design provides flexibility in managing movie showtimes and allows for more complex queries (e.g., finding all movies currently running or all runs of a specific movie).
-CREATE TABLE MOVIE_RUN (
+CREATE TABLE IF NOT EXISTS MOVIE_RUN (
     run_id INT AUTO_INCREMENT PRIMARY KEY,
     movie_id INT NOT NULL,
     start_date DATE NOT NULL,
@@ -135,7 +139,7 @@ CREATE TABLE MOVIE_RUN (
 );
 
 -- The CUSTOMER_FAVORITE_MOVIE table allows customers to mark movies as their favorites, creating a many-to-many relationship between customers and movies. This design provides flexibility in managing customer preferences and allows for more complex queries (e.g., finding all favorite movies of a specific customer or all customers who have marked a specific movie as a favorite).
-CREATE TABLE CUSTOMER_FAVORITE_MOVIE (
+CREATE TABLE IF NOT EXISTS CUSTOMER_FAVORITE_MOVIE (
     user_id INT,
     movie_id INT,
     PRIMARY KEY (user_id, movie_id),
@@ -148,7 +152,7 @@ CREATE TABLE CUSTOMER_FAVORITE_MOVIE (
 -- ------------------------------------------------------------------------------
 
 -- The DEAL table captures promotional offers that can be applied to bookings, allowing for flexibility in managing discounts and promotions. The discount_percent field allows for percentage-based discounts, while the valid_until field allows for time-limited offers. This design provides the ability to create various types of deals and apply them to customer bookings, enhancing the marketing capabilities of the cinema.
-CREATE TABLE DEAL (
+CREATE TABLE IF NOT EXISTS DEAL (
     deal_id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     discount_percent DECIMAL(5,2) NOT NULL CHECK (discount_percent BETWEEN 0 AND 100),
@@ -156,7 +160,7 @@ CREATE TABLE DEAL (
 );
 
 -- The CONSUMABLE table captures items that can be sold at the cinema, such as popcorn, drinks, and candy. The unit_price field allows for pricing of each consumable item, while the stock_quantity field allows for inventory management. This design provides the ability to manage consumable items effectively and integrate them into the booking process (e.g., allowing customers to add consumables to their bookings).
-CREATE TABLE CONSUMABLE (
+CREATE TABLE IF NOT EXISTS CONSUMABLE (
     consumable_id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(150) NOT NULL,
     unit_price DECIMAL(10,2) NOT NULL,
@@ -167,7 +171,7 @@ CREATE TABLE CONSUMABLE (
 -- 5. CORE TRANSACTIONS (SCREENING, BOOKING, TICKET, REVIEW)
 -- ------------------------------------------------------------------------------
 
-CREATE TABLE SCREENING (
+CREATE TABLE IF NOT EXISTS SCREENING (
     screening_id INT AUTO_INCREMENT PRIMARY KEY,
     movie_id INT NOT NULL,
     theater_id INT NOT NULL,
@@ -188,7 +192,7 @@ CREATE INDEX idx_screening_theater_saloon_start_time
 CREATE INDEX idx_screening_movie_start_time
     ON SCREENING(movie_id, start_time);
 
-CREATE TABLE BOOKING (
+CREATE TABLE IF NOT EXISTS BOOKING (
     booking_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     deal_id INT,
@@ -201,7 +205,7 @@ CREATE TABLE BOOKING (
 CREATE INDEX idx_booking_user_created_at
     ON BOOKING(user_id, created_at);
 
-CREATE TABLE TICKET (
+CREATE TABLE IF NOT EXISTS TICKET (
     ticket_id INT AUTO_INCREMENT PRIMARY KEY,
     booking_id INT NOT NULL,
     screening_id INT NOT NULL,
@@ -213,8 +217,8 @@ CREATE TABLE TICKET (
     
     -- Foreign Keys to link the Ticket to the exact Seat and Screening
     FOREIGN KEY (booking_id) REFERENCES BOOKING(booking_id) ON DELETE CASCADE,
-    FOREIGN KEY (screening_id, theater_id, saloon_number)
-        REFERENCES SCREENING(screening_id, theater_id, saloon_number) ON DELETE CASCADE,
+    FOREIGN KEY (screening_id)
+        REFERENCES SCREENING(screening_id) ON DELETE CASCADE,
     FOREIGN KEY (theater_id, saloon_number, row_letter, seat_number) 
         REFERENCES SEAT(theater_id, saloon_number, row_letter, number) ON DELETE CASCADE,
         
@@ -225,7 +229,7 @@ CREATE TABLE TICKET (
 CREATE INDEX idx_ticket_booking_id
     ON TICKET(booking_id);
 
-CREATE TABLE PAYMENT (
+CREATE TABLE IF NOT EXISTS PAYMENT (
     payment_id INT AUTO_INCREMENT PRIMARY KEY,
     booking_id INT NOT NULL UNIQUE,
     method VARCHAR(50) NOT NULL DEFAULT 'Credit Card',
@@ -242,7 +246,7 @@ CREATE TABLE BOOKING_CONSUMABLE (
     FOREIGN KEY (consumable_id) REFERENCES CONSUMABLE(consumable_id) ON DELETE CASCADE
 );
 
-CREATE TABLE REVIEW (
+CREATE TABLE IF NOT EXISTS REVIEW (
     review_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     movie_id INT NOT NULL,
