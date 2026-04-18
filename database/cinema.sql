@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS EMPLOYEE (
 -- ------------------------------------------------------------------------------
 
 -- So capacity can be derived from counting the number of seats associated with a saloon, but it can also be useful to have it as a separate attribute for quick reference and to enforce constraints on seat creation.
-CREATE TABLE SALOON (
+CREATE TABLE IF NOT EXISTS SALOON (
     theater_id INT,
     number INT,
     capacity INT NOT NULL,
@@ -64,7 +64,7 @@ CREATE TABLE SALOON (
     FOREIGN KEY (theater_id) REFERENCES THEATER(theater_id) ON DELETE CASCADE
 );
 
-CREATE TABLE SEAT (
+CREATE TABLE IF NOT EXISTS SEAT (
     theater_id INT,
     saloon_number INT NOT NULL,
     row_letter VARCHAR(1) NOT NULL,
