@@ -6,6 +6,39 @@
 USE cinema_db;
 
 -- ------------------------------------------------------------------------------
+-- 0. IDEMPOTENCY / CLEAN SLATE (Safely empties database before seeding)
+-- ------------------------------------------------------------------------------
+-- Temporarily disable Foreign Key checks so MySQL lets us TRUNCATE everything
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- Wiping all tables and resetting AUTO_INCREMENT IDs back to 1
+TRUNCATE TABLE REVIEW;
+TRUNCATE TABLE BOOKING_CONSUMABLE;
+TRUNCATE TABLE PAYMENT;
+TRUNCATE TABLE TICKET;
+TRUNCATE TABLE BOOKING;
+TRUNCATE TABLE SCREENING;
+TRUNCATE TABLE CUSTOMER_FAVORITE_MOVIE;
+TRUNCATE TABLE MOVIE_RUN;
+TRUNCATE TABLE MOVIE_FORMAT;
+TRUNCATE TABLE MOVIE_GENRE;
+TRUNCATE TABLE MOVIE_CAST;
+TRUNCATE TABLE MOVIE;
+TRUNCATE TABLE FORMAT;
+TRUNCATE TABLE GENRE;
+TRUNCATE TABLE SEAT;
+TRUNCATE TABLE SALOON;
+TRUNCATE TABLE THEATER;
+TRUNCATE TABLE EMPLOYEE;
+TRUNCATE TABLE CUSTOMER;
+TRUNCATE TABLE DEAL;
+TRUNCATE TABLE CONSUMABLE;
+TRUNCATE TABLE `USER`;
+
+-- Instantly turn Foreign Key checks back on to protect our new data!
+SET FOREIGN_KEY_CHECKS = 1;
+
+-- ------------------------------------------------------------------------------
 -- 1. UTILITY PROCEDURES
 -- ------------------------------------------------------------------------------
 DROP PROCEDURE IF EXISTS GenerateSeats;
