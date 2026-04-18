@@ -196,8 +196,8 @@ CREATE TABLE BOOKING (
     FOREIGN KEY (deal_id) REFERENCES DEAL(deal_id) ON DELETE SET NULL
 );
 
-CREATE INDEX idx_booking_user_timestamp
-    ON BOOKING(user_id, timestamp);
+CREATE INDEX idx_booking_user_created_at
+    ON BOOKING(user_id, created_at);
 
 CREATE TABLE TICKET (
     ticket_id INT AUTO_INCREMENT PRIMARY KEY,
