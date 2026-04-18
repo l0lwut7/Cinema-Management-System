@@ -59,7 +59,7 @@ CREATE TABLE SALOON (
     number INT,
     capacity INT NOT NULL,
     type VARCHAR(50),
-    isActive BOOLEAN DEFAULT TRUE,
+    is_active BOOLEAN DEFAULT TRUE,
     PRIMARY KEY (theater_id, number),
     FOREIGN KEY (theater_id) REFERENCES THEATER(theater_id) ON DELETE CASCADE
 );
