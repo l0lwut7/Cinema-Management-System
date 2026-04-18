@@ -17,12 +17,13 @@ The system was built to demonstrate advanced SQL concepts including **Weak Entit
 
 ## 🛠️ Tech Stack
 * **Database:** MySQL Community Server 8.0
-* **Backend:** [Insert Node.js/Express OR Python/Flask]
+* **Backend:** TBD (backend framework has not been finalized in this document)
 * **Frontend:** HTML5, Bootstrap 5 (Server-Side Rendered)
 * **Design/Architecture:** draw.io, dbdiagram.io
 
 ## 🚀 How to Run the Project Locally
 
+> At present, the documented setup covers the database layer. If a backend service is added later, its framework choice and startup steps should be documented here.
 ### 1. Database Setup
 1. Open **MySQL Workbench** or your preferred SQL terminal.
 2. Run the schema creation script to build the tables:
