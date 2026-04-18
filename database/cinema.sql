@@ -264,8 +264,9 @@ JOIN MOVIE_RUN mr ON m.movie_id = mr.movie_id
 JOIN MOVIE_GENRE mg ON m.movie_id = mg.movie_id
 WHERE CURRENT_DATE BETWEEN mr.start_date AND mr.end_date;
 
+-- GROUP_CONCAT is used to aggregate multiple genres into a single comma-separated string for each movie. This allows the view to display all genres associated with each active movie in a more readable format, rather than having multiple rows for movies that belong to multiple genres.
 CREATE VIEW IF NOT EXISTS Coming_Soon_Movies AS
-SELECT m.movie_id, m.title, m.director, m.duration_mins, m.release_date, GROUP_CONCAT(g.name SEPERATOR ', ') AS genres
+SELECT m.movie_id, m.title, m.director, m.duration_mins, m.release_date, GROUP_CONCAT(g.name SEPARATOR ', ') AS genres
 FROM MOVIE m
 JOIN MOVIE_RUN mr ON m.movie_id = mr.movie_id
 LEFT JOIN MOVIE_GENRE mg ON m.movie_id = mg.movie_id
