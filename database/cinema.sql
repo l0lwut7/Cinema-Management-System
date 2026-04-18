@@ -176,7 +176,8 @@ CREATE TABLE SCREENING (
     base_price DECIMAL(10,2) NOT NULL,
     is_subtitled BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (movie_id) REFERENCES MOVIE(movie_id) ON DELETE CASCADE,
-    FOREIGN KEY (theater_id, saloon_number) REFERENCES SALOON(theater_id, number) ON DELETE CASCADE
+    FOREIGN KEY (theater_id, saloon_number) REFERENCES SALOON(theater_id, number) ON DELETE CASCADE,
+    UNIQUE (screening_id, theater_id, saloon_number)
 );
 
 CREATE INDEX idx_screening_theater_saloon_start_time
@@ -210,7 +211,8 @@ CREATE TABLE TICKET (
     
     -- Foreign Keys to link the Ticket to the exact Seat and Screening
     FOREIGN KEY (booking_id) REFERENCES BOOKING(booking_id) ON DELETE CASCADE,
-    FOREIGN KEY (screening_id) REFERENCES SCREENING(screening_id) ON DELETE CASCADE,
+    FOREIGN KEY (screening_id, theater_id, saloon_number)
+        REFERENCES SCREENING(screening_id, theater_id, saloon_number) ON DELETE CASCADE,
     FOREIGN KEY (theater_id, saloon_number, row_letter, seat_number) 
         REFERENCES SEAT(theater_id, saloon_number, row_letter, number) ON DELETE CASCADE,
         
