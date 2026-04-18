@@ -2,16 +2,16 @@
 -- CINEMA MANAGEMENT SYSTEM DATABASE SCHEMA
 -- ==============================================================================
 
-DROP DATABASE IF EXISTS cinema;
-CREATE DATABASE cinema;
-USE cinema;
+-- This schema file is intentionally non-destructive.
+-- Select the target database before running it (for example, via your SQL client,
+-- connection configuration, or a separate local-development reset script).
 
 -- ------------------------------------------------------------------------------
 -- 1. INDEPENDENT ENTITIES & ISA HIERARCHY
 -- ------------------------------------------------------------------------------
 
 -- Be sure about the VARCHAR sizes and data types based on expected input lengths and formats in a real-world application. Adjust as necessary for your specific use case or constraints.
-CREATE TABLE USER (
+CREATE TABLE IF NOT EXISTS USER (
     user_id INT AUTO_INCREMENT PRIMARY KEY,
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
@@ -21,7 +21,7 @@ CREATE TABLE USER (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE CUSTOMER (
+CREATE TABLE IF NOT EXISTS CUSTOMER (
     user_id INT PRIMARY KEY,
     birth_date DATE,
     loyalty_points INT DEFAULT 0,
@@ -29,8 +29,15 @@ CREATE TABLE CUSTOMER (
     FOREIGN KEY (user_id) REFERENCES USER(user_id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS THEATER (
+    theater_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(150) NOT NULL,
+    phone_number VARCHAR(20) UNIQUE NOT NULL,
+    address TEXT
+);
+
 -- ON DELETE SET NULL for theater_id in EMPLOYEE allows employees to remain in the system even if their associated theater is deleted, while still maintaining data integrity by nullifying the theater reference.
-CREATE TABLE EMPLOYEE (
+CREATE TABLE IF NOT EXISTS EMPLOYEE (
     user_id INT PRIMARY KEY,
     role VARCHAR(100) NOT NULL,
     salary DECIMAL(10,2),
@@ -40,13 +47,6 @@ CREATE TABLE EMPLOYEE (
     theater_id INT,
     FOREIGN KEY (user_id) REFERENCES USER(user_id) ON DELETE CASCADE,
     FOREIGN KEY (theater_id) REFERENCES THEATER(theater_id) ON DELETE SET NULL
-);
-
-CREATE TABLE THEATER (
-    theater_id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(150) NOT NULL,
-    phone_number VARCHAR(20) UNIQUE NOT NULL,
-    address TEXT
 );
 
 -- ------------------------------------------------------------------------------
