@@ -256,3 +256,26 @@ CREATE TABLE IF NOT EXISTS REVIEW (
     FOREIGN KEY (user_id) REFERENCES CUSTOMER(user_id) ON DELETE CASCADE,
     FOREIGN KEY (movie_id) REFERENCES MOVIE(movie_id) ON DELETE CASCADE
 );
+
+CREATE VIEW IF NOT EXISTS Active_Movies AS
+SELECT m.movie_id, m.title, m.director, m.duration_mins, m.release_date
+FROM MOVIE m
+JOIN MOVIE_RUN mr ON m.movie_id = mr.movie_id
+JOIN MOVIE_GENRE mg ON m.movie_id = mg.movie_id
+WHERE CURRENT_DATE BETWEEN mr.start_date AND mr.end_date;
+
+CREATE VIEW IF NOT EXISTS Coming_Soon_Movies AS
+SELECT m.movie_id, m.title, m.director, m.duration_mins, m.release_date, GROUP_CONCAT(g.name SEPERATOR ', ') AS genres
+FROM MOVIE m
+JOIN MOVIE_RUN mr ON m.movie_id = mr.movie_id
+LEFT JOIN MOVIE_GENRE mg ON m.movie_id = mg.movie_id
+LEFT JOIN GENRE g ON mg.genre_id = g.genre_id
+WHERE mr.start_date > CURRENT_DATE
+GROUP BY m.movie_id, m.title, m.director, m.duration_mins, m.release_date;
+
+-- Speeds up checking if a movie is active or coming soon
+CREATE INDEX idx_movierun_dates ON MOVIE_RUN(start_date, end_date);
+-- Speeds up the JOIN between MOVIE and MOVIE_RUN
+CREATE INDEX idx_movierun_movie_id ON MOVIE_RUN(movie_id);
+-- Speeds up the "Sort by Release Date" feature on the frontend
+CREATE INDEX idx_movie_release_date ON MOVIE(release_date);
