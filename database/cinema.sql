@@ -151,7 +151,7 @@ CREATE TABLE CUSTOMER_FAVORITE_MOVIE (
 CREATE TABLE DEAL (
     deal_id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    discount_percent DECIMAL(5,2) NOT NULL,
+    discount_percent DECIMAL(5,2) NOT NULL CHECK (discount_percent BETWEEN 0 AND 100),
     valid_until DATE
 );
 
