@@ -214,6 +214,7 @@ CREATE TABLE IF NOT EXISTS TICKET (
     row_letter VARCHAR(1) NOT NULL,
     seat_number INT NOT NULL,
     ticket_type VARCHAR(50) DEFAULT 'Standard',
+    scanned_at DATETIME DEFAULT NULL,
     
     -- Foreign Keys to link the Ticket to the exact Seat and Screening
     FOREIGN KEY (booking_id) REFERENCES BOOKING(booking_id) ON DELETE CASCADE,
