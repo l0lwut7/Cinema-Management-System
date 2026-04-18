@@ -176,9 +176,11 @@ CREATE TABLE SCREENING (
     base_price DECIMAL(10,2) NOT NULL,
     is_subtitled BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (movie_id) REFERENCES MOVIE(movie_id) ON DELETE CASCADE,
-    FOREIGN KEY (theater_id, saloon_number) REFERENCES SALOON(theater_id, number) ON DELETE CASCADE,
-    UNIQUE (screening_id, theater_id, saloon_number)
+    FOREIGN KEY (theater_id, saloon_number) REFERENCES SALOON(theater_id, number) ON DELETE CASCADE
 );
+
+CREATE INDEX idx_screening_id_theater_saloon
+    ON SCREENING(screening_id, theater_id, saloon_number);
 
 CREATE INDEX idx_screening_theater_saloon_start_time
     ON SCREENING(theater_id, saloon_number, start_time);
