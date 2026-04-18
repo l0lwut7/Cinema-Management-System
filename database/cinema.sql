@@ -174,7 +174,7 @@ CREATE TABLE SCREENING (
     saloon_number INT NOT NULL,
     start_time DATETIME NOT NULL,
     base_price DECIMAL(10,2) NOT NULL,
-    isSubtitled BOOLEAN DEFAULT FALSE,
+    is_subtitled BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (movie_id) REFERENCES MOVIE(movie_id) ON DELETE CASCADE,
     FOREIGN KEY (theater_id, saloon_number) REFERENCES SALOON(theater_id, number) ON DELETE CASCADE
 );
