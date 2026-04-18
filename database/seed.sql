@@ -73,8 +73,8 @@ INSERT INTO `USER` (user_id, first_name, last_name, phone_number, email, passwor
 -- Assign Customers
 INSERT INTO CUSTOMER (user_id, birth_date, loyalty_points, membership_tier) VALUES
 (1, '1990-05-14', 1500, 'VIP'),        -- Alice: Target for Top Spender Dashboard
-(2, '1985-10-22', 200, 'standard'),    -- Bob: Standard user
-(3, '2001-01-08', 50, 'standard');     -- Charlie: New user
+(2, '1985-10-22', 200, 'Standard'),    -- Bob: Standard user
+(3, '2001-01-08', 50, 'Standard');     -- Charlie: New user
 
 -- Assign Staff (Tests the Admin Staff Management & Staff Login flows)
 INSERT INTO EMPLOYEE (user_id, role, salary, account_status, auth_level, work_shift, theater_id) VALUES
