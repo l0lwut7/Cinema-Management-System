@@ -22,7 +22,7 @@ BEGIN
         
         WHILE current_col <= seats_per_row DO
             INSERT INTO SEAT (theater_id, saloon_number, row_letter, number, type) 
-            VALUES (t_id, s_num, row_char, current_col, 'standard');
+            VALUES (t_id, s_num, row_char, current_col, 'Standard');
             SET current_col = current_col + 1;
         END WHILE;
         
