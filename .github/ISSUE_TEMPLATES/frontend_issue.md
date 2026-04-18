@@ -14,7 +14,7 @@ What backend endpoint does this page rely on?
 
 ## ✅ Acceptance Criteria
 - [ ] Page loads without errors.
-- [ ] Uses Bootstrap 5 classes for styling.
+- [ ] Uses Tailwind CSS utility classes for styling.
 - [ ] Dynamic data from the database is displayed correctly.
 - [ ] Forms submit data correctly to the backend.
 
