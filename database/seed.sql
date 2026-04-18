@@ -55,7 +55,7 @@ BEGIN
         
         WHILE current_col <= seats_per_row DO
             INSERT INTO SEAT (theater_id, saloon_number, row_letter, number, type) 
-            VALUES (t_id, s_num, row_char, current_col, 'standard');
+            VALUES (t_id, s_num, row_char, current_col, 'Standard');
             SET current_col = current_col + 1;
         END WHILE;
         
@@ -106,14 +106,14 @@ INSERT INTO `USER` (user_id, first_name, last_name, phone_number, email, passwor
 -- Assign Customers
 INSERT INTO CUSTOMER (user_id, birth_date, loyalty_points, membership_tier) VALUES
 (1, '1990-05-14', 1500, 'VIP'),        -- Alice: Target for Top Spender Dashboard
-(2, '1985-10-22', 200, 'standard'),    -- Bob: Standard user
-(3, '2001-01-08', 50, 'standard');     -- Charlie: New user
+(2, '1985-10-22', 200, 'Standard'),    -- Bob: Standard user
+(3, '2001-01-08', 50, 'Standard');     -- Charlie: New user
 
 -- Assign Staff (Tests the Admin Staff Management & Staff Login flows)
 INSERT INTO EMPLOYEE (user_id, role, salary, account_status, auth_level, work_shift, theater_id) VALUES
-(4, 'System Admin', 8500.00, 'active', 3, 'All', NULL),                 -- Diana: Full Admin (Auth 3)
-(5, 'Ticket Counter', 3500.00, 'active', 1, 'Morning', 1),              -- Evan: Active Staff at Mavibahçe
-(6, 'Usher', 3000.00, 'pending', 1, 'Evening', 2);                      -- Fiona: Pending Admin Approval!
+(4, 'System Admin', 8500.00, 'Active', 3, 'All', NULL),                 -- Diana: Full Admin (Auth 3)
+(5, 'Ticket Counter', 3500.00, 'Active', 1, 'Morning', 1),              -- Evan: Active Staff at Mavibahçe
+(6, 'Usher', 3000.00, 'Pending', 1, 'Evening', 2);                      -- Fiona: Pending Admin Approval!
 
 -- ------------------------------------------------------------------------------
 -- 4. MOVIE CATALOG & METADATA (Discovery Flow)
