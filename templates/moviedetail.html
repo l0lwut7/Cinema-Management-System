@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Movie Detail - The Curated Lens</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-on-surface": "#f4eff5",
+                        "primary": "#680005",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary-fixed": "#dbe1ff",
+                        "primary-container": "#92000a",
+                        "tertiary-container": "#003ea6",
+                        "surface-dim": "#ddd9de",
+                        "error": "#ba1a1a",
+                        "tertiary": "#002a76",
+                        "on-tertiary-fixed": "#00174a",
+                        "on-secondary-container": "#752721",
+                        "surface-bright": "#fdf8fd",
+                        "on-primary-fixed-variant": "#93010b",
+                        "background": "#fdf8fd",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed-dim": "#b3c5ff",
+                        "on-error-container": "#93000a",
+                        "outline": "#8f706c",
+                        "primary-fixed-dim": "#ffb4ab",
+                        "secondary-fixed-dim": "#ffb4ab",
+                        "on-tertiary-container": "#99b2ff",
+                        "on-background": "#1c1b1f",
+                        "on-primary-container": "#ff988d",
+                        "on-surface": "#1c1b1f",
+                        "primary-fixed": "#ffdad6",
+                        "on-secondary-fixed-variant": "#7c2c25",
+                        "surface": "#fdf8fd",
+                        "secondary": "#9b433b",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-low": "#f7f2f8",
+                        "on-surface-variant": "#5a403d",
+                        "surface-container-high": "#ebe7ec",
+                        "error-container": "#ffdad6",
+                        "inverse-primary": "#ffb4ab",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed": "#ffdad6",
+                        "inverse-surface": "#313034",
+                        "on-secondary-fixed": "#400102",
+                        "on-error": "#ffffff",
+                        "secondary-container": "#fd8f83",
+                        "surface-container": "#f1ecf2",
+                        "surface-container-highest": "#e5e1e7",
+                        "surface-tint": "#b62320",
+                        "outline-variant": "#e3beba",
+                        "surface-variant": "#e5e1e7",
+                        "on-primary-fixed": "#410002",
+                        "on-tertiary-fixed-variant": "#013ea6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: theme('colors.background');
+            color: theme('colors.on-background');
+            font-family: theme('fontFamily.body');
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .bg-gradient-primary {
+            background-image: linear-gradient(135deg, theme('colors.primary'), theme('colors.primary-container'));
+        }
+
+        .glass-panel {
+            background-color: rgba(253, 248, 253, 0.7); /* surface with opacity */
+            backdrop-filter: blur(20px);
+        }
+
+        .shadow-ambient {
+            box-shadow: 0px 12px 32px rgba(28, 27, 31, 0.06);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-[#fdf8fd]/80 dark:bg-zinc-950/80 backdrop-blur-md shadow-none no-border">
+<div class="flex justify-between items-center px-12 py-4 w-full max-w-[1920px] mx-auto">
+<div class="flex items-center gap-12">
+<a class="text-2xl font-black tracking-tighter text-[#680005] dark:text-red-700 font-headline" href="#">The Curated Lens</a>
+<!-- Desktop Nav -->
+<div class="hidden md:flex gap-8">
+<a class="text-[#92000A] dark:text-red-500 border-b-2 border-[#92000A] pb-1 font-headline tracking-tight font-bold text-lg hover:text-[#92000A] transition-colors duration-300" href="{{ url_for('home') }">Movies</a>
+<a class="text-zinc-600 dark:text-zinc-400 font-medium font-headline tracking-tight text-lg hover:text-[#92000A] transition-colors duration-300" href="{{ url_for('deals_page') }">Deals</a>
+<a class="text-zinc-600 dark:text-zinc-400 font-medium font-headline tracking-tight text-lg hover:text-[#92000A] transition-colors duration-300" href="{{ url_for('subscription_page') }">Subscription</a>
+</div>
+</div>
+<!-- Actions -->
+<div class="hidden md:flex items-center gap-6">
+<!-- Search Icon (Right side as per config) -->
+<button class="text-zinc-600 dark:text-zinc-400 hover:text-[#92000A] transition-colors duration-300">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">search</span>
+</button>
+<a class="text-zinc-600 dark:text-zinc-400 font-medium font-headline tracking-tight text-lg hover:text-[#92000A] transition-colors duration-300 scale-95 transition-transform" href="#">Login</a>
+<a class="text-[#92000A] dark:text-red-500 font-headline tracking-tight font-bold text-lg hover:text-[#92000A] transition-colors duration-300 scale-95 transition-transform" href="#">Register</a>
+</div>
+<!-- Mobile Menu Toggle -->
+<button class="md:hidden text-zinc-600">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="flex-grow pt-24 pb-20"> <!-- pt-24 accounts for fixed header -->
+<!-- Hero Banner Section -->
+<section class="relative w-full max-w-[1600px] mx-auto h-[614px] min-h-[500px] bg-surface-container-low rounded-b-xl overflow-hidden mb-12 shadow-ambient">
+<!-- Background Image -->
+<img alt="Movie Banner" class="absolute inset-0 w-full h-full object-cover object-center opacity-80" data-alt="dramatic cinematic wide shot of a desert landscape at dusk with deep orange and purple skies" src="{{ movie.banner_url }}"/>
+<!-- Gradient Overlay for readability -->
+<div class="absolute inset-0 bg-gradient-to-t from-surface via-surface/40 to-transparent"></div>
+<!-- Hero Content Area -->
+<div class="absolute bottom-0 left-0 w-full p-8 md:p-16 flex flex-col md:flex-row items-end gap-8">
+<!-- Poster -->
+<div class="hidden md:block w-64 shrink-0 rounded-lg overflow-hidden shadow-ambient z-10 -mb-24 ml-8 border-4 border-surface">
+<img alt="Movie Poster" class="w-full h-auto object-cover" data-alt="striking minimalist movie poster design featuring a lone figure silhouette against a stark red background" src="{{ movie.poster_url }}"/>
+</div>
+<!-- Title & Actions Glass Panel -->
+<div class="glass-panel rounded-xl p-8 flex-grow z-10 max-w-4xl">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+<div>
+<h1 class="font-headline font-extrabold text-4xl md:text-6xl tracking-tight text-on-surface mb-2">
+    {{ movie.title }}
+</h1>
+<p class="font-body text-on-surface-variant text-lg">
+    Directed by {{ movie.director }} · {{ movie.year }}
+</p>
+</div>
+<div class="flex items-center gap-4">
+<button aria-label="Add to Favorites" class="bg-surface-container-highest text-on-surface rounded-full w-12 h-12 flex items-center justify-center hover:bg-surface-dim transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">favorite</span>
+</button>
+{% if movie.status == "Coming Soon" %}
+
+<button disabled
+    class="bg-gray-400 text-white font-headline font-bold rounded-full px-8 py-4 text-lg cursor-not-allowed opacity-70 flex items-center gap-2">
+    Coming Soon
+</button>
+
+{% else %}
+
+<a href="{{ url_for('booking', movie_id=movie.id) }}"
+   class="bg-gradient-primary text-on-primary font-headline font-bold rounded-full px-8 py-4 text-lg hover:opacity-90 transition-opacity shadow-ambient flex items-center gap-2">
+    Book Now
+</a>
+
+{% endif %}
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Content Grid (Bento Style) -->
+<div class="max-w-[1400px] mx-auto px-6 md:px-12 grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12">
+<!-- Left Column: Specs & Synopsis -->
+<div class="lg:col-span-8 flex flex-col gap-12">
+<!-- Mobile Poster (Visible only on small screens) -->
+<div class="md:hidden w-48 mx-auto rounded-lg overflow-hidden shadow-ambient mb-4">
+<img alt="Movie Poster" class="w-full h-auto object-cover" data-alt="striking minimalist movie poster design featuring a lone figure silhouette against a stark red background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAXVYf4grGywb2ifrSX9r1a76EjaPV9hD3lu7JrNM4BQUUvgY4-SoP_O3w74TuoX5pwoc7pEK3yc9lR4raw2YQ4B6TyOEnwpGP-oWmLELWXXyficG2pIX-JKQMddQcdG6GzvnBpaC2yt3K5b1ax_TfxgLMrvsCT-9FeICM1ctXuwHm7Ko4bcvB977yLW-FJNfDMkxW0p5Qw0h0wuRJ83CnDx_DSIsA_hCKwt7gT6DbFWMKS8pSPk7wfy1f6zuo1HgfxJG3H__n2snc"/>
+</div>
+<!-- Technical Specs Chips -->
+<div class="flex flex-wrap gap-3">
+    {% for genre in movie.genres %}
+    <span class="bg-surface-variant text-outline font-label text-sm px-4 py-2 rounded-full">
+        {{ genre }}
+    </span>
+    {% endfor %}
+
+    <span class="bg-surface-variant text-outline font-label text-sm px-4 py-2 rounded-full">
+        {{ movie.duration }}
+    </span>
+
+    <span class="bg-surface-variant text-outline font-label text-sm px-4 py-2 rounded-full">
+        {{ movie.format }}
+    </span>
+
+    {% if movie.badge %}
+    <span class="bg-secondary-container text-on-secondary-container font-label text-sm px-4 py-2 rounded-full font-medium">
+        {{ movie.badge }}
+    </span>
+    {% endif %}
+</div>
+<!-- Synopsis -->
+<div class="bg-surface-container-low rounded-xl p-8">
+<h2 class="font-headline font-bold text-2xl text-on-surface mb-4">Synopsis</h2>
+<p class="font-body text-on-surface-variant leading-relaxed text-lg">
+    {{ movie.description }}
+</p>
+</div>
+<!-- Cast Bento Grid -->
+<div>
+<h2 class="font-headline font-bold text-2xl text-on-surface mb-6 ml-2">Principal Cast</h2>
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+    {% for actor in movie.cast %}
+    <div class="bg-surface-container-lowest rounded-xl overflow-hidden hover:bg-surface-container-high transition-colors p-4 flex flex-col items-center text-center shadow-ambient">
+        <div class="w-20 h-20 rounded-full overflow-hidden mb-3 bg-surface-container-high flex items-center justify-center">
+            <span class="material-symbols-outlined text-primary text-3xl">person</span>
+        </div>
+        <span class="font-headline font-semibold text-on-surface">{{ actor.name }}</span>
+        <span class="font-body text-sm text-on-surface-variant">{{ actor.role }}</span>
+    </div>
+    {% endfor %}
+</div>
+<!-- Cast Member 1 -->
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden hover:bg-surface-container-high transition-colors p-4 flex flex-col items-center text-center shadow-ambient">
+<div class="w-20 h-20 rounded-full overflow-hidden mb-3">
+<img alt="Actor" class="w-full h-full object-cover" data-alt="black and white portrait photograph of a young male actor with intense expression" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDE9XMxQeUKkc4oa6QKZeckjWln6S7U27OXBJdSq-04f44hW7oxHNNCw9ccg4sRfaiHt9-fIh-IEd9MQdiCBpfjjyDvzSkwp_0y3b5-VYb3rx-gv04behidwk4wjBiKDtOzT5WTNqIvyWDVwGAe2QiiTkMrn5_KMr3U7X4h3-Qdup-D5tIbXZcRBH9-wvIXptzq6PAnTuhm-Ire5mRWMt_nOgY1XwjKWAnjC_MTBYHqwzF8lO7gS5TXiLJtlK6OIuPBGLdjfYRF10Q"/>
+</div>
+<span class="font-headline font-semibold text-on-surface">Timothée Chalamet</span>
+<span class="font-body text-sm text-on-surface-variant">Paul Atreides</span>
+</div>
+<!-- Cast Member 2 -->
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden hover:bg-surface-container-high transition-colors p-4 flex flex-col items-center text-center shadow-ambient">
+<div class="w-20 h-20 rounded-full overflow-hidden mb-3">
+<img alt="Actor" class="w-full h-full object-cover" data-alt="studio portrait of a young female actress with soft lighting and natural makeup" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCR5TGOSWyiHTXpnKPJS1TbREOXU9IWo1YwtTdo3ManpVjGN9hFkMQx95cUr1v19-jZe_-4k-hCx6NWePuyE9odrAYC4eYO60LyGq6bzsMFp5kC3ORuvGH_tgyN9SwJ-Uf5xR-Ce6dvcNlBOtV6IvoKYspCiEh0OFXIawVi4LlRiA7LJ3njxNHpccLNgegPpCotw1uWpjg3zFhsHSxLFZyQVx5AyAcQzue0kjnhgtXH1wfXtUZDnPbs00x8QoL8Rri0Lvs8xADNFUM"/>
+</div>
+<span class="font-headline font-semibold text-on-surface">Zendaya</span>
+<span class="font-body text-sm text-on-surface-variant">Chani</span>
+</div>
+<!-- Cast Member 3 -->
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden hover:bg-surface-container-high transition-colors p-4 flex flex-col items-center text-center shadow-ambient">
+<div class="w-20 h-20 rounded-full overflow-hidden mb-3">
+<img alt="Actor" class="w-full h-full object-cover" data-alt="headshot of a middle-aged male actor looking confident with slight smile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAvLL96HPe_-udt4wjjQV7vgxMFZhuFiYaFU6vmecbVoqWtEWUq7CcQrXyvsPU9zV8QQvL-uFQ-zMg0kN3RoWDKUTo9RiE3plMmEE4S8vQWCnB-nrw4l3uxUQDeWvlG6haf9hltxpE0Ot2SBbRCrWD9xIU_o9_LcVLVelEQPRq8AoWTagWC3aBOZfpw4PK05m1-2voz43-exOdt56ST3ipZreJSNYvH1VoYCserdrhuajRnNdv9zy_D3Y2EoMTN3LAB8hCEauRZ1TI"/>
+</div>
+<span class="font-headline font-semibold text-on-surface">Rebecca Ferguson</span>
+<span class="font-body text-sm text-on-surface-variant">Lady Jessica</span>
+</div>
+<!-- Cast Member 4 -->
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden hover:bg-surface-container-high transition-colors p-4 flex flex-col items-center text-center shadow-ambient">
+<div class="w-20 h-20 rounded-full overflow-hidden mb-3">
+<img alt="Actor" class="w-full h-full object-cover" data-alt="portrait of an older male actor with beard and intense gaze" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAM3KDZtboS_7gHa-ImorLKwblXW8jKOBDergtOc4-qtBArspV2bZLFJdxYPjwiUlKeypUMD_bQICs_8bDcx19gfHfJqn8PKBAZsU1BZ1kuWFRYo213mBD-5ffzHPTD_fII-I3KdXz-mYsgP3X-RXE4Yk45OFnCqVB546WLwp-0_7irlcIyguK2PM9CdInu7MlZc2wNvUDmB3BpuCFOco-aGkJ5f5oCqbLEShBdedBMxb6ubcI37qvADl2SEihqj3XpWkEp24m_9oA"/>
+</div>
+<span class="font-headline font-semibold text-on-surface">Javier Bardem</span>
+<span class="font-body text-sm text-on-surface-variant">Stilgar</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Ratings & Reviews -->
+<div class="lg:col-span-4 flex flex-col gap-8">
+<!-- Main Rating Card -->
+<div class="bg-surface-container-lowest rounded-xl p-8 shadow-ambient flex flex-col items-center text-center">
+<span class="font-headline font-bold text-on-surface text-xl mb-2">Curated Score</span>
+<div class="text-6xl font-headline font-black text-primary mb-2">
+    {{ movie.rating }}
+</div>
+<p class="font-body text-sm text-on-surface-variant">
+    Based on {{ movie.review_count }} critic reviews
+</p>
+</div>
+<!-- Review Snippets -->
+<div class="bg-surface-container-low rounded-xl p-6 flex flex-col gap-6">
+    <h3 class="font-headline font-bold text-lg text-on-surface border-b border-outline-variant/15 pb-2">
+        Editorial Reviews
+    </h3>
+
+    {% for review in movie.reviews %}
+    <div class="flex flex-col gap-2">
+        <p class="font-body text-on-surface italic">
+            "{{ review.quote }}"
+        </p>
+        <span class="font-label text-xs text-on-surface-variant font-medium uppercase tracking-widest">
+            - {{ review.source }}
+        </span>
+    </div>
+    {% endfor %}
+</div>
+<h3 class="font-headline font-bold text-lg text-on-surface border-b border-outline-variant/15 pb-2">Editorial Reviews</h3>
+<div class="flex flex-col gap-2">
+<p class="font-body text-on-surface italic">"A monumental achievement in sci-fi cinema. Visually staggering."</p>
+<span class="font-label text-xs text-on-surface-variant font-medium uppercase tracking-widest">- The Cinematic Post</span>
+</div>
+<div class="flex flex-col gap-2">
+<p class="font-body text-on-surface italic">"Villeneuve crafts a sequel that surpasses the original in scale and emotional depth."</p>
+<span class="font-label text-xs text-on-surface-variant font-medium uppercase tracking-widest">- Frame &amp; Lens</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full py-12 mt-20 bg-[#fdf8fd] dark:bg-zinc-950 border-t border-[#e3beba]/15 shadow-none">
+<div class="flex flex-col items-center gap-6 px-4">
+<div class="flex gap-6">
+<a class="font-['Inter'] text-xs uppercase tracking-widest text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 opacity-80 hover:opacity-100 transition-opacity" href="#">Terms of Service</a>
+<a class="font-['Inter'] text-xs uppercase tracking-widest text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 opacity-80 hover:opacity-100 transition-opacity" href="#">Privacy Policy</a>
+<a class="font-['Inter'] text-xs uppercase tracking-widest text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 opacity-80 hover:opacity-100 transition-opacity" href="#">Accessibility</a>
+<a class="font-['Inter'] text-xs uppercase tracking-widest text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 opacity-80 hover:opacity-100 transition-opacity" href="#">Contact</a>
+</div>
+<p class="font-['Inter'] text-xs uppercase tracking-widest text-[#92000A] dark:text-red-500">© 2024 The Curated Lens. A Cinematic Archive.</p>
+</div>
+</footer>
+</body></html>

@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Customer Deals - The Curated Lens</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "inverse-on-surface": "#f4eff5",
+                    "primary": "#680005",
+                    "surface-container-lowest": "#ffffff",
+                    "tertiary-fixed": "#dbe1ff",
+                    "primary-container": "#92000a",
+                    "tertiary-container": "#003ea6",
+                    "surface-dim": "#ddd9de",
+                    "error": "#ba1a1a",
+                    "tertiary": "#002a76",
+                    "on-tertiary-fixed": "#00174a",
+                    "on-secondary-container": "#752721",
+                    "surface-bright": "#fdf8fd",
+                    "on-primary-fixed-variant": "#93010b",
+                    "background": "#fdf8fd",
+                    "on-secondary": "#ffffff",
+                    "tertiary-fixed-dim": "#b3c5ff",
+                    "on-error-container": "#93000a",
+                    "outline": "#8f706c",
+                    "primary-fixed-dim": "#ffb4ab",
+                    "secondary-fixed-dim": "#ffb4ab",
+                    "on-tertiary-container": "#99b2ff",
+                    "on-background": "#1c1b1f",
+                    "on-primary-container": "#ff988d",
+                    "on-surface": "#1c1b1f",
+                    "primary-fixed": "#ffdad6",
+                    "on-secondary-fixed-variant": "#7c2c25",
+                    "surface": "#fdf8fd",
+                    "secondary": "#9b433b",
+                    "on-tertiary": "#ffffff",
+                    "surface-container-low": "#f7f2f8",
+                    "on-surface-variant": "#5a403d",
+                    "surface-container-high": "#ebe7ec",
+                    "error-container": "#ffdad6",
+                    "inverse-primary": "#ffb4ab",
+                    "on-primary": "#ffffff",
+                    "secondary-fixed": "#ffdad6",
+                    "inverse-surface": "#313034",
+                    "on-secondary-fixed": "#400102",
+                    "on-error": "#ffffff",
+                    "secondary-container": "#fd8f83",
+                    "surface-container": "#f1ecf2",
+                    "surface-container-highest": "#e5e1e7",
+                    "surface-tint": "#b62320",
+                    "outline-variant": "#e3beba",
+                    "surface-variant": "#e5e1e7",
+                    "on-primary-fixed": "#410002",
+                    "on-tertiary-fixed-variant": "#013ea6"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {},
+            "fontFamily": {
+                    "headline": ["Manrope"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .fill-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+        .gradient-btn {
+            background: linear-gradient(135deg, #680005 0%, #92000a 100%);
+        }
+        .gradient-btn:hover {
+            background: linear-gradient(135deg, #4f0004 0%, #7a0008 100%);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body antialiased min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-[#fdf8fd]/80 dark:bg-zinc-950/80 backdrop-blur-md shadow-none bg-[#fdf8fd]/90">
+<div class="flex justify-between items-center px-12 py-4 w-full max-w-[1920px] mx-auto">
+<div class="text-2xl font-black tracking-tighter text-[#680005] dark:text-red-700 font-headline">
+                The Curated Lens
+            </div>
+<div class="hidden md:flex gap-8 items-center">
+<a class="text-zinc-600 dark:text-zinc-400 font-medium font-['Manrope'] tracking-tight font-bold text-lg hover:text-[#92000A] transition-colors duration-300 scale-95 transition-transform" href="{{ url_for('home') }}">Movies</a>
+<a class="text-[#92000A] dark:text-red-500 border-b-2 border-[#92000A] pb-1 font-['Manrope'] tracking-tight font-bold text-lg hover:text-[#92000A] transition-colors duration-300 scale-95 transition-transform" href="{{ url_for('deals_page') }}">Deals</a>
+<a class="text-zinc-600 dark:text-zinc-400 font-medium font-['Manrope'] tracking-tight font-bold text-lg hover:text-[#92000A] transition-colors duration-300 scale-95 transition-transform" href="{{ url_for('subscription_page') }}">Subscription</a>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden md:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/50">search</span>
+<input class="pl-10 pr-4 py-2 rounded-md bg-surface-container-low border-none focus:ring-1 focus:ring-primary/40 focus:bg-surface-container-lowest transition-colors w-48 text-sm" placeholder="Search..." type="text"/>
+</div>
+<button class="text-zinc-600 dark:text-zinc-400 font-medium font-['Manrope'] tracking-tight font-bold text-lg hover:text-[#92000A] transition-colors duration-300">Login</button>
+<button class="gradient-btn text-on-primary px-6 py-2 rounded-full font-label font-medium tracking-wide shadow-sm hover:shadow-md transition-all">Register</button>
+</div>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="flex-grow pt-32 pb-24 px-6 md:px-12 max-w-[1920px] mx-auto w-full">
+<!-- Hero Section / Header -->
+<div class="mb-16 ml-0 md:ml-12 lg:ml-24 max-w-3xl">
+<h1 class="font-headline text-5xl md:text-6xl font-extrabold tracking-tight text-on-surface mb-6">Exclusive Cinematic Offers</h1>
+<p class="font-body text-on-surface-variant text-lg md:text-xl leading-relaxed">
+                Elevate your viewing experience. Discover curated deals and seasonal campaigns designed for the true cinephile.
+            </p>
+</div>
+<!-- Deals Grid -->
+<!-- Deals Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12 lg:gap-16">
+
+    {% for deal in deals %}
+        {% if deal.highlighted %}
+        <div class="group relative rounded-xl overflow-hidden bg-surface-container-lowest shadow-[0px_12px_32px_rgba(28,27,31,0.06)] hover:bg-surface-container-high transition-colors duration-500 md:col-span-2 lg:col-span-2 h-[400px]">
+            <img
+                alt="{{ deal.title }}"
+                class="absolute inset-0 w-full h-full object-cover opacity-80 mix-blend-multiply filter brightness-75 transition-transform duration-700 group-hover:scale-105"
+                src="https://images.unsplash.com/photo-1513106580091-1d82408b8cd6?q=80&w=1200&auto=format&fit=crop"
+            />
+
+            <div class="absolute inset-0 bg-gradient-to-t from-surface/90 via-surface/40 to-transparent backdrop-blur-[2px]"></div>
+
+            <div class="absolute bottom-0 left-0 p-8 w-full flex flex-col justify-end">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-xs font-label font-semibold tracking-wide uppercase">
+                        {{ deal.category }}
+                    </span>
+                    <span class="text-on-surface bg-surface/80 backdrop-blur-md px-3 py-1 rounded-full text-xs font-label font-medium flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[16px]">schedule</span>
+                        {{ deal.badge }}
+                    </span>
+                </div>
+
+                <h2 class="font-headline text-3xl md:text-4xl font-bold text-on-surface mb-3 tracking-tight">
+                    {{ deal.title }}
+                </h2>
+
+                <p class="font-body text-on-surface-variant mb-6 max-w-xl">
+                    {{ deal.description }}
+                </p>
+
+                <div class="flex items-center justify-between">
+                    <span class="font-headline text-2xl font-extrabold text-primary">
+                        {% if deal.price %}
+                            ${{ deal.price }}
+                        {% endif %}
+                        {% if deal.old_price %}
+                            <span class="text-sm text-on-surface-variant font-medium line-through ml-2">
+                                ${{ deal.old_price }}
+                            </span>
+                        {% endif %}
+                    </span>
+
+                    <button class="gradient-btn text-on-primary px-6 py-3 rounded-full font-label font-medium tracking-wide shadow-md hover:shadow-lg transition-all flex items-center gap-2">
+                        {{ deal.button_text }}
+                        <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        {% else %}
+        <div class="group rounded-xl p-8 bg-surface-container-low hover:bg-surface-container-lowest hover:shadow-[0px_12px_32px_rgba(28,27,31,0.06)] transition-all duration-300 flex flex-col h-[400px]">
+            <div class="mb-auto">
+                <div class="flex justify-between items-start mb-6">
+                    <div class="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-primary">
+                        <span class="material-symbols-outlined text-2xl">{{ deal.icon }}</span>
+                    </div>
+
+                    <span class="text-on-surface-variant text-xs font-label font-medium flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[16px]">event</span>
+                        {{ deal.badge }}
+                    </span>
+                </div>
+
+                <h3 class="font-headline text-xl font-bold text-on-surface mb-3 tracking-tight">
+                    {{ deal.title }}
+                </h3>
+
+                <p class="font-body text-on-surface-variant text-sm leading-relaxed mb-6">
+                    {{ deal.description }}
+                </p>
+            </div>
+
+            <div>
+                <div class="h-[1px] w-full bg-outline-variant/15 mb-6"></div>
+                <button class="w-full bg-surface-container-highest text-on-surface px-4 py-3 rounded-full font-label font-medium hover:bg-surface-dim transition-colors text-center">
+                    {{ deal.button_text }}
+                </button>
+            </div>
+        </div>
+        {% endif %}
+    {% endfor %}
+
+</div>
+<!-- Deal Card 1 (Featured/Glassmorphism) -->
+<div class="group relative rounded-xl overflow-hidden bg-surface-container-lowest shadow-[0px_12px_32px_rgba(28,27,31,0.06)] hover:bg-surface-container-high transition-colors duration-500 md:col-span-2 lg:col-span-2 h-[400px]">
+<img alt="Cinema Seats" class="absolute inset-0 w-full h-full object-cover opacity-80 mix-blend-multiply filter brightness-75 transition-transform duration-700 group-hover:scale-105" data-alt="Vintage cinema seats in a dimly lit, luxurious theater with rich red velvet upholstery and soft dramatic spotlighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBp6wJIOccDGMeWiTuDeoZbo_GgAUyU-l9Gx822hDHnVoVj5kCLD5tB9cnXA0yA8CV-0mPrGRf8SEMjx2P1EZKnS4ZvZ1FCYSh41J0S8MHtg-91nojBgku_x3yDcgGxqivWnoVeyoVT4Zz-3SqpnCJzU1w5eMtsVN2eobrJAjhRhq8czM0hJScANfGwBRpB__3UvGq0wXC4nAb6e1E6SQ9SAWE5uaVPeGoXuxkCTlLoDy_SARMHpQ5qCQ5YrNWRtELUsfQtoZj1GWg"/>
+<!-- Glass overlay -->
+<div class="absolute inset-0 bg-gradient-to-t from-surface/90 via-surface/40 to-transparent backdrop-blur-[2px]"></div>
+<div class="absolute bottom-0 left-0 p-8 w-full flex flex-col justify-end">
+<div class="flex items-center gap-3 mb-4">
+<span class="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-xs font-label font-semibold tracking-wide uppercase">Premium</span>
+<span class="text-on-surface bg-surface/80 backdrop-blur-md px-3 py-1 rounded-full text-xs font-label font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">schedule</span> Ends in 3 days
+                        </span>
+</div>
+<h2 class="font-headline text-3xl md:text-4xl font-bold text-on-surface mb-3 tracking-tight">The Auteur Collection Pass</h2>
+<p class="font-body text-on-surface-variant mb-6 max-w-xl">
+                        Gain unlimited access to independent and international cinema screenings for the entire season. Includes priority seating and complimentary gallery lounge access.
+                    </p>
+<div class="flex items-center justify-between">
+<span class="font-headline text-2xl font-extrabold text-primary">$149 <span class="text-sm text-on-surface-variant font-medium line-through ml-2">$299</span></span>
+<button class="gradient-btn text-on-primary px-6 py-3 rounded-full font-label font-medium tracking-wide shadow-md hover:shadow-lg transition-all flex items-center gap-2">
+                            Claim Offer <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Deal Card 2 -->
+<div class="group rounded-xl p-8 bg-surface-container-low hover:bg-surface-container-lowest hover:shadow-[0px_12px_32px_rgba(28,27,31,0.06)] transition-all duration-300 flex flex-col h-[400px]">
+<div class="mb-auto">
+<div class="flex justify-between items-start mb-6">
+<div class="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-2xl">local_activity</span>
+</div>
+<span class="text-on-surface-variant text-xs font-label font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">event</span> Valid till Dec 31
+                        </span>
+</div>
+<h3 class="font-headline text-xl font-bold text-on-surface mb-3 tracking-tight">Matinee Magic</h3>
+<p class="font-body text-on-surface-variant text-sm leading-relaxed mb-6">
+                        Enjoy 40% off all screenings before 4 PM, Tuesday through Thursday. Perfect for a quiet cinematic escape.
+                    </p>
+</div>
+<div>
+<div class="h-[1px] w-full bg-outline-variant/15 mb-6"></div>
+<button class="w-full bg-surface-container-highest text-on-surface px-4 py-3 rounded-full font-label font-medium hover:bg-surface-dim transition-colors text-center">
+                        View Details
+                    </button>
+</div>
+</div>
+<!-- Deal Card 3 -->
+<div class="group rounded-xl p-8 bg-surface-container-low hover:bg-surface-container-lowest hover:shadow-[0px_12px_32px_rgba(28,27,31,0.06)] transition-all duration-300 flex flex-col h-[400px]">
+<div class="mb-auto">
+<div class="flex justify-between items-start mb-6">
+<div class="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-2xl">group</span>
+</div>
+<span class="text-on-surface-variant text-xs font-label font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">event</span> Ongoing
+                        </span>
+</div>
+<h3 class="font-headline text-xl font-bold text-on-surface mb-3 tracking-tight">Cinephile Duo</h3>
+<p class="font-body text-on-surface-variant text-sm leading-relaxed mb-6">
+                        Bring a companion. Buy one general admission ticket and get the second at half price. Applies to all standard screenings.
+                    </p>
+</div>
+<div>
+<div class="h-[1px] w-full bg-outline-variant/15 mb-6"></div>
+<button class="w-full bg-surface-container-highest text-on-surface px-4 py-3 rounded-full font-label font-medium hover:bg-surface-dim transition-colors text-center">
+                        View Details
+                    </button>
+</div>
+</div>
+<!-- Deal Card 4 -->
+<div class="group rounded-xl p-8 bg-surface-container-low hover:bg-surface-container-lowest hover:shadow-[0px_12px_32px_rgba(28,27,31,0.06)] transition-all duration-300 flex flex-col h-[400px]">
+<div class="mb-auto">
+<div class="flex justify-between items-start mb-6">
+<div class="w-12 h-12 rounded-lg bg-surface flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-2xl">restaurant</span>
+</div>
+<span class="bg-surface-variant text-outline px-3 py-1 rounded-full text-xs font-label font-medium">Members Only</span>
+</div>
+<h3 class="font-headline text-xl font-bold text-on-surface mb-3 tracking-tight">Curated Concessions</h3>
+<p class="font-body text-on-surface-variant text-sm leading-relaxed mb-6">
+                        Complimentary artisanal popcorn pairing or a glass of select wine with any evening premiere ticket purchase.
+                    </p>
+</div>
+<div>
+<div class="h-[1px] w-full bg-outline-variant/15 mb-6"></div>
+<button class="w-full bg-surface-container-highest text-on-surface px-4 py-3 rounded-full font-label font-medium hover:bg-surface-dim transition-colors text-center">
+                        View Details
+                    </button>
+</div>
+</div>
+<!-- Promotional Banner (Full width) -->
+<div class="col-span-1 md:col-span-2 lg:col-span-3 rounded-xl overflow-hidden bg-primary-container relative mt-8 flex flex-col md:flex-row items-center">
+<div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10"></div>
+<div class="p-10 md:p-12 z-10 w-full md:w-2/3">
+<h2 class="font-headline text-3xl font-extrabold text-on-primary mb-4 tracking-tight">Gift the Magic of Cinema</h2>
+<p class="font-body text-on-primary-container mb-8 max-w-lg text-lg">
+                        Purchase a digital gift card for $100 or more and receive a $20 bonus credit for your own account.
+                    </p>
+<button class="bg-surface text-primary px-8 py-3 rounded-full font-label font-bold tracking-wide shadow-sm hover:shadow-md hover:bg-surface-bright transition-all">
+                        Buy Gift Card
+                    </button>
+</div>
+<div class="w-full md:w-1/3 h-48 md:h-full relative overflow-hidden hidden md:block">
+<img alt="Cinematic Light" class="absolute inset-0 w-full h-full object-cover mix-blend-screen opacity-60" data-alt="Abstract cinematic light leaks and lens flares creating a warm glowing texture over dark background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDIXg2UlE95B_2t_QekfTODtX1B11yRP09_PugTRC6x63tI_VyISCF2lv3aTkZn-uumTBFRieXMn1lLIUwYSga6yXWuMbCOySpLkxqf01noFsAILikUre0AgXPrSqYQDjQQplVKVVjlapTMABE3fw2tyJ_rAebmQJUv_Z-3U6wGZpLOcR2GfMaQ5IVLL31FxwLADjuaRcsYJ6VoqzE739-af15-AegaCMLXNGNPgz0LUhnBdIRezz-0__IQQdL6mShWTU-gW-AB-E"/>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full py-12 mt-20 border-t border-[#e3beba]/15 bg-[#fdf8fd] dark:bg-zinc-950 flex flex-col items-center gap-6 px-4">
+<div class="hidden">
+            The Curated Lens
+        </div>
+<div class="flex gap-8">
+<a class="text-zinc-400 font-['Inter'] text-xs uppercase tracking-widest hover:text-zinc-900 dark:hover:text-zinc-100 opacity-80 hover:opacity-100 transition-opacity" href="#">Terms of Service</a>
+<a class="text-zinc-400 font-['Inter'] text-xs uppercase tracking-widest hover:text-zinc-900 dark:hover:text-zinc-100 opacity-80 hover:opacity-100 transition-opacity" href="#">Privacy Policy</a>
+<a class="text-zinc-400 font-['Inter'] text-xs uppercase tracking-widest hover:text-zinc-900 dark:hover:text-zinc-100 opacity-80 hover:opacity-100 transition-opacity" href="#">Accessibility</a>
+<a class="text-zinc-400 font-['Inter'] text-xs uppercase tracking-widest hover:text-zinc-900 dark:hover:text-zinc-100 opacity-80 hover:opacity-100 transition-opacity" href="#">Contact</a>
+</div>
+<div class="text-zinc-400 font-['Inter'] text-xs uppercase tracking-widest text-center mt-4">
+            © 2024 The Curated Lens. A Cinematic Archive.
+        </div>
+</footer>
+</body></html>
