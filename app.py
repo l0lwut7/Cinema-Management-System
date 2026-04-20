@@ -217,7 +217,6 @@ def home():
         deals=deals
     )
 
-
 @app.route("/nowshowing")
 def now_showing():
     return render_template("nowshowing.html", movies=now_showing_movies)
@@ -283,22 +282,6 @@ def booking(movie_id):
         return "Movie not found", 404
 
     return render_template("booking.html", movie=movie)
-
-
-# İleride frontend fetch ile kullanmak istersen JSON endpointleri de hazır olabilir
-@app.route("/api/movies/now-showing")
-def api_now_showing():
-    return jsonify(now_showing_movies)
-
-
-@app.route("/api/movies/coming-soon")
-def api_coming_soon():
-    return jsonify(coming_soon_movies)
-
-
-@app.route("/api/deals")
-def api_deals():
-    return jsonify(deals)
 
 
 if __name__ == "__main__":
