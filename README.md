@@ -81,7 +81,6 @@ The app starts on `http://127.0.0.1:5000`.
 Useful routes:
 - Home: `http://127.0.0.1:5000/`
 - Styleguide: `http://127.0.0.1:5000/styleguide`
-- Components: `http://127.0.0.1:5000/components`
 
 ## Database Setup (Optional for UI work)
 If you only work on templates/styleguide, you do not need the database running.
