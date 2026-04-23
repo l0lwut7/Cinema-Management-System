@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% from 'components.html' import primary_button, secondary_button, form_input, form_select, status_badge, movie_card, stat_card, data_table %}
+
+{% block title %}UI Styleguide - CineMax{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-6 py-12 max-w-5xl">
+    
+    <div class="mb-10 pb-6 border-b border-slate-800">
+        <h1 class="font-display text-4xl font-bold text-white mb-2">Team UI Styleguide</h1>
+        <p class="text-slate-400">Copy and paste these macros instead of writing raw HTML/Tailwind.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+        <section class="bg-brand-surface p-8 rounded-2xl shadow-xl border border-slate-800">
+            <h2 class="text-xl font-bold text-white mb-6">Buttons</h2>
+            <div class="flex flex-wrap gap-4 items-center mb-4">
+                {{ primary_button('Primary Action', '#') }}
+                {{ secondary_button('Secondary Action', '#') }}
+            </div>
+        </section>
+        
+        <section class="bg-brand-surface p-8 rounded-2xl shadow-xl border border-slate-800">
+            <h2 class="text-xl font-bold text-white mb-6">Status Badges</h2>
+            <div class="flex flex-wrap gap-4">
+                {{ status_badge('Active') }}
+                {{ status_badge('Pending') }}
+                {{ status_badge('Cancelled') }}
+                {{ status_badge('Standard') }}
+            </div>
+        </section>
+    </div>
+
+    <section class="mb-12 bg-brand-surface p-8 rounded-2xl shadow-xl border border-slate-800">
+        <h2 class="text-xl font-bold text-white mb-6">Forms & Inputs</h2>
+        <form class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl">
+            {{ form_input('Email Address', 'email', 'email', 'Enter your email', True) }}
+            {{ form_input('Password', 'password', 'password', '••••••••', True) }}
+            
+            <div class="md:col-span-2">
+                {% set theater_options = [('1', 'CineMax Downtown'), ('2', 'CineMax Mall'), ('3', 'CineMax IMAX West')] %}
+                {{ form_select('Select Theater', 'theater_id', theater_options, True) }}
+            </div>
+            
+            <div class="md:col-span-2 mt-2">
+                {{ primary_button('Submit Form', type='submit') }}
+            </div>
+        </form>
+    </section>
+
+    <section class="mb-12">
+        <h2 class="text-2xl font-bold text-white mb-6 border-b border-slate-800 pb-2">Admin Dashboard Cards</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {{ stat_card('Total Revenue', '$14,230', '+12% from last week') }}
+            {{ stat_card('Tickets Sold', '1,204', 'Across all theaters today') }}
+            {{ stat_card('Pending Approvals', '5', 'Staff accounts waiting') }}
+        </div>
+    </section>
+
+    <section class="mb-12">
+        <h2 class="text-2xl font-bold text-white mb-6 border-b border-slate-800 pb-2">Customer Movie Cards</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+            {{ movie_card('Dune: Part Two', '166', '4.8', 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=600&q=80', '/book/1') }}
+            {{ movie_card('Oppenheimer', '180', '4.9', 'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?auto=format&fit=crop&w=600&q=80', '/book/2') }}
+        </div>
+    </section>
+
+    <section class="mb-12">
+        <h2 class="text-2xl font-bold text-white mb-6 border-b border-slate-800 pb-2">Admin Data Tables</h2>
+        
+        {% call data_table(['ID', 'Staff Name', 'Role', 'Status', 'Actions']) %}
+            <tr class="hover:bg-slate-800/30 transition">
+                <td class="p-4 text-white font-mono text-sm">#1042</td>
+                <td class="p-4 text-white font-medium">Alp Yüksekkaya</td>
+                <td class="p-4 text-slate-400">Admin</td>
+                <td class="p-4">{{ status_badge('Active') }}</td>
+                <td class="p-4">
+                    <a href="#" class="text-brand-amber hover:text-white text-sm font-bold transition">Edit</a>
+                </td>
+            </tr>
+            <tr class="hover:bg-slate-800/30 transition border-t border-slate-800">
+                <td class="p-4 text-white font-mono text-sm">#1043</td>
+                <td class="p-4 text-white font-medium">Jane Doe</td>
+                <td class="p-4 text-slate-400">Cashier</td>
+                <td class="p-4">{{ status_badge('Pending') }}</td>
+                <td class="p-4">
+                    <a href="#" class="text-brand-amber hover:text-white text-sm font-bold transition">Edit</a>
+                </td>
+            </tr>
+        {% endcall %}
+    </section>
+
+</div>
+{% endblock %}

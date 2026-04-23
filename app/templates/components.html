@@ -1,0 +1,114 @@
+{% macro primary_button(text, url='#', type='button') %}
+    {% if type == 'submit' %}
+        <button type="submit" class="bg-brand-red hover:bg-rose-700 text-white font-bold py-3 px-6 rounded-xl transition shadow-lg shadow-brand-red/20 w-full md:w-auto">
+            {{ text }}
+        </button>
+    {% else %}
+        <a href="{{ url }}" class="inline-block text-center bg-brand-red hover:bg-rose-700 text-white font-bold py-3 px-6 rounded-xl transition shadow-lg shadow-brand-red/20 w-full md:w-auto">
+            {{ text }}
+        </a>
+    {% endif %}
+{% endmacro %}
+
+{% macro secondary_button(text, url='#') %}
+    <a href="{{ url }}" class="inline-block text-center bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-bold py-3 px-6 rounded-xl transition w-full md:w-auto">
+        {{ text }}
+    </a>
+{% endmacro %}
+
+{% macro form_input(label, name, type='text', placeholder='', required=False) %}
+    <div class="mb-4">
+        <label for="{{ name }}" class="block text-sm font-semibold text-slate-400 mb-2">
+            {{ label }} {% if required %}<span class="text-brand-red">*</span>{% endif %}
+        </label>
+        <input 
+            type="{{ type }}" 
+            id="{{ name }}" 
+            name="{{ name }}" 
+            placeholder="{{ placeholder }}"
+            {% if required %}required{% endif %}
+            class="w-full bg-brand-dark border border-slate-700 rounded-lg p-3 text-white focus:outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red transition"
+        >
+    </div>
+{% endmacro %}
+
+{% macro status_badge(status) %}
+    {% set color = 'bg-slate-700 text-slate-300' %} {% if status | lower == 'active' or status | lower == 'completed' %}
+        {% set color = 'bg-green-500/20 text-green-400 border border-green-500/30' %}
+    {% elif status | lower == 'pending' %}
+        {% set color = 'bg-brand-amber/20 text-brand-amber border border-brand-amber/30' %}
+    {% elif status | lower == 'refunded' or status | lower == 'cancelled' %}
+        {% set color = 'bg-brand-red/20 text-rose-400 border border-brand-red/30' %}
+    {% endif %}
+
+    <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider {{ color }}">
+        {{ status }}
+    </span>
+{% endmacro %}
+
+{% macro form_select(label, name, options, required=False) %}
+    <div class="mb-4">
+        <label for="{{ name }}" class="block text-sm font-semibold text-slate-400 mb-2">
+            {{ label }} {% if required %}<span class="text-brand-red">*</span>{% endif %}
+        </label>
+        <select 
+            id="{{ name }}" 
+            name="{{ name }}" 
+            {% if required %}required{% endif %}
+            class="w-full bg-brand-dark border border-slate-700 rounded-lg p-3 text-white focus:outline-none focus:border-brand-red focus:ring-1 focus:ring-brand-red transition appearance-none"
+        >
+            <option value="" disabled selected>Select an option...</option>
+            {% for value, display_text in options %}
+                <option value="{{ value }}">{{ display_text }}</option>
+            {% endfor %}
+        </select>
+    </div>
+{% endmacro %}
+
+{% macro movie_card(title, duration, rating, image_url, book_url) %}
+    <div class="bg-brand-surface rounded-xl overflow-hidden shadow-lg border border-slate-800 group transition hover:border-brand-red/50 hover:shadow-brand-red/10">
+        <div class="relative h-72 w-full bg-slate-800 overflow-hidden">
+            <img src="{{ image_url }}" alt="{{ title }}" class="object-cover w-full h-full opacity-80 group-hover:opacity-100 group-hover:scale-105 transition duration-500">
+            <button type="button" aria-label="Add {{ title }} to favorites" class="absolute top-3 right-3 p-2 bg-brand-dark/80 rounded-full text-slate-300 hover:text-brand-red transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+            </button>
+            <div class="absolute bottom-3 left-3 bg-brand-amber text-black text-xs font-bold px-2 py-1 rounded shadow-lg">
+                ★ {{ rating }}
+            </div>
+        </div>
+        <div class="p-5">
+            <h3 class="font-display font-bold text-xl text-white truncate mb-1">{{ title }}</h3>
+            <p class="text-slate-400 text-sm mb-4">{{ duration }} mins</p>
+            <a href="{{ book_url }}" class="block w-full text-center bg-brand-red/10 hover:bg-brand-red text-brand-red hover:text-white font-bold py-2 rounded-lg transition border border-brand-red/20">
+                Book Now
+            </a>
+        </div>
+    </div>
+{% endmacro %}
+
+{% macro stat_card(title, value, subtitle='') %}
+    <div class="bg-brand-surface p-6 rounded-2xl shadow-xl border border-slate-800 border-l-4 border-l-brand-red">
+        <h3 class="text-slate-400 text-sm font-semibold uppercase tracking-wider mb-2">{{ title }}</h3>
+        <div class="text-3xl font-display font-bold text-white mb-1">{{ value }}</div>
+        {% if subtitle %}
+            <div class="text-slate-500 text-xs">{{ subtitle }}</div>
+        {% endif %}
+    </div>
+{% endmacro %}
+
+{% macro data_table(headers) %}
+    <div class="overflow-x-auto bg-brand-surface rounded-xl border border-slate-800 shadow-xl">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-slate-800/50 border-b border-slate-700">
+                    {% for header in headers %}
+                        <th class="p-4 text-xs font-bold text-slate-300 uppercase tracking-wider">{{ header }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800">
+                {{ caller() }}
+            </tbody>
+        </table>
+    </div>
+{% endmacro %}
