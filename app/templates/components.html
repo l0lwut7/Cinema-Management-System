@@ -129,7 +129,7 @@
         {% for key, label in tabs_dict.items() %}
             <button 
                 type="button"
-                data-tab-target="{{ key }}"
+                data-tab="{{ key }}"
                 class="tab-btn flex-1 py-3 rounded-lg font-medium transition-all {% if key == active_key %}bg-brand-red text-white shadow-lg{% else %}text-slate-400 hover:text-white{% endif %}"
             >
                 {{ label }}
