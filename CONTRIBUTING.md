@@ -1,114 +1,144 @@
-# 🎬 Contributing to the Cinema Management System
+# Contributing to the Cinema Management System
 
-Welcome to the team! 🚀  
-To keep our codebase clean and safe, we follow a structured workflow using:
+This document defines how to run the project locally and how to contribute with minimal merge conflicts.
 
-- **Feature Branches** → Your personal workspace  
-- **Pull Requests (PRs)** → Code review before merging  
+## Core Rules
+1. Never commit directly to `main`.
+2. Every issue must be developed on its own branch.
+3. Open a Pull Request (PR) for review before merge.
 
----
+## First-Time Setup
 
-## 🚨 Golden Rule
-> ❗ **NEVER write code directly on the `main` branch!**
+### 1. Clone the repository
+```bash
+git clone <repo-url>
+cd Cinema-Management-System
+```
 
----
-
-## 🖥️ Required Tool
-
-👉 Install **GitHub Desktop**
-
----
-
-# ⚙️ 1. First-Time Setup (Do this once)
-
-## 📥 Step A: Clone the Repository
-
-1. Open GitHub Desktop  
-2. File → Clone Repository  
-3. Select `cinema-management-system`  
-4. Click **Clone**
-
----
-
-## 🐍 Step B: Setup Python Environment
-
+### 2. Create virtual environment and install dependencies
+macOS/Linux:
 ```bash
 python3 -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
+source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
----
-
-## 🗄️ Step C: Setup Database
-
-Run in your MySQL client:
-
-```
-database/cinema.sql
-database/seed.sql
+Windows (PowerShell):
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
 ```
 
----
-
-# 🔁 2. Daily Workflow
-
-## 📝 Step 1: Claim an Issue
-
-Go to GitHub Issues and comment:
-```
-I'll take this!
+### 3. Run the Flask app
+```bash
+python run.py
 ```
 
----
+Check routes:
+- `http://127.0.0.1:5000/`
+- `http://127.0.0.1:5000/styleguide`
+- `http://127.0.0.1:5000/components`
 
-## 🌿 Step 2: Create a Branch
+### 4. Optional database setup
+Run these in your MySQL client when working on SQL tasks:
+- `database/cinema.sql`
+- `database/seed.sql`
+- `database/queries.sql` (for checks/examples)
 
-1. Switch to `main`
-2. Click **Fetch origin**
-3. Create a new branch:
-   - `feature-login`
-   - `bugfix-seats`
-   - `refactor-database`
-   - `docs-readme`
-   - `etc.`
-   - Or create a branch from the issue by Development → Create Branch from Issue from the issue page on GitHub.
-4. Publish branch
+## Daily Contribution Workflow
 
----
+### 1. Claim an issue
+Comment on the issue and assign yourself.
 
-## 💻 Step 3: Write Code
+### 2. Sync local `main`
+```bash
+git checkout main
+git pull origin main
+```
 
-Structure:
+### 3. Create a branch from `main`
+Use one branch per issue:
+- `feature/<short-topic>`
+- `bugfix/<short-topic>`
+- `docs/<short-topic>`
+- `refactor/<short-topic>`
 
-- `app.py / app/` → Backend  
-- `templates/` → HTML  
-- `database/` → SQL  
+Examples:
+- `feature/styleguide-buttons`
+- `bugfix/session-timeout`
+- `docs/run-instructions`
 
----
+### 4. Commit with focused scope
+Keep commits small and issue-focused.
 
-## 💾 Step 4: Commit & Push
+Good commit examples:
+- `docs: add flask quick start`
+- `templates: add card component variants`
+- `styleguide: normalize spacing tokens`
 
-1. Write commit message:
-   - Added login page
-   - Fixed seat bug
-2. Commit
-3. Push
+### 5. Open PR early
+Open as draft if needed, then request review when ready.
 
----
+## Template and Blueprint Structure Policy (Conflict Prevention)
 
-## 🔀 Step 5: Pull Request
+To reduce merge conflicts, each issue should map to a single feature area and avoid touching shared files unless required.
 
-1. Click **Create Pull Request**
-2. Fill template
-3. Submit PR
+### Preferred ownership model
+1. Blueprint scope:
+Each feature should have its own blueprint module. Keep feature routes in that module instead of putting everything in one shared file.
 
----
+Suggested target structure as the project grows:
+```text
+app/
+|- blueprints/
+|  |- bookings/
+|  |  |- __init__.py
+|  |  |- routes.py
+|  |- movies/
+|  |  |- __init__.py
+|  |  |- routes.py
+|- templates/
+   |- bookings/
+   |- movies/
+   |- shared/
+```
 
-# ✅ Done!
+2. Template scope:
+Put issue-specific templates inside a feature folder:
+- `app/templates/bookings/...`
+- `app/templates/movies/...`
 
-🎉 Wait for review and merge.
+Shared template fragments go under:
+- `app/templates/shared/...`
 
----
+### File touch rules
+1. Do not edit `app/templates/base.html` unless the issue explicitly requires a global layout change.
+2. Do not bundle unrelated styleguide/component changes in the same PR.
+3. If a change affects shared files, mention it explicitly in PR description under `Shared files changed`.
+4. If two open issues would modify the same shared file, coordinate and split work before coding.
 
-Happy coding 🚀
+### PR checklist for structure safety
+- Branch created from latest `main`
+- Issue scope is respected (no unrelated files)
+- Feature files are under the correct blueprint/template folder
+- Shared file edits are justified in PR description
+- App runs locally (`python run.py`) and relevant pages are manually checked
+
+## Review Expectations
+1. At least one approval before merge.
+2. Resolve all review comments.
+3. Rebase or update branch if it falls behind `main`.
+
+## Quick Commands
+```bash
+# create branch
+git checkout -b feature/<topic>
+
+# stage and commit
+git add .
+git commit -m "<type>: <short message>"
+
+# push branch
+git push -u origin feature/<topic>
+```

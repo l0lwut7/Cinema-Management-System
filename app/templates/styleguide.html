@@ -1,95 +1,429 @@
 {% extends "base.html" %}
 
-{% from 'components.html' import primary_button, secondary_button, form_input, form_select, status_badge, movie_card, stat_card, data_table %}
+{% from 'components.html' import primary_button, secondary_button, form_input, form_select, status_badge, movie_card, stat_card, data_table, step_tracker, empty_state, pos_item, seat_button, ticket_card, accordion_item, star_rating, modal, hero_banner, selectable_card, avatar_item, rating_bar, showtime_pill, screen_curve, booking_info_bar, quantity_selector, order_summary_row, success_state, password_input, password_strength_meter, social_button, dashboard_nav_link, profile_stat_card, history_table_row, pos_cart_item, activity_list_item, booking_result_card, scanner_alert, admin_sidebar_link, admin_kpi_card, filter_chip, tier_card, admin_list_item %}
 
-{% block title %}UI Styleguide - CineMax{% endblock %}
+{% block title %}Master UI Styleguide - CineMax{% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-6 py-12 max-w-5xl">
+<div class="container mx-auto px-6 py-12 max-w-7xl">
     
     <div class="mb-10 pb-6 border-b border-slate-800">
-        <h1 class="font-display text-4xl font-bold text-white mb-2">Team UI Styleguide</h1>
-        <p class="text-slate-400">Copy and paste these macros instead of writing raw HTML/Tailwind.</p>
+        <h1 class="font-display text-4xl font-bold text-white mb-2">Master UI Styleguide</h1>
+        <p class="text-slate-400">Your single source of truth for all 17 CineMax Design System components.</p>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-        <section class="bg-brand-surface p-8 rounded-2xl shadow-xl border border-slate-800">
-            <h2 class="text-xl font-bold text-white mb-6">Buttons</h2>
-            <div class="flex flex-wrap gap-4 items-center mb-4">
-                {{ primary_button('Primary Action', '#') }}
-                {{ secondary_button('Secondary Action', '#') }}
+    <section class="mb-16">
+        <h2 class="text-2xl font-bold text-white mb-6 border-b border-slate-800 pb-2">1. Basics & Actions</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            
+            <div class="bg-brand-surface p-8 rounded-2xl shadow-xl border border-slate-800">
+                <h3 class="text-slate-400 mb-6 text-sm uppercase tracking-wide">Buttons</h3>
+                <div class="flex flex-wrap gap-4 items-center mb-6">
+                    {{ primary_button('Primary Action', '#') }}
+                    {{ secondary_button('Secondary Action', '#') }}
+                </div>
+                <button onclick="document.getElementById('demo_modal').classList.remove('hidden')" class="text-brand-amber font-bold underline hover:text-white transition">
+                    Test Popup Modal →
+                </button>
             </div>
-        </section>
-        
-        <section class="bg-brand-surface p-8 rounded-2xl shadow-xl border border-slate-800">
-            <h2 class="text-xl font-bold text-white mb-6">Status Badges</h2>
-            <div class="flex flex-wrap gap-4">
-                {{ status_badge('Active') }}
-                {{ status_badge('Pending') }}
-                {{ status_badge('Cancelled') }}
-                {{ status_badge('Standard') }}
-            </div>
-        </section>
-    </div>
 
-    <section class="mb-12 bg-brand-surface p-8 rounded-2xl shadow-xl border border-slate-800">
-        <h2 class="text-xl font-bold text-white mb-6">Forms & Inputs</h2>
-        <form class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl">
-            {{ form_input('Email Address', 'email', 'email', 'Enter your email', True) }}
-            {{ form_input('Password', 'password', 'password', '••••••••', True) }}
-            
-            <div class="md:col-span-2">
-                {% set theater_options = [('1', 'CineMax Downtown'), ('2', 'CineMax Mall'), ('3', 'CineMax IMAX West')] %}
-                {{ form_select('Select Theater', 'theater_id', theater_options, True) }}
+            <div class="bg-brand-surface p-8 rounded-2xl shadow-xl border border-slate-800">
+                <h3 class="text-slate-400 mb-6 text-sm uppercase tracking-wide">Badges & Ratings</h3>
+                <div class="flex flex-wrap gap-4 mb-6">
+                    {{ status_badge('Active') }}
+                    {{ status_badge('Pending') }}
+                    {{ status_badge('Cancelled') }}
+                </div>
+                <div class="bg-brand-dark inline-block p-4 rounded-xl border border-slate-700">
+                    {{ star_rating(4) }}
+                </div>
             </div>
-            
-            <div class="md:col-span-2 mt-2">
-                {{ primary_button('Submit Form', type='submit') }}
-            </div>
-        </form>
+        </div>
     </section>
 
-    <section class="mb-12">
-        <h2 class="text-2xl font-bold text-white mb-6 border-b border-slate-800 pb-2">Admin Dashboard Cards</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <section class="mb-16">
+        <h2 class="text-2xl font-bold text-white mb-6 border-b border-slate-800 pb-2">2. Forms & Data Entry</h2>
+        <div class="bg-brand-surface p-8 rounded-2xl shadow-xl border border-slate-800">
+            <form class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 max-w-4xl">
+                {{ form_input('Email Address', 'email', 'email', 'Enter your email', True) }}
+                {{ form_input('Password', 'password', 'password', '••••••••', True) }}
+                
+                <div class="md:col-span-2">
+                    {% set options = [('1', 'CineMax Downtown'), ('2', 'CineMax Mall (IMAX)')] %}
+                    {{ form_select('Select Theater', 'theater_id', options, True) }}
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <section class="mb-16">
+        <h2 class="text-2xl font-bold text-white mb-6 border-b border-slate-800 pb-2">3. Booking Flow UI</h2>
+        
+        <div class="bg-brand-surface p-8 rounded-2xl shadow-xl border border-slate-800 mb-8">
+            <h3 class="text-slate-400 mb-6 text-sm uppercase tracking-wide">Step Tracker</h3>
+            {{ step_tracker(['Showtimes', 'Seats', 'Extras', 'Payment', 'Ticket'], 2) }}
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+            <div class="bg-brand-surface p-8 rounded-2xl shadow-xl border border-slate-800">
+                <h3 class="text-slate-400 mb-6 text-sm uppercase tracking-wide">Interactive Seats</h3>
+                <div class="flex gap-3 items-center justify-center bg-brand-dark p-6 rounded-xl border border-slate-700">
+                    {{ seat_button('A1', 'A1', 'available') }}
+                    {{ seat_button('A2', 'A2', 'occupied') }}
+                    {{ seat_button('A3', 'A3', 'selected') }}
+                    {{ seat_button('VIP1', 'V1', 'available', True) }}
+                </div>
+            </div>
+            
+            <div class="lg:col-span-2">
+                <h3 class="text-slate-400 mb-6 text-sm uppercase tracking-wide">Final Digital Ticket</h3>
+                {{ ticket_card('Dune: Part Two', 'CineMax Downtown', 'Oct 24, 2026', '19:30', 'Row J • 14, 15', 'TKT-9842X') }}
+            </div>
+        </div>
+    </section>
+
+    <section class="mb-16">
+        <h2 class="text-2xl font-bold text-white mb-6 border-b border-slate-800 pb-2">4. Admin & Staff Dashboards</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             {{ stat_card('Total Revenue', '$14,230', '+12% from last week') }}
-            {{ stat_card('Tickets Sold', '1,204', 'Across all theaters today') }}
-            {{ stat_card('Pending Approvals', '5', 'Staff accounts waiting') }}
+            {{ pos_item('Large Popcorn', '$8.50', True) }}
+            {{ pos_item('Adult Ticket', '$14.00') }}
         </div>
-    </section>
 
-    <section class="mb-12">
-        <h2 class="text-2xl font-bold text-white mb-6 border-b border-slate-800 pb-2">Customer Movie Cards</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-            {{ movie_card('Dune: Part Two', '166', '4.8', 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=600&q=80', '/book/1') }}
-            {{ movie_card('Oppenheimer', '180', '4.9', 'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?auto=format&fit=crop&w=600&q=80', '/book/2') }}
-        </div>
-    </section>
-
-    <section class="mb-12">
-        <h2 class="text-2xl font-bold text-white mb-6 border-b border-slate-800 pb-2">Admin Data Tables</h2>
-        
+        <h3 class="text-slate-400 mb-4 text-sm uppercase tracking-wide">Data Tables</h3>
         {% call data_table(['ID', 'Staff Name', 'Role', 'Status', 'Actions']) %}
             <tr class="hover:bg-slate-800/30 transition">
                 <td class="p-4 text-white font-mono text-sm">#1042</td>
                 <td class="p-4 text-white font-medium">Alp Yüksekkaya</td>
                 <td class="p-4 text-slate-400">Admin</td>
                 <td class="p-4">{{ status_badge('Active') }}</td>
-                <td class="p-4">
-                    <a href="#" class="text-brand-amber hover:text-white text-sm font-bold transition">Edit</a>
-                </td>
+                <td class="p-4"><a href="#" class="text-brand-amber hover:text-white text-sm font-bold transition">Edit</a></td>
             </tr>
             <tr class="hover:bg-slate-800/30 transition border-t border-slate-800">
                 <td class="p-4 text-white font-mono text-sm">#1043</td>
                 <td class="p-4 text-white font-medium">Jane Doe</td>
                 <td class="p-4 text-slate-400">Cashier</td>
                 <td class="p-4">{{ status_badge('Pending') }}</td>
-                <td class="p-4">
-                    <a href="#" class="text-brand-amber hover:text-white text-sm font-bold transition">Edit</a>
-                </td>
+                <td class="p-4"><a href="#" class="text-brand-amber hover:text-white text-sm font-bold transition">Edit</a></td>
             </tr>
         {% endcall %}
+
+        <div class="mt-12 border-t border-slate-800 pt-8">
+            <h3 class="text-slate-400 mb-6 text-sm uppercase tracking-wide">Staff Terminal Tools</h3>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="space-y-6">
+                    <div class="bg-brand-dark p-6 rounded-xl border border-slate-800">
+                        <h4 class="font-display font-semibold text-white mb-4">Live POS Cart</h4>
+                        {{ pos_cart_item('Dune: Part Two', 15.99, 2, 'ticket') }}
+                        {{ pos_cart_item('Large Popcorn', 8.50, 1, 'snack') }}
+                    </div>
+                    
+                    <div class="bg-brand-surface p-6 rounded-xl border border-slate-800">
+                        <h4 class="font-display font-semibold text-white mb-4">Activity Log</h4>
+                        <div class="space-y-2">
+                            {{ activity_list_item('TK-8471-2938-PQRS', 'Avatar 4 • Hall 2', 'Just now', 'success') }}
+                            {{ activity_list_item('TK-0000-1234-FAKE', 'Invalid ticket', '8 min ago', 'error') }}
+                            {{ activity_list_item('BK-847102', 'Customer Request', '-$31.98', 'warning') }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-6">
+                    <div class="bg-brand-dark p-6 rounded-xl border border-slate-800">
+                        <h4 class="font-display font-semibold text-white mb-4">Scanner States</h4>
+                        <div class="grid grid-cols-2 gap-4">
+                            {{ scanner_alert('success', 'TK-8472-9103', 'Dune: Part Two', 'Hall 1 / G-14') }}
+                            {{ scanner_alert('fail', 'TK-0000-0000', '', 'Ticket already used or invalid') }}
+                        </div>
+                    </div>
+                    
+                    <div class="bg-brand-surface p-6 rounded-xl border border-slate-800">
+                        <h4 class="font-display font-semibold text-white mb-4">Refund Search Result</h4>
+                        {% set mock_items = [('2x Dune: Part Three (7:30 PM)', '$31.98'), ('1x Movie Combo', '$24.99')] %}
+                        {{ booking_result_card('BK-847291', 'Active', 'John Smith', 'john@email.com', '$56.97', 'Apr 23, 2026', mock_items) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="mb-16">
+        <h2 class="text-2xl font-bold text-white mb-6 border-b border-slate-800 pb-2">5. Cards, Empty States & Help</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div>
+                <h3 class="text-slate-400 mb-6 text-sm uppercase tracking-wide">Movie Card</h3>
+                {{ movie_card('Oppenheimer', '180', '4.9', 'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?auto=format&fit=crop&w=600&q=80', 'Sci-Fi, History', '/book/2') }}
+            </div>
+
+            <div class="md:col-span-2 space-y-8">
+                <div>
+                    <h3 class="text-slate-400 mb-6 text-sm uppercase tracking-wide">Empty State</h3>
+                    {{ empty_state('No Movies Found', 'There are no movies matching your current filters. Please try a different theater or date.', '') }}
+                </div>
+                
+                <div class="bg-brand-surface p-6 rounded-2xl border border-slate-800">
+                    <h3 class="text-slate-400 mb-4 text-sm uppercase tracking-wide">FAQ Accordion</h3>
+                    <div class="border-t border-slate-700/50">
+                        {{ accordion_item('faq1', 'How do I request a refund?', 'You can request a refund directly from your User Dashboard up to 2 hours before the screening time.') }}
+                        {{ accordion_item('faq2', 'Do you offer student discounts?', 'Yes! Just present a valid student ID at the counter.') }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="mb-16">
+        <h2 class="text-2xl font-bold text-white mb-6 border-b border-slate-800 pb-2">6. Discovery & Theater Patterns</h2>
+        
+        <div class="mb-8">
+            <h3 class="text-slate-400 mb-4 text-sm uppercase tracking-wide">Hero Banner</h3>
+            {% call hero_banner('DUNE: PART TWO', 'Experience the epic conclusion in breathtaking IMAX.', 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=1200&q=80', 'Now Showing') %}
+                {{ primary_button('Book Tickets', '#') }}
+            {% endcall %}
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="space-y-6">
+                <div>
+                    <h3 class="text-slate-400 mb-4 text-sm uppercase tracking-wide">Selectable Theater Card</h3>
+                    {% call selectable_card('CineMax Downtown', '123 Main Street, City Center', True) %}
+                        {{ status_badge('Open') }}
+                    {% endcall %}
+                </div>
+                
+                <div class="bg-brand-surface p-6 rounded-xl border border-slate-800">
+                    <h3 class="text-slate-400 mb-4 text-sm uppercase tracking-wide">Showtime Pills</h3>
+                    <div class="flex flex-wrap gap-2">
+                        {{ showtime_pill('10:30 AM') }}
+                        {{ showtime_pill('1:15 PM', True) }}
+                        {{ showtime_pill('4:45 PM') }}
+                        {{ showtime_pill('8:00 PM') }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <div class="bg-brand-surface p-6 rounded-xl border border-slate-800">
+                    <h3 class="text-slate-400 mb-4 text-sm uppercase tracking-wide">Review & Cast Avatars</h3>
+                    <div class="flex items-center gap-8 mb-6">
+                        {{ avatar_item('Zendaya', 'Chani', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80') }}
+                        {{ avatar_item('Timothee', 'Paul Atreides') }}
+                    </div>
+                    <div class="border-t border-slate-700 pt-4">
+                        {{ avatar_item('John Doe', '2 days ago', is_horizontal=True) }}
+                    </div>
+                </div>
+
+                <div class="bg-brand-surface p-6 rounded-xl border border-slate-800">
+                    <h3 class="text-slate-400 mb-4 text-sm uppercase tracking-wide">Rating Distribution</h3>
+                    <div class="space-y-2">
+                        {{ rating_bar(5, 65) }}
+                        {{ rating_bar(4, 25) }}
+                        {{ rating_bar(3, 7) }}
+                        {{ rating_bar(2, 2) }}
+                        {{ rating_bar(1, 1) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="mb-16">
+        <h2 class="text-2xl font-bold text-white mb-6 border-b border-slate-800 pb-2">7. E-commerce & Checkout Engine</h2>
+        
+        <div class="space-y-8">
+            <div>
+                <h3 class="text-slate-400 mb-4 text-sm uppercase tracking-wide">Context Header</h3>
+                {{ booking_info_bar('Dune: Part Two', 'Today, 7:30 PM - IMAX', 'CineMax Downtown') }}
+            </div>
+
+            <div class="bg-brand-surface p-8 rounded-xl border border-slate-800">
+                <h3 class="text-slate-400 mb-8 text-sm uppercase tracking-wide">Seat Map Screen</h3>
+                {{ screen_curve() }}
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-2 bg-brand-surface p-6 rounded-xl border border-slate-800">
+                    <h3 class="text-slate-400 mb-6 text-sm uppercase tracking-wide">Cart Items (Tickets & Extras)</h3>
+                    <div class="space-y-4">
+                        {{ quantity_selector('qty_adult', 'Adult Ticket', '$15.00 each') }}
+                        {{ quantity_selector('qty_child', 'Child Ticket', '$10.00 each') }}
+                        {{ quantity_selector('qty_popcorn', 'Large Popcorn', '$8.50 each', '🍿') }}
+                        {{ quantity_selector('qty_soda', 'Large Soda', '$6.00 each', '🥤') }}
+                    </div>
+                </div>
+
+                <div class="bg-brand-surface p-6 rounded-xl border border-slate-800 h-fit">
+                    <h3 class="text-white font-bold text-lg mb-6">Order Summary</h3>
+                    {{ order_summary_row('Adult Tickets (2)', '$30.00') }}
+                    {{ order_summary_row('Large Popcorn (1)', '$8.50') }}
+                    {{ order_summary_row('Service Fee', '$2.50') }}
+                    <div class="my-4 border-t border-slate-700 border-dashed"></div>
+                    {{ order_summary_row('Total', '$41.00', True) }}
+                    <div class="mt-6">
+                        {{ primary_button('Proceed to Payment', '#') }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-brand-surface p-8 rounded-xl border border-slate-800">
+                {% call success_state('BOOKING CONFIRMED!', 'Your tickets have been sent to your email address.') %}
+                    {{ secondary_button('View Digital Ticket', '#') }}
+                    {{ primary_button('Return Home', '/') }}
+                {% endcall %}
+            </div>
+        </div>
+    </section>
+
+    <section class="mb-16">
+        <h2 class="text-2xl font-bold text-white mb-6 border-b border-slate-800 pb-2">8. Auth & Customer Dashboard</h2>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-1 glass-panel p-8 rounded-2xl border border-white/10">
+                <h3 class="text-slate-400 mb-6 text-sm uppercase tracking-wide">Auth Inputs</h3>
+                <form class="space-y-4">
+                    {{ password_input('Create Password', 'reg_pass', 'Min. 8 characters', True) }}
+                    {{ password_strength_meter() }}
+                    
+                    <div class="mt-6 flex items-center gap-4 mb-6">
+                        <div class="flex-1 h-px bg-slate-700"></div>
+                        <span class="text-sm text-slate-500">or</span>
+                        <div class="flex-1 h-px bg-slate-700"></div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        {{ social_button('Google', '<svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>') }}
+                        {{ social_button('GitHub', '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0012 2z"/></svg>') }}
+                    </div>
+                </form>
+            </div>
+
+            <div class="lg:col-span-2 space-y-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {{ profile_stat_card('Movies Watched', '9', '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"/></svg>', 'emerald-500') }}
+                    {{ profile_stat_card('Total Spent', '$247.50', '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>', 'brand-amber') }}
+                </div>
+
+                <div class="bg-brand-surface rounded-xl border border-white/5 overflow-hidden shadow-xl">
+                    <div class="px-6 py-4 border-b border-white/5">
+                        <h3 class="font-semibold text-white">Recent Bookings</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-800/50">
+                                <tr class="text-sm text-slate-400 border-b border-white/5">
+                                    <th class="px-6 py-4 font-medium">Movie</th>
+                                    <th class="px-6 py-4 font-medium">Date & Time</th>
+                                    <th class="px-6 py-4 font-medium">Seats</th>
+                                    <th class="px-6 py-4 font-medium">Total</th>
+                                    <th class="px-6 py-4 font-medium">Status</th>
+                                    <th class="px-6 py-4 font-medium text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% call history_table_row('Dune: Part Two', 'IMAX 3D', 'Mar 15, 2026', '7:30 PM', 'E7, E8', '$45.00', 'Completed', 'from-violet-600 to-purple-800') %}
+                                    {{ status_badge('Completed') }}
+                                {% endcall %}
+                                
+                                {% call history_table_row('Oppenheimer', '70mm IMAX', 'Mar 20, 2026', '8:00 PM', 'G12, G13', '$67.50', 'Upcoming', 'from-red-600 to-orange-600') %}
+                                    {{ status_badge('Pending') }}
+                                {% endcall %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="mb-16">
+        <h2 class="text-2xl font-bold text-white mb-6 border-b border-slate-800 pb-2">9. Admin CMS Specifics</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {{ admin_kpi_card('Total Revenue', '$284,520', 'This month', '+12.5%', 'positive') }}
+            {{ admin_kpi_card('Occupancy Rate', '78.4%', 'Average this week', '+3.2%', 'positive') }}
+            {{ admin_kpi_card('Tickets Sold', '12,847', 'This month', '-2.1%', 'negative') }}
+            {{ admin_kpi_card('Inventory Alerts', '3', 'Low stock warnings', '3 items', 'neutral') }}
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="space-y-8">
+                <div class="bg-slate-800 p-4 rounded-xl border border-slate-700">
+                    <h3 class="text-slate-400 mb-4 text-sm uppercase tracking-wide">Admin Navigation</h3>
+                    <div class="space-y-1">
+                        {{ admin_sidebar_link('Analytics', 'analytics', '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>', True) }}
+                        {{ admin_sidebar_link('Catalog', 'catalog', '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"/></svg>') }}
+                    </div>
+                </div>
+
+                <div class="bg-brand-surface p-6 rounded-xl border border-slate-700">
+                    <h3 class="text-slate-400 mb-4 text-sm uppercase tracking-wide">Multi-Select Chips</h3>
+                    <div class="flex flex-wrap gap-2">
+                        {{ filter_chip('Action', 'action', True) }}
+                        {{ filter_chip('Sci-Fi', 'scifi', True) }}
+                        {{ filter_chip('Comedy', 'comedy') }}
+                        {{ filter_chip('Drama', 'drama') }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2 space-y-8">
+                <div class="bg-brand-surface p-6 rounded-xl border border-slate-700">
+                    <h3 class="text-slate-400 mb-4 text-sm uppercase tracking-wide">Membership Tier Cards</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {% call tier_card('Gold Tier', '#F59E0B', 'text-brand-amber') %}
+                            <div class="flex justify-between"><span class="text-slate-400">Spend:</span><span class="text-white">$500 - $1,499</span></div>
+                            <div class="flex justify-between"><span class="text-slate-400">Discount:</span><span class="text-emerald-400">10% off</span></div>
+                        {% endcall %}
+                        
+                        {% call tier_card('Platinum Tier', '#CBD5E1', 'text-slate-200') %}
+                            <div class="flex justify-between"><span class="text-slate-400">Spend:</span><span class="text-white">$1,500+</span></div>
+                            <div class="flex justify-between"><span class="text-slate-400">Discount:</span><span class="text-emerald-400">15% off + VIP</span></div>
+                        {% endcall %}
+                    </div>
+                </div>
+
+                <div class="bg-brand-surface rounded-xl border border-slate-700 overflow-hidden">
+                    <div class="p-4 border-b border-slate-700 bg-slate-800">
+                        <h3 class="text-white font-bold text-lg">CMS List Rows</h3>
+                    </div>
+                    <div class="divide-y divide-slate-700">
+                        {% call admin_list_item('Galactic Odyssey', '<span class="px-2 py-0.5 bg-brand-red/20 text-brand-red rounded text-xs">Sci-Fi</span>', '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4"/></svg>') %}
+                            <span class="text-slate-400 text-sm">148 min</span>
+                            <button class="text-sky-400 text-sm font-medium hover:text-white">Edit</button>
+                        {% endcall %}
+                        
+                        {% call admin_list_item('Popcorn (Large)', 'Stock: 245 units', '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>') %}
+                            <span class="text-emerald-400 font-semibold">$8.50</span>
+                            <button class="text-sky-400 text-sm font-medium hover:text-white">Edit</button>
+                        {% endcall %}
+                    </div>
+                </div>
+            </div>
+        </div>
     </section>
 
 </div>
+
+{% call modal('demo_modal', 'Demo Refund Request') %}
+    <p class="text-slate-300 mb-6">Are you sure you want to refund this ticket? This action cannot be undone and the seats will be released back to the public.</p>
+    <div class="flex gap-4">
+        <button
+            type="button"
+            class="inline-flex items-center justify-center rounded-lg border border-slate-600 bg-transparent px-5 py-3 text-sm font-semibold text-slate-200 transition hover:border-slate-500 hover:bg-slate-800 hover:text-white"
+            onclick="document.getElementById('demo_modal').classList.add('hidden')">
+            Cancel
+        </button>
+        <button
+            type="button"
+            class="inline-flex items-center justify-center rounded-lg bg-brand-red px-5 py-3 text-sm font-semibold text-white transition hover:bg-red-700"
+            onclick="document.getElementById('demo_modal').classList.add('hidden')">
+            Confirm Refund
+        </button>
+    </div>
+{% endcall %}
+
 {% endblock %}

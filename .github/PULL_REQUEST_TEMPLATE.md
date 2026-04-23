@@ -1,21 +1,44 @@
-## 🎫 Ticket / Issue Link
-Resolves: #[Issue Number]
+## Ticket / Issue
+Resolves: #<issue-number>
 
-## 📝 Description
-Briefly describe what this PR does. (e.g., "Built the GET /admin/dashboard endpoint and the HTML table to display total revenue").
+## Summary
+What changed in this PR and why?
 
-## 🗄️ Database Impact (Check one)
-- [ ] No database changes required.
-- [ ] This PR changes `cinema.sql` or `seed.sql` (Explain below).
+## Scope
+- Issue type: [ ] feature [ ] bugfix [ ] docs [ ] refactor
+- Branch name used: `<type>/<short-topic>`
+- Scope is limited to one issue: [ ] yes
 
-## ✅ Developer Checklist
-- [ ] I have tested this code locally on my machine.
-- [ ] My SQL queries execute successfully without errors.
-- [ ] I have removed any hardcoded passwords or sensitive data.
-- [ ] My code follows the agreed-upon naming conventions.
+## Structure Impact
+Which areas are touched?
+- [ ] `app/__init__.py` (shared app setup)
+- [ ] `app/templates/base.html` (global layout)
+- [ ] `app/templates/shared/*` (shared template fragments)
+- [ ] Feature templates only (`app/templates/<feature>/*`)
+- [ ] SQL files (`database/cinema.sql`, `database/seed.sql`, `database/queries.sql`)
 
-## 📸 Screenshots (If applicable)
-*Drag and drop screenshots of the web page or terminal output here.*
+If shared files were changed, explain why:
 
-## 🔍 Instructions for the Reviewer
-How should your teammate test this? (e.g., "Go to localhost:3000/movies and click the Buy button to see if it inserts a row into the Bookings table.")
+## Database Impact
+- [ ] No database changes
+- [ ] Schema/data script changes included
+
+If checked, list exact SQL files changed and expected effect:
+
+## Local Verification
+- [ ] Ran app locally with `python run.py`
+- [ ] Verified relevant route(s) manually (`/`, `/styleguide`, `/components`, or issue-specific routes)
+- [ ] SQL changes were tested in MySQL (if applicable)
+- [ ] No sensitive data (passwords/secrets) added
+
+## Reviewer Steps
+Provide exact steps to verify this PR:
+1.
+2.
+3.
+
+## Screenshots (If UI changed)
+Attach before/after screenshots for relevant pages.
+
+## Notes
+Anything reviewers should know (trade-offs, follow-up tasks, known limitations).

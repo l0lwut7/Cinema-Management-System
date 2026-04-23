@@ -1,30 +1,100 @@
-# 🎬 Cinema Management & Integrated Booking System
+# Cinema Management & Integrated Booking System
 
-**Course:** SE2230 - Database Systems  
-**Institution:** Yaşar University  
-**Term:** Spring 2026  
+Course: SE2230 - Database Systems  
+Institution: Yasar University  
+Term: Spring 2026
 
-## 👥 Team Members
-* **Şevval Ahıshalı**
-* **Reis Yıldız**
-* **Alp Yüksekkaya**
-* **Firdevs Palay**
+## Team Members
+- Sevval Ahishali
+- Reis Yildiz
+- Alp Yuksekkaya
+- Firdevs Palay
 
-## 📝 Project Overview
-This project is a centralized, relational database solution for managing a multi-location cinema chain. It handles the full lifecycle of a movie theater's operations, from complex movie scheduling and multi-theater resource allocation to seat-level transaction management and analytics. 
+## Project Overview
+This project is a centralized relational database solution for managing a multi-location cinema chain. It handles core operations such as movie scheduling, theater allocation, seat-level booking flow, and operational analytics.
 
-The system was built to demonstrate advanced SQL concepts including **Weak Entities**, **ISA Hierarchies**, **Complex JOINs**, **Subqueries**, and **Aggregations**.
+The current Flask app is primarily used to render and iterate on UI templates, including the styleguide and reusable components.
 
-## 🛠️ Tech Stack
-* **Database:** MySQL Community Server 8.0
-* **Backend:** Python Flask 3.1
-* **Frontend:** HTML5, Tailwind CSS (Server-Side Rendered)
-* **Design/Architecture:** draw.io, dbdiagram.io
+## Tech Stack
+- Database: MySQL Community Server 8.0
+- Backend: Python + Flask 3.1
+- Frontend: HTML5, Tailwind CSS (server-side rendered templates)
+- Design/Architecture: draw.io, dbdiagram.io
 
-## 🚀 How to Run the Project Locally
+## Repository Structure
+```text
+.
+|- run.py
+|- app/
+|  |- __init__.py
+|  |- templates/
+|     |- base.html
+|     |- components.html
+|     |- styleguide.html
+|- database/
+|  |- cinema.sql
+|  |- queries.sql
+|  |- seed.sql
+|- docs/
+   |- ER_Diagram.md
+```
 
-> At present, the documented setup covers the database layer. If a backend service is added later, its framework choice and startup steps should be documented here.
-### 1. Database Setup
-1. Open **MySQL Workbench** or start a MySQL client session from your shell:
+## Quick Start (Styleguide + Flask App)
+
+### 1. Prerequisites
+- Python 3.11+ (3.10+ also works)
+- pip
+- Optional: MySQL 8.0 if you want to run SQL scripts locally
+
+### 2. Clone and enter the project
+```bash
+git clone <repo-url>
+cd Cinema-Management-System
+```
+
+### 3. Create and activate virtual environment
+macOS/Linux:
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+Windows (PowerShell):
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+```
+
+### 4. Install dependencies
+```bash
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+### 5. Run the Flask app
+```bash
+python run.py
+```
+
+The app starts on `http://127.0.0.1:5000`.
+
+Useful routes:
+- Home: `http://127.0.0.1:5000/`
+- Styleguide: `http://127.0.0.1:5000/styleguide`
+
+## Database Setup (Optional for UI work)
+If you only work on templates/styleguide, you do not need the database running.
+
+If your issue touches SQL/schema:
+1. Open MySQL client:
    ```bash
    mysql -u <username> -p
+   ```
+2. Create/select your database.
+3. Run scripts in order:
+   - `database/cinema.sql`
+   - `database/seed.sql`
+4. Use `database/queries.sql` for query checks and examples.
+
+## Contributing
+Contribution workflow, branch naming, and merge-conflict-safe structure rules are documented in `CONTRIBUTING.md`.
