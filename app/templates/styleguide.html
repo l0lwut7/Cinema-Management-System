@@ -411,8 +411,18 @@
 {% call modal('demo_modal', 'Demo Refund Request') %}
     <p class="text-slate-300 mb-6">Are you sure you want to refund this ticket? This action cannot be undone and the seats will be released back to the public.</p>
     <div class="flex gap-4">
-        {{ secondary_button('Cancel', "javascript:document.getElementById('demo_modal').classList.add('hidden')") }}
-        {{ primary_button('Confirm Refund', "javascript:document.getElementById('demo_modal').classList.add('hidden')") }}
+        <button
+            type="button"
+            class="inline-flex items-center justify-center rounded-lg border border-slate-600 bg-transparent px-5 py-3 text-sm font-semibold text-slate-200 transition hover:border-slate-500 hover:bg-slate-800 hover:text-white"
+            onclick="document.getElementById('demo_modal').classList.add('hidden')">
+            Cancel
+        </button>
+        <button
+            type="button"
+            class="inline-flex items-center justify-center rounded-lg bg-brand-red px-5 py-3 text-sm font-semibold text-white transition hover:bg-red-700"
+            onclick="document.getElementById('demo_modal').classList.add('hidden')">
+            Confirm Refund
+        </button>
     </div>
 {% endcall %}
 
