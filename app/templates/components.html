@@ -581,7 +581,7 @@
         {% set icon_path = 'M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6' %}
     {% endif %}
     
-    {% set bg_class = 'bg-amber/20' if color == 'brand-amber' else 'bg-' ~ color ~ '-500/20' %}
+    {% set bg_class = 'bg-brand-amber/20' if color == 'brand-amber' else 'bg-' ~ color ~ '-500/20' %}
     {% set text_class = 'text-brand-amber' if color == 'brand-amber' else 'text-' ~ color ~ '-400' %}
 
     <div class="flex items-center justify-between bg-brand-surface rounded-lg p-3 border border-slate-800">
