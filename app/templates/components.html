@@ -139,10 +139,16 @@
 {% endmacro %}
 
 {% macro step_tracker(steps_list, current_step_index) %}
+    {% set step_count = steps_list|length %}
+    {% if step_count < 2 %}
+        {% set progress_width = 0 %}
+    {% else %}
+        {% set progress_width = (current_step_index / (step_count - 1)) * 100 %}
+    {% endif %}
     <div class="flex items-center justify-between relative mb-10 w-full max-w-3xl mx-auto">
         <div class="absolute left-0 top-1/2 transform -translate-y-1/2 w-full h-1 bg-slate-800 z-0"></div>
         <div class="absolute left-0 top-1/2 transform -translate-y-1/2 h-1 bg-brand-red z-0 transition-all duration-500" 
-             style="width: {{ (current_step_index / (steps_list|length - 1)) * 100 }}%"></div>
+             style="width: {{ progress_width }}%"></div>
         
         {% for step in steps_list %}
             <div class="relative z-10 flex flex-col items-center group">
