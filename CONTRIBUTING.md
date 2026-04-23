@@ -33,8 +33,8 @@ To keep our codebase clean and safe, we follow a structured workflow using:
 ## 🐍 Step B: Setup Python Environment
 
 ```bash
-python3 -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+python3 -m .venv venv
+source .venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
