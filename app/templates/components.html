@@ -69,7 +69,7 @@
     <div class="bg-brand-surface rounded-xl overflow-hidden shadow-lg border border-slate-800 group transition hover:border-brand-red/50 hover:shadow-brand-red/10">
         <div class="relative h-72 w-full bg-slate-800 overflow-hidden">
             <img src="{{ image_url }}" alt="{{ title }}" class="object-cover w-full h-full opacity-80 group-hover:opacity-100 group-hover:scale-105 transition duration-500">
-            <button class="absolute top-3 right-3 p-2 bg-brand-dark/80 rounded-full text-slate-300 hover:text-brand-red transition">
+            <button type="button" aria-label="Add {{ title }} to favorites" class="absolute top-3 right-3 p-2 bg-brand-dark/80 rounded-full text-slate-300 hover:text-brand-red transition">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
             </button>
             <div class="absolute bottom-3 left-3 bg-brand-amber text-black text-xs font-bold px-2 py-1 rounded shadow-lg">
