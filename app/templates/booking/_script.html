@@ -1,0 +1,562 @@
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var bookingData = window.bookingData || {};
+    var bookingInitial = window.bookingInitial || {};
+
+    var prices = bookingData.prices || {};
+    var movieNames = bookingData.movie_names || {};
+    var theaterNames = bookingData.theater_names || {};
+    var showtimes = bookingData.showtimes || [];
+    var seatRows = bookingData.seat_rows || [];
+    var seatsPerRow = bookingData.seats_per_row || 12;
+    var occupiedSeats = bookingData.occupied_seats || [];
+    var disabledSeats = bookingData.disabled_seats || [];
+    var maxSeats = bookingData.max_seats || 10;
+    var noScreeningRule = bookingData.no_screening_rule || {};
+
+    var state = {
+        currentStep: 1,
+        theater: bookingInitial.theater || '',
+        movie: bookingInitial.movie || '',
+        showtime: bookingInitial.showtime || '',
+        selectedSeats: [],
+        tickets: { adult: 0, child: 0, senior: 0 },
+        consumables: { popcorn: 0, soda: 0, candy: 0, hotdog: 0 }
+    };
+
+    var steps = {
+        1: document.getElementById('step1'),
+        2: document.getElementById('step2'),
+        3: document.getElementById('step3'),
+        4: document.getElementById('step4')
+    };
+
+    var indicators = {
+        1: document.getElementById('step1Indicator'),
+        2: document.getElementById('step2Indicator'),
+        3: document.getElementById('step3Indicator'),
+        4: document.getElementById('step4Indicator')
+    };
+
+    var progressLine = document.getElementById('progressLine');
+    var theaterSelect = document.getElementById('theaterSelect');
+    var movieSelect = document.getElementById('movieSelect');
+    var emptyState = document.getElementById('emptyState');
+    var noScreenings = document.getElementById('noScreenings');
+    var showtimesGrid = document.getElementById('showtimesGrid');
+    var showtimesList = document.getElementById('showtimesList');
+    var step1Next = document.getElementById('step1Next');
+    var seatMap = document.getElementById('seatMap');
+    var selectedSeatsDisplay = document.getElementById('selectedSeatsDisplay');
+    var seatsSubtotal = document.getElementById('seatsSubtotal');
+    var step2Next = document.getElementById('step2Next');
+    var checkoutForm = document.getElementById('checkoutForm');
+    var confirmationScreen = document.getElementById('confirmationScreen');
+
+    function goToStep(step) {
+        var number;
+
+        for (number in steps) {
+            steps[number].classList.remove('step-active');
+            steps[number].classList.add('step-hidden');
+        }
+
+        steps[step].classList.remove('step-hidden');
+        steps[step].classList.add('step-active');
+
+        for (number in indicators) {
+            if (parseInt(number, 10) <= step) {
+                indicators[number].classList.remove('bg-cinema-surface');
+                indicators[number].classList.add('bg-cinema-primary');
+            } else {
+                indicators[number].classList.remove('bg-cinema-primary');
+                indicators[number].classList.add('bg-cinema-surface');
+            }
+        }
+
+        progressLine.style.width = ((step - 1) / 3 * 100) + '%';
+        state.currentStep = step;
+
+        if (step === 2) {
+            renderSeatMap();
+            updateSeatInfo();
+        }
+
+        if (step === 3) {
+            updateStep3Summary();
+            autoDistributeTickets();
+        }
+
+        if (step === 4) {
+            updateReview();
+        }
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function updateShowtimes() {
+        var selectedMovie = movieSelect.value;
+        var selectedTheater = theaterSelect.value;
+
+        state.movie = selectedMovie;
+        state.theater = selectedTheater;
+        state.showtime = '';
+        step1Next.disabled = true;
+
+        if (!selectedMovie || !selectedTheater) {
+            emptyState.classList.remove('hidden');
+            noScreenings.classList.add('hidden');
+            showtimesGrid.classList.add('hidden');
+            return;
+        }
+
+        if (selectedMovie === noScreeningRule.movie && selectedTheater === noScreeningRule.theater) {
+            emptyState.classList.add('hidden');
+            noScreenings.classList.remove('hidden');
+            showtimesGrid.classList.add('hidden');
+            return;
+        }
+
+        emptyState.classList.add('hidden');
+        noScreenings.classList.add('hidden');
+        showtimesGrid.classList.remove('hidden');
+
+        var html = '';
+        var index;
+        for (index = 0; index < showtimes.length; index++) {
+            html += '<button class="showtime-btn bg-cinema-bg hover:bg-cinema-primary/20 border border-slate-600 hover:border-cinema-primary text-white px-4 py-3 rounded-lg text-center transition-all" data-time="' + showtimes[index] + '">' +
+                '<span class="block font-semibold">' + showtimes[index] + '</span>' +
+                '<span class="block text-xs text-slate-400 mt-1">' + (selectedTheater === 'downtown' ? 'IMAX' : 'Standard') + '</span>' +
+            '</button>';
+        }
+
+        showtimesList.innerHTML = html;
+
+        document.querySelectorAll('.showtime-btn').forEach(function (button) {
+            button.addEventListener('click', function () {
+                document.querySelectorAll('.showtime-btn').forEach(function (item) {
+                    item.classList.remove('bg-cinema-primary', 'border-cinema-primary');
+                    item.classList.add('bg-cinema-bg', 'border-slate-600');
+                });
+
+                button.classList.remove('bg-cinema-bg', 'border-slate-600');
+                button.classList.add('bg-cinema-primary', 'border-cinema-primary');
+                state.showtime = button.dataset.time;
+                step1Next.disabled = false;
+            });
+        });
+    }
+
+    function renderSeatMap() {
+        var html = '';
+        var rowIndex;
+        var seatNumber;
+
+        for (rowIndex = 0; rowIndex < seatRows.length; rowIndex++) {
+            html += '<div class="flex items-center gap-2">';
+            html += '<span class="w-6 text-center text-slate-400 font-medium">' + seatRows[rowIndex] + '</span>';
+            html += '<div class="flex gap-1">';
+
+            for (seatNumber = 1; seatNumber <= seatsPerRow; seatNumber++) {
+                var seatId = seatRows[rowIndex] + seatNumber;
+                var isOccupied = occupiedSeats.indexOf(seatId) > -1;
+                var isDisabled = disabledSeats.indexOf(seatId) > -1;
+                var isSelected = state.selectedSeats.indexOf(seatId) > -1;
+                var classes = 'seat w-8 h-8 rounded text-xs font-medium flex items-center justify-center cursor-pointer';
+
+                if (isDisabled) {
+                    classes += ' bg-slate-700 opacity-30 cursor-not-allowed disabled';
+                } else if (isOccupied) {
+                    classes += ' bg-slate-600 opacity-50 cursor-not-allowed occupied';
+                } else if (isSelected) {
+                    classes += ' bg-cinema-primary text-white';
+                } else {
+                    classes += ' bg-slate-600 hover:bg-slate-500';
+                }
+
+                html += '<button class="' + classes + '" data-seat="' + seatId + '"' + (isOccupied || isDisabled ? ' disabled' : '') + '>' + seatNumber + '</button>';
+            }
+
+            html += '</div>';
+            html += '<span class="w-6 text-center text-slate-400 font-medium">' + seatRows[rowIndex] + '</span>';
+            html += '</div>';
+        }
+
+        seatMap.innerHTML = html;
+
+        document.querySelectorAll('.seat:not(.occupied):not(.disabled)').forEach(function (button) {
+            button.addEventListener('click', function () {
+                toggleSeat(button.dataset.seat);
+            });
+        });
+    }
+
+    function toggleSeat(seatId) {
+        var seatIndex = state.selectedSeats.indexOf(seatId);
+
+        if (seatIndex > -1) {
+            state.selectedSeats.splice(seatIndex, 1);
+        } else if (state.selectedSeats.length < maxSeats) {
+            state.selectedSeats.push(seatId);
+        }
+
+        state.selectedSeats.sort(function (left, right) {
+            var leftRow = left.charAt(0);
+            var rightRow = right.charAt(0);
+            var leftNumber = parseInt(left.slice(1), 10);
+            var rightNumber = parseInt(right.slice(1), 10);
+
+            if (leftRow !== rightRow) {
+                return leftRow.localeCompare(rightRow);
+            }
+
+            return leftNumber - rightNumber;
+        });
+
+        renderSeatMap();
+        updateSeatDisplay();
+    }
+
+    function updateSeatDisplay() {
+        if (state.selectedSeats.length === 0) {
+            selectedSeatsDisplay.textContent = 'None selected';
+            seatsSubtotal.textContent = '$0.00';
+            step2Next.disabled = true;
+            return;
+        }
+
+        selectedSeatsDisplay.textContent = state.selectedSeats.join(', ');
+        seatsSubtotal.textContent = '$' + (state.selectedSeats.length * prices.adult).toFixed(2);
+        step2Next.disabled = false;
+    }
+
+    function updateSeatInfo() {
+        var movieLabel = movieNames[state.movie] || 'Movie';
+        var theaterLabel = theaterNames[state.theater] || 'Theater';
+        var showtimeLabel = state.showtime || '7:30 PM';
+        var showtimeType = state.theater === 'downtown' ? 'IMAX' : 'Standard';
+
+        document.getElementById('seatMovieInfo').textContent = movieLabel;
+        document.getElementById('seatShowtimeInfo').textContent = showtimeLabel + ' - ' + showtimeType;
+        document.getElementById('seatTheaterInfo').textContent = theaterLabel;
+    }
+
+    function autoDistributeTickets() {
+        state.tickets.adult = state.selectedSeats.length;
+        state.tickets.child = 0;
+        state.tickets.senior = 0;
+        updateTicketDisplay();
+        updateConsumableDisplay();
+        updateTotals();
+    }
+
+    function updateTicketDisplay() {
+        document.getElementById('adultCount').textContent = state.tickets.adult;
+        document.getElementById('childCount').textContent = state.tickets.child;
+        document.getElementById('seniorCount').textContent = state.tickets.senior;
+    }
+
+    function updateConsumableDisplay() {
+        document.getElementById('popcornCount').textContent = state.consumables.popcorn;
+        document.getElementById('sodaCount').textContent = state.consumables.soda;
+        document.getElementById('candyCount').textContent = state.consumables.candy;
+        document.getElementById('hotdogCount').textContent = state.consumables.hotdog;
+    }
+
+    function updateTotals() {
+        var ticketTotal = state.tickets.adult * prices.adult +
+            state.tickets.child * prices.child +
+            state.tickets.senior * prices.senior;
+
+        var consumableTotal = state.consumables.popcorn * prices.popcorn +
+            state.consumables.soda * prices.soda +
+            state.consumables.candy * prices.candy +
+            state.consumables.hotdog * prices.hotdog;
+
+        var grandTotal = ticketTotal + consumableTotal + prices.serviceFee;
+
+        document.getElementById('ticketTotal').textContent = '$' + ticketTotal.toFixed(2);
+        document.getElementById('consumableTotal').textContent = '$' + consumableTotal.toFixed(2);
+        document.getElementById('grandTotal').textContent = '$' + grandTotal.toFixed(2);
+        document.getElementById('serviceFee').textContent = '$' + prices.serviceFee.toFixed(2);
+
+        var ticketSummary = '';
+        if (state.tickets.adult > 0) {
+            ticketSummary += '<div class="flex justify-between text-sm"><span class="text-slate-400">' + state.tickets.adult + 'x Adult</span><span>$' + (state.tickets.adult * prices.adult).toFixed(2) + '</span></div>';
+        }
+        if (state.tickets.child > 0) {
+            ticketSummary += '<div class="flex justify-between text-sm"><span class="text-slate-400">' + state.tickets.child + 'x Child</span><span>$' + (state.tickets.child * prices.child).toFixed(2) + '</span></div>';
+        }
+        if (state.tickets.senior > 0) {
+            ticketSummary += '<div class="flex justify-between text-sm"><span class="text-slate-400">' + state.tickets.senior + 'x Senior</span><span>$' + (state.tickets.senior * prices.senior).toFixed(2) + '</span></div>';
+        }
+        document.getElementById('ticketSummary').innerHTML = ticketSummary || '<div class="text-sm text-slate-500">No tickets selected</div>';
+
+        var consumableSummary = '';
+        if (state.consumables.popcorn > 0) {
+            consumableSummary += '<div class="flex justify-between text-sm"><span class="text-slate-400">' + state.consumables.popcorn + 'x Popcorn</span><span>$' + (state.consumables.popcorn * prices.popcorn).toFixed(2) + '</span></div>';
+        }
+        if (state.consumables.soda > 0) {
+            consumableSummary += '<div class="flex justify-between text-sm"><span class="text-slate-400">' + state.consumables.soda + 'x Soda</span><span>$' + (state.consumables.soda * prices.soda).toFixed(2) + '</span></div>';
+        }
+        if (state.consumables.candy > 0) {
+            consumableSummary += '<div class="flex justify-between text-sm"><span class="text-slate-400">' + state.consumables.candy + 'x Candy</span><span>$' + (state.consumables.candy * prices.candy).toFixed(2) + '</span></div>';
+        }
+        if (state.consumables.hotdog > 0) {
+            consumableSummary += '<div class="flex justify-between text-sm"><span class="text-slate-400">' + state.consumables.hotdog + 'x Hot Dog</span><span>$' + (state.consumables.hotdog * prices.hotdog).toFixed(2) + '</span></div>';
+        }
+        document.getElementById('consumableSummary').innerHTML = consumableSummary || '<div class="text-sm text-slate-500">No extras added</div>';
+
+        document.getElementById('step3Next').disabled = (state.tickets.adult + state.tickets.child + state.tickets.senior) !== state.selectedSeats.length;
+    }
+
+    function updateStep3Summary() {
+        document.getElementById('summarySeats').textContent = state.selectedSeats.join(', ') || '-';
+    }
+
+    function updateReview() {
+        var movieLabel = movieNames[state.movie] || 'Movie';
+        var theaterLabel = theaterNames[state.theater] || 'Theater';
+        var showtimeType = state.theater === 'downtown' ? 'IMAX' : 'Standard';
+        var ticketTotal = state.tickets.adult * prices.adult +
+            state.tickets.child * prices.child +
+            state.tickets.senior * prices.senior;
+        var consumableTotal = state.consumables.popcorn * prices.popcorn +
+            state.consumables.soda * prices.soda +
+            state.consumables.candy * prices.candy +
+            state.consumables.hotdog * prices.hotdog;
+        var grandTotal = ticketTotal + consumableTotal + prices.serviceFee;
+
+        document.getElementById('reviewMovie').textContent = movieLabel;
+        document.getElementById('reviewShowtime').textContent = 'Today, ' + state.showtime + ' - ' + showtimeType;
+        document.getElementById('reviewTheater').textContent = theaterLabel;
+        document.getElementById('reviewSeats').textContent = state.selectedSeats.join(', ');
+        document.getElementById('reviewTotal').textContent = '$' + grandTotal.toFixed(2);
+
+        var extrasList = '';
+        if (state.tickets.adult > 0) extrasList += '<p class="text-sm text-slate-300">' + state.tickets.adult + 'x Adult Ticket</p>';
+        if (state.tickets.child > 0) extrasList += '<p class="text-sm text-slate-300">' + state.tickets.child + 'x Child Ticket</p>';
+        if (state.tickets.senior > 0) extrasList += '<p class="text-sm text-slate-300">' + state.tickets.senior + 'x Senior Ticket</p>';
+        if (state.consumables.popcorn > 0) extrasList += '<p class="text-sm text-slate-300">' + state.consumables.popcorn + 'x Large Popcorn</p>';
+        if (state.consumables.soda > 0) extrasList += '<p class="text-sm text-slate-300">' + state.consumables.soda + 'x Large Soda</p>';
+        if (state.consumables.candy > 0) extrasList += '<p class="text-sm text-slate-300">' + state.consumables.candy + 'x Candy Box</p>';
+        if (state.consumables.hotdog > 0) extrasList += '<p class="text-sm text-slate-300">' + state.consumables.hotdog + 'x Hot Dog</p>';
+        document.getElementById('reviewExtrasList').innerHTML = extrasList || '<p class="text-sm text-slate-500">No extras</p>';
+    }
+
+    function validateForm() {
+        var isValid = true;
+        var cardName = document.getElementById('cardName');
+        var cardNumber = document.getElementById('cardNumber');
+        var cardExpiry = document.getElementById('cardExpiry');
+        var cardCvv = document.getElementById('cardCvv');
+        var email = document.getElementById('email');
+        var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!cardName.value.trim()) {
+            document.getElementById('cardNameError').classList.remove('hidden');
+            cardName.classList.add('border-cinema-primary');
+            isValid = false;
+        } else {
+            document.getElementById('cardNameError').classList.add('hidden');
+            cardName.classList.remove('border-cinema-primary');
+        }
+
+        if (cardNumber.value.replace(/\s/g, '').length < 16) {
+            document.getElementById('cardNumberError').classList.remove('hidden');
+            cardNumber.classList.add('border-cinema-primary');
+            isValid = false;
+        } else {
+            document.getElementById('cardNumberError').classList.add('hidden');
+            cardNumber.classList.remove('border-cinema-primary');
+        }
+
+        if (cardExpiry.value.length < 5) {
+            document.getElementById('cardExpiryError').classList.remove('hidden');
+            cardExpiry.classList.add('border-cinema-primary');
+            isValid = false;
+        } else {
+            document.getElementById('cardExpiryError').classList.add('hidden');
+            cardExpiry.classList.remove('border-cinema-primary');
+        }
+
+        if (cardCvv.value.length < 3) {
+            document.getElementById('cardCvvError').classList.remove('hidden');
+            cardCvv.classList.add('border-cinema-primary');
+            isValid = false;
+        } else {
+            document.getElementById('cardCvvError').classList.add('hidden');
+            cardCvv.classList.remove('border-cinema-primary');
+        }
+
+        if (!emailRegex.test(email.value)) {
+            document.getElementById('emailError').classList.remove('hidden');
+            email.classList.add('border-cinema-primary');
+            isValid = false;
+        } else {
+            document.getElementById('emailError').classList.add('hidden');
+            email.classList.remove('border-cinema-primary');
+        }
+
+        return isValid;
+    }
+
+    function showConfirmation() {
+        var bookingId = 'CB-2024-' + Math.random().toString(36).slice(2, 7).toUpperCase();
+        var ticketTotal = state.tickets.adult * prices.adult +
+            state.tickets.child * prices.child +
+            state.tickets.senior * prices.senior;
+        var consumableTotal = state.consumables.popcorn * prices.popcorn +
+            state.consumables.soda * prices.soda +
+            state.consumables.candy * prices.candy +
+            state.consumables.hotdog * prices.hotdog;
+        var grandTotal = ticketTotal + consumableTotal + prices.serviceFee;
+
+        checkoutForm.classList.add('hidden');
+        confirmationScreen.classList.remove('hidden');
+
+        document.getElementById('bookingId').textContent = bookingId;
+        document.getElementById('confirmMovie').textContent = movieNames[state.movie] || 'Movie';
+        document.getElementById('confirmShowtime').textContent = 'Today, ' + state.showtime;
+        document.getElementById('confirmTheater').textContent = theaterNames[state.theater] || 'Theater';
+        document.getElementById('confirmSeats').textContent = state.selectedSeats.join(', ');
+        document.getElementById('confirmTotal').textContent = '$' + grandTotal.toFixed(2);
+    }
+
+    function resetBooking() {
+        state.currentStep = 1;
+        state.theater = '';
+        state.movie = '';
+        state.showtime = '';
+        state.selectedSeats = [];
+        state.tickets = { adult: 0, child: 0, senior: 0 };
+        state.consumables = { popcorn: 0, soda: 0, candy: 0, hotdog: 0 };
+
+        theaterSelect.value = '';
+        movieSelect.value = '';
+        document.getElementById('paymentForm').reset();
+
+        checkoutForm.classList.remove('hidden');
+        confirmationScreen.classList.add('hidden');
+
+        updateShowtimes();
+        updateSeatDisplay();
+        updateTicketDisplay();
+        updateConsumableDisplay();
+        updateTotals();
+        goToStep(1);
+    }
+
+    theaterSelect.addEventListener('change', updateShowtimes);
+    movieSelect.addEventListener('change', updateShowtimes);
+
+    step1Next.addEventListener('click', function () {
+        if (state.showtime) {
+            goToStep(2);
+        }
+    });
+
+    document.getElementById('step2Back').addEventListener('click', function () {
+        goToStep(1);
+    });
+
+    step2Next.addEventListener('click', function () {
+        if (state.selectedSeats.length > 0) {
+            goToStep(3);
+        }
+    });
+
+    document.querySelectorAll('.ticket-minus').forEach(function (button) {
+        button.addEventListener('click', function () {
+            var type = button.dataset.type;
+            if (state.tickets[type] > 0) {
+                state.tickets[type]--;
+                updateTicketDisplay();
+                updateTotals();
+            }
+        });
+    });
+
+    document.querySelectorAll('.ticket-plus').forEach(function (button) {
+        button.addEventListener('click', function () {
+            var type = button.dataset.type;
+            var totalTickets = state.tickets.adult + state.tickets.child + state.tickets.senior;
+            if (totalTickets < state.selectedSeats.length) {
+                state.tickets[type]++;
+                updateTicketDisplay();
+                updateTotals();
+            }
+        });
+    });
+
+    document.querySelectorAll('.consumable-minus').forEach(function (button) {
+        button.addEventListener('click', function () {
+            var item = button.dataset.item;
+            if (state.consumables[item] > 0) {
+                state.consumables[item]--;
+                updateConsumableDisplay();
+                updateTotals();
+            }
+        });
+    });
+
+    document.querySelectorAll('.consumable-plus').forEach(function (button) {
+        button.addEventListener('click', function () {
+            var item = button.dataset.item;
+            if (state.consumables[item] < 10) {
+                state.consumables[item]++;
+                updateConsumableDisplay();
+                updateTotals();
+            }
+        });
+    });
+
+    document.getElementById('step3Back').addEventListener('click', function () {
+        goToStep(2);
+    });
+
+    document.getElementById('step3Next').addEventListener('click', function () {
+        goToStep(4);
+    });
+
+    document.getElementById('cardNumber').addEventListener('input', function (event) {
+        var value = event.target.value.replace(/\s/g, '').replace(/\D/g, '');
+        var groups = value.match(/.{1,4}/g);
+        event.target.value = groups ? groups.join(' ') : '';
+    });
+
+    document.getElementById('cardExpiry').addEventListener('input', function (event) {
+        var value = event.target.value.replace(/\D/g, '');
+        if (value.length >= 2) {
+            value = value.slice(0, 2) + '/' + value.slice(2, 4);
+        }
+        event.target.value = value;
+    });
+
+    document.getElementById('cardCvv').addEventListener('input', function (event) {
+        event.target.value = event.target.value.replace(/\D/g, '');
+    });
+
+    document.getElementById('payButton').addEventListener('click', function () {
+        if (validateForm()) {
+            showConfirmation();
+        }
+    });
+
+    document.getElementById('step4Back').addEventListener('click', function () {
+        checkoutForm.classList.remove('hidden');
+        confirmationScreen.classList.add('hidden');
+        goToStep(3);
+    });
+
+    document.getElementById('newBookingBtn').addEventListener('click', function () {
+        resetBooking();
+    });
+
+    updateShowtimes();
+    updateSeatDisplay();
+    updateTicketDisplay();
+    updateConsumableDisplay();
+    updateTotals();
+});
+</script>

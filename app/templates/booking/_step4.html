@@ -1,0 +1,171 @@
+<div id="step4" class="step-hidden">
+    <div id="checkoutForm" class="bg-cinema-surface rounded-xl p-6">
+        <h2 class="font-display text-2xl font-bold mb-6 text-white">CHECKOUT</h2>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div>
+                <h3 class="font-semibold text-lg mb-4 text-slate-200">Payment Details</h3>
+
+                <form id="paymentForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm text-slate-400 mb-2">Cardholder Name</label>
+                        <input type="text" id="cardName" required placeholder="John Doe" class="w-full bg-cinema-bg border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-500">
+                        <p id="cardNameError" class="text-cinema-primary text-sm mt-1 hidden">Please enter cardholder name</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm text-slate-400 mb-2">Card Number</label>
+                        <input type="text" id="cardNumber" required placeholder="1234 5678 9012 3456" maxlength="19" class="w-full bg-cinema-bg border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-500">
+                        <p id="cardNumberError" class="text-cinema-primary text-sm mt-1 hidden">Please enter a valid card number</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm text-slate-400 mb-2">Expiry Date</label>
+                            <input type="text" id="cardExpiry" required placeholder="MM/YY" maxlength="5" class="w-full bg-cinema-bg border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-500">
+                            <p id="cardExpiryError" class="text-cinema-primary text-sm mt-1 hidden">Invalid expiry</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-slate-400 mb-2">CVV</label>
+                            <input type="text" id="cardCvv" required placeholder="123" maxlength="4" class="w-full bg-cinema-bg border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-500">
+                            <p id="cardCvvError" class="text-cinema-primary text-sm mt-1 hidden">Invalid CVV</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm text-slate-400 mb-2">Email (for confirmation)</label>
+                        <input type="email" id="email" required placeholder="john@example.com" class="w-full bg-cinema-bg border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-500">
+                        <p id="emailError" class="text-cinema-primary text-sm mt-1 hidden">Please enter a valid email</p>
+                    </div>
+                </form>
+            </div>
+
+            <div>
+                <h3 class="font-semibold text-lg mb-4 text-slate-200">Order Review</h3>
+
+                <div class="bg-cinema-bg rounded-xl p-4 space-y-4">
+                    <div class="flex items-start gap-4">
+                        <div class="w-16 h-20 bg-slate-600 rounded-lg flex items-center justify-center">
+                            <svg class="w-8 h-8 text-cinema-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p id="reviewMovie" class="font-semibold text-white">Movie</p>
+                            <p id="reviewShowtime" class="text-slate-400 text-sm">Today, 7:30 PM - IMAX</p>
+                            <p id="reviewTheater" class="text-slate-400 text-sm">Theater</p>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-slate-600 pt-4">
+                        <p class="text-slate-400 text-sm mb-1">Seats</p>
+                        <p id="reviewSeats" class="text-white font-medium">-</p>
+                    </div>
+
+                    <div id="reviewExtras" class="border-t border-slate-600 pt-4">
+                        <p class="text-slate-400 text-sm mb-2">Extras</p>
+                        <div id="reviewExtrasList" class="space-y-1"></div>
+                    </div>
+
+                    <div class="border-t border-slate-600 pt-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-lg font-semibold">Total</span>
+                            <span id="reviewTotal" class="text-2xl font-bold text-cinema-primary">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-8 flex justify-between">
+            <button id="step4Back" class="border border-slate-600 hover:bg-slate-600 text-white font-semibold px-8 py-3 rounded-xl transition-colors">
+                Back
+            </button>
+            <button id="payButton" class="bg-cinema-primary hover:bg-red-700 text-white font-semibold px-8 py-3 rounded-xl transition-colors flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                Pay Now
+            </button>
+        </div>
+    </div>
+
+    <div id="confirmationScreen" class="bg-cinema-surface rounded-xl p-6 hidden">
+        <div class="text-center mb-8">
+            <div class="w-20 h-20 mx-auto bg-green-500/20 rounded-full flex items-center justify-center mb-4">
+                <svg class="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+            <h2 class="font-display text-3xl font-bold text-white">BOOKING CONFIRMED</h2>
+            <p class="text-slate-400 mt-2">Your tickets have been sent to your email</p>
+        </div>
+
+        <div class="max-w-md mx-auto">
+            <div class="bg-cinema-bg rounded-xl p-6 text-center mb-6">
+                <div class="w-40 h-40 mx-auto bg-white rounded-lg flex items-center justify-center mb-4">
+                    <svg viewBox="0 0 100 100" class="w-32 h-32" aria-hidden="true">
+                        <rect x="10" y="10" width="20" height="20" fill="#000" />
+                        <rect x="70" y="10" width="20" height="20" fill="#000" />
+                        <rect x="10" y="70" width="20" height="20" fill="#000" />
+                        <rect x="15" y="15" width="10" height="10" fill="#fff" />
+                        <rect x="75" y="15" width="10" height="10" fill="#fff" />
+                        <rect x="15" y="75" width="10" height="10" fill="#fff" />
+                        <rect x="35" y="10" width="5" height="5" fill="#000" />
+                        <rect x="45" y="10" width="5" height="5" fill="#000" />
+                        <rect x="35" y="20" width="5" height="5" fill="#000" />
+                        <rect x="50" y="20" width="5" height="5" fill="#000" />
+                        <rect x="10" y="35" width="5" height="5" fill="#000" />
+                        <rect x="20" y="40" width="5" height="5" fill="#000" />
+                        <rect x="35" y="35" width="30" height="30" fill="#000" />
+                        <rect x="40" y="40" width="20" height="20" fill="#fff" />
+                        <rect x="45" y="45" width="10" height="10" fill="#000" />
+                        <rect x="70" y="35" width="5" height="5" fill="#000" />
+                        <rect x="80" y="45" width="5" height="5" fill="#000" />
+                        <rect x="35" y="70" width="5" height="5" fill="#000" />
+                        <rect x="50" y="75" width="5" height="5" fill="#000" />
+                        <rect x="70" y="70" width="20" height="20" fill="#000" />
+                        <rect x="75" y="75" width="10" height="10" fill="#fff" />
+                    </svg>
+                </div>
+                <p class="text-slate-400 text-sm mb-2">Booking ID</p>
+                <p id="bookingId" class="font-mono text-xl font-bold text-cinema-primary">CB-2024-XXXXX</p>
+            </div>
+
+            <div class="bg-cinema-bg rounded-xl p-4 space-y-3">
+                <div class="flex justify-between">
+                    <span class="text-slate-400">Movie</span>
+                    <span id="confirmMovie" class="text-white font-medium">Movie</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-400">Date & Time</span>
+                    <span id="confirmShowtime" class="text-white">Today, 7:30 PM</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-400">Theater</span>
+                    <span id="confirmTheater" class="text-white">Theater</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-400">Seats</span>
+                    <span id="confirmSeats" class="text-white font-medium">-</span>
+                </div>
+                <div class="border-t border-slate-600 pt-3 flex justify-between">
+                    <span class="font-semibold">Total Paid</span>
+                    <span id="confirmTotal" class="text-cinema-primary font-bold">$0.00</span>
+                </div>
+            </div>
+
+            <div class="mt-6 flex flex-col sm:flex-row gap-3">
+                <button onclick="window.print()" class="flex-1 border border-slate-600 hover:bg-slate-600 text-white font-semibold px-6 py-3 rounded-xl transition-colors flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                    </svg>
+                    Print Tickets
+                </button>
+                <button id="newBookingBtn" class="flex-1 bg-cinema-primary hover:bg-red-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors">
+                    New Booking
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

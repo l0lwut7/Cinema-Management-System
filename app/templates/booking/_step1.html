@@ -1,0 +1,52 @@
+<div id="step1" class="step-active">
+    <div class="bg-cinema-surface rounded-xl p-6">
+        <h2 class="font-display text-2xl font-bold mb-6 text-white">SELECT YOUR SHOW</h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            <div>
+                <label class="block text-sm text-slate-400 mb-2">Theater</label>
+                <select id="theaterSelect" class="w-full bg-cinema-bg border border-slate-600 rounded-lg px-4 py-3 text-white">
+                    <option value="">Select Theater</option>
+                    {% for theater_option in booking_theaters %}
+                        <option value="{{ theater_option.value }}" {% if booking_initial.theater == theater_option.value %}selected{% endif %}>{{ theater_option.label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm text-slate-400 mb-2">Movie</label>
+                <select id="movieSelect" class="w-full bg-cinema-bg border border-slate-600 rounded-lg px-4 py-3 text-white">
+                    <option value="">Select Movie</option>
+                    {% for movie_option in booking_movies %}
+                        <option value="{{ movie_option.value }}" {% if booking_initial.movie == movie_option.value %}selected{% endif %}>{{ movie_option.label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div id="emptyState" class="text-center py-12">
+            <svg class="w-16 h-16 mx-auto text-slate-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
+            </svg>
+            <p class="text-slate-400">Select a theater and movie to see available showtimes</p>
+        </div>
+
+        <div id="noScreenings" class="text-center py-12 hidden">
+            <svg class="w-16 h-16 mx-auto text-amber-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <p class="text-amber-500">No screenings available for this selection</p>
+            <p class="text-slate-400 text-sm mt-2">Try a different theater or movie</p>
+        </div>
+
+        <div id="showtimesGrid" class="hidden">
+            <h3 class="text-lg font-semibold mb-4 text-slate-300">Available Showtimes - <span id="selectedDate">Today, Dec 15</span></h3>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3" id="showtimesList"></div>
+        </div>
+
+        <div class="mt-8 flex justify-end">
+            <button id="step1Next" class="bg-cinema-primary hover:bg-red-700 text-white font-semibold px-8 py-3 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                Next Step
+            </button>
+        </div>
+    </div>
+</div>

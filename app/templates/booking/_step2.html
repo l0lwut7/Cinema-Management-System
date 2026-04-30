@@ -1,0 +1,63 @@
+<div id="step2" class="step-hidden">
+    <div class="bg-cinema-surface rounded-xl p-6">
+        <h2 class="font-display text-2xl font-bold mb-6 text-white">SELECT YOUR SEATS</h2>
+
+        <div class="bg-cinema-bg rounded-lg p-4 mb-6 flex flex-wrap items-center gap-4">
+            <span id="seatMovieInfo" class="text-white font-medium">Movie</span>
+            <span class="text-slate-400">|</span>
+            <span id="seatShowtimeInfo" class="text-slate-300">7:30 PM - IMAX</span>
+            <span class="text-slate-400">|</span>
+            <span id="seatTheaterInfo" class="text-slate-300">Theater</span>
+        </div>
+
+        <div class="mb-8">
+            <div class="screen-curve h-8 w-3/4 mx-auto mb-2"></div>
+            <p class="text-center text-slate-400 text-sm">SCREEN</p>
+        </div>
+
+        <div class="overflow-x-auto pb-4">
+            <div id="seatMap" class="flex flex-col items-center gap-2 min-w-fit"></div>
+        </div>
+
+        <div class="flex flex-wrap justify-center gap-6 mt-6 pt-6 border-t border-slate-600">
+            <div class="flex items-center gap-2">
+                <div class="w-6 h-6 rounded bg-slate-600"></div>
+                <span class="text-sm text-slate-400">Available</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <div class="w-6 h-6 rounded bg-cinema-primary"></div>
+                <span class="text-sm text-slate-400">Selected</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <div class="w-6 h-6 rounded bg-slate-600 opacity-50"></div>
+                <span class="text-sm text-slate-400">Occupied</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <div class="w-6 h-6 rounded bg-slate-700 opacity-30"></div>
+                <span class="text-sm text-slate-400">Disabled</span>
+            </div>
+        </div>
+
+        <div class="mt-6 p-4 bg-cinema-bg rounded-lg">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                    <p class="text-slate-400 text-sm">Selected Seats</p>
+                    <p id="selectedSeatsDisplay" class="text-white font-semibold">None selected</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-slate-400 text-sm">Subtotal</p>
+                    <p id="seatsSubtotal" class="text-2xl font-bold text-cinema-primary">$0.00</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-8 flex justify-between">
+            <button id="step2Back" class="border border-slate-600 hover:bg-slate-600 text-white font-semibold px-8 py-3 rounded-xl transition-colors">
+                Back
+            </button>
+            <button id="step2Next" class="bg-cinema-primary hover:bg-red-700 text-white font-semibold px-8 py-3 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                Next Step
+            </button>
+        </div>
+    </div>
+</div>
