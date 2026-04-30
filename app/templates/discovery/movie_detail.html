@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ movie.title }} - CineMax{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-6 py-8">
+    <div class="relative h-[450px] overflow-hidden rounded-2xl mb-12">
+        <div class="absolute inset-0 bg-gradient-to-t from-cinema-bg via-cinema-bg/90 to-cinema-bg/40 z-10"></div>
+        <img src="{{ movie.image_url }}" alt="Movie Background" class="absolute inset-0 w-full h-full object-cover">
+        <div class="relative z-20 max-w-7xl mx-auto px-6 h-full flex items-end pb-8">
+            <div class="flex gap-8 items-end">
+                <img src="{{ movie.image_url }}" alt="Movie Poster" class="w-48 h-72 object-cover rounded-xl shadow-2xl hidden md:block">
+                <div class="flex-1">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="px-3 py-1 bg-cinema-primary/20 text-cinema-primary rounded-full text-sm font-medium">Now Showing</span>
+                        <span class="px-3 py-1 bg-cinema-secondary/20 text-cinema-secondary rounded-full text-sm font-medium flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                            </svg>
+                            {{ movie.avg_rating }}/10
+                        </span>
+                    </div>
+                    <div class="flex items-start justify-between gap-4">
+                        <h1 class="font-heading text-4xl md:text-5xl font-bold mb-3">{{ movie.title|upper }}</h1>
+                        {% if is_authenticated %}
+                            <button type="button" class="favorite-btn w-12 h-12 bg-cinema-surface/80 backdrop-blur rounded-full flex items-center justify-center hover:bg-cinema-primary transition-all">
+                                <svg class="w-6 h-6 heart-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                </svg>
+                            </button>
+                        {% else %}
+                            <a href="{{ login_url }}" class="favorite-btn w-12 h-12 bg-cinema-surface/80 backdrop-blur rounded-full flex items-center justify-center hover:bg-cinema-primary transition-all">
+                                <svg class="w-6 h-6 heart-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                </svg>
+                            </a>
+                        {% endif %}
+                    </div>
+                    <p class="text-cinema-muted mb-4">{{ movie.genres }} | {{ movie.release_date }} | {{ movie.runtime_label }}</p>
+                    <div class="flex flex-wrap gap-2 mb-6">
+                        <span class="px-3 py-1.5 bg-cinema-surface rounded-lg text-sm font-medium">{{ movie.format }}</span>
+                        <span class="px-3 py-1.5 bg-cinema-surface rounded-lg text-sm font-medium">{{ movie.language }}</span>
+                        <span class="px-3 py-1.5 bg-cinema-surface rounded-lg text-sm font-medium">{{ movie.director }}</span>
+                    </div>
+                    <a href="{{ url_for('discovery.booking', movie_id=movie.id) }}" class="bg-cinema-primary hover:bg-red-700 text-white px-8 py-3 rounded-xl font-semibold transition-all inline-flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/>
+                        </svg>
+                        Book Now
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-2 space-y-8">
+            <div class="bg-cinema-surface rounded-xl p-6">
+                <h2 class="font-heading text-2xl font-bold mb-4">SYNOPSIS</h2>
+                <p class="text-cinema-muted leading-relaxed">{{ movie.synopsis }}</p>
+            </div>
+
+            <div class="bg-cinema-surface rounded-xl p-6">
+                <h2 class="font-heading text-2xl font-bold mb-4">CAST</h2>
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    {% for actor in cast %}
+                        <div class="text-center">
+                            <div class="w-20 h-20 mx-auto mb-2 rounded-full bg-slate-700 overflow-hidden">
+                                <img src="{{ actor.image_url }}" alt="Actor" class="w-full h-full object-cover">
+                            </div>
+                            <p class="font-medium text-sm">{{ actor.name }}</p>
+                            <p class="text-cinema-muted text-xs">{{ actor.role }}</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="bg-cinema-surface rounded-xl p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="font-heading text-2xl font-bold">REVIEWS</h2>
+                    <span class="text-cinema-muted text-sm">{{ total_reviews }} reviews</span>
+                </div>
+                <div class="flex items-center gap-6 mb-6 pb-6 border-b border-slate-700">
+                    <div class="text-center">
+                        <div class="text-5xl font-bold text-cinema-secondary">{{ movie.avg_rating }}</div>
+                    </div>
+                    <div class="flex-1 space-y-2">
+                        <div class="flex items-center gap-2"><span class="text-sm w-6">5</span><div class="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden"><div class="h-full bg-cinema-secondary rounded-full" style="width: 65%"></div></div><span class="text-sm text-cinema-muted w-8">65%</span></div>
+                        <div class="flex items-center gap-2"><span class="text-sm w-6">4</span><div class="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden"><div class="h-full bg-cinema-secondary rounded-full" style="width: 25%"></div></div><span class="text-sm text-cinema-muted w-8">25%</span></div>
+                        <div class="flex items-center gap-2"><span class="text-sm w-6">3</span><div class="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden"><div class="h-full bg-cinema-secondary rounded-full" style="width: 7%"></div></div><span class="text-sm text-cinema-muted w-8">7%</span></div>
+                        <div class="flex items-center gap-2"><span class="text-sm w-6">2</span><div class="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden"><div class="h-full bg-cinema-secondary rounded-full" style="width: 2%"></div></div><span class="text-sm text-cinema-muted w-8">2%</span></div>
+                        <div class="flex items-center gap-2"><span class="text-sm w-6">1</span><div class="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden"><div class="h-full bg-cinema-secondary rounded-full" style="width: 1%"></div></div><span class="text-sm text-cinema-muted w-8">1%</span></div>
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <h3 class="font-semibold mb-3">Write a Review</h3>
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="text-sm text-cinema-muted">Your rating:</span>
+                        <div class="flex gap-1" id="star-rating">
+                            {% for i in range(5) %}
+                                <button type="button" onclick="setRating({{ i + 1 }})" class="star-btn text-slate-600 hover:text-cinema-secondary transition-colors">
+                                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                </button>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% if is_authenticated %}
+                        <textarea placeholder="Share your thoughts about this movie..." class="w-full h-24 bg-slate-700 border border-slate-600 rounded-lg p-3 text-cinema-text placeholder-cinema-muted resize-none focus:outline-none focus:ring-2 focus:ring-cinema-primary"></textarea>
+                        <button class="mt-3 bg-cinema-primary hover:bg-red-700 text-white px-6 py-2 rounded-lg font-semibold transition-all">Submit Review</button>
+                    {% else %}
+                        <div class="bg-slate-700 rounded-lg p-4 text-cinema-muted">
+                            Please <a href="{{ login_url }}" class="text-cinema-primary font-semibold">log in</a> to submit a review.
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="space-y-4">
+                    {% for review in reviews %}
+                        <div class="border-t border-slate-700 pt-4">
+                            <div class="flex items-start gap-3">
+                                <div class="w-10 h-10 rounded-full bg-slate-700 overflow-hidden flex-shrink-0">
+                                    <img src="{{ review.avatar_url }}" alt="User" class="w-full h-full object-cover">
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span class="font-medium">{{ review.author }}</span>
+                                        <span class="text-cinema-muted text-sm">{{ review.date }}</span>
+                                    </div>
+                                    <p class="text-cinema-muted text-sm">{{ review.comment }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-1 space-y-6">
+            <div class="bg-cinema-surface rounded-xl p-6">
+                <h3 class="font-heading text-xl font-bold mb-4">MOVIE INFO</h3>
+                <dl class="space-y-3">
+                    <div class="flex justify-between"><dt class="text-cinema-muted">Director</dt><dd class="font-medium">{{ movie.director }}</dd></div>
+                    <div class="flex justify-between"><dt class="text-cinema-muted">Release Date</dt><dd class="font-medium">{{ movie.release_date }}</dd></div>
+                    <div class="flex justify-between"><dt class="text-cinema-muted">Runtime</dt><dd class="font-medium">{{ movie.runtime_label }}</dd></div>
+                    <div class="flex justify-between"><dt class="text-cinema-muted">Language</dt><dd class="font-medium">{{ movie.language }}</dd></div>
+                    <div class="flex justify-between"><dt class="text-cinema-muted">Genre</dt><dd class="font-medium">{{ movie.genres }}</dd></div>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

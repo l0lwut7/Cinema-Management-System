@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}Our Theaters - CineMax{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-6 py-12">
+    <div class="mb-10 text-center">
+        <h1 class="font-heading text-4xl font-bold text-white mb-4">THEATER DIRECTORY</h1>
+        <p class="text-cinema-muted text-lg">Find your nearest cinema and explore available screens</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-1 space-y-4">
+            {% for theater in theaters %}
+                <a href="{{ url_for('discovery.theaters', theater_id=theater.id, movie_id=selected_movie.id) }}" class="block">
+                    {% set is_selected = selected_theater.id == theater.id %}
+                    {% include 'shared/_theater_card.html' %}
+                </a>
+            {% endfor %}
+        </div>
+
+        <div class="lg:col-span-2">
+            <div class="bg-cinema-surface rounded-xl p-6">
+                <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 pb-6 border-b border-slate-700">
+                    <div>
+                        <h2 id="theater-name" class="font-heading text-2xl font-bold mb-1">{{ selected_theater.name }}</h2>
+                        <p id="theater-address" class="text-cinema-muted">{{ selected_theater.address }}</p>
+                    </div>
+                    <div class="flex gap-3 mt-4 md:mt-0">
+                        <a href="tel:{{ selected_theater.phone }}" class="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg transition-all">Call</a>
+                        <a href="#" class="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg transition-all">Directions</a>
+                    </div>
+                </div>
+
+                <h3 class="font-heading text-xl font-semibold mb-4">SCREENS & SALOONS</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="text-left text-cinema-muted text-sm border-b border-slate-700">
+                                <th class="pb-3 font-medium">Screen</th>
+                                <th class="pb-3 font-medium">Type</th>
+                                <th class="pb-3 font-medium">Capacity</th>
+                                <th class="pb-3 font-medium">Features</th>
+                                <th class="pb-3 font-medium">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-700">
+                            {% for screen in selected_screens %}
+                                <tr class="hover:bg-slate-700/50">
+                                    <td class="py-4 font-medium">{{ screen.name }}</td>
+                                    <td class="py-4"><span class="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs rounded-full">{{ screen.type }}</span></td>
+                                    <td class="py-4">{{ screen.capacity }} seats</td>
+                                    <td class="py-4 text-cinema-muted text-sm">{{ screen.features }}</td>
+                                    <td class="py-4"><span class="px-2 py-1 {% if screen.status == 'Available' %}bg-green-500/20 text-green-400{% else %}bg-cinema-secondary/20 text-cinema-secondary{% endif %} text-xs rounded-full">{{ screen.status }}</span></td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

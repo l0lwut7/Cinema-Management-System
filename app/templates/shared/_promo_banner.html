@@ -1,0 +1,43 @@
+<section class="relative overflow-hidden rounded-[2rem] border border-white/10 bg-slate-900 shadow-2xl shadow-black/20">
+  <div class="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/75 to-transparent"></div>
+  <img src="{{ image_url }}" alt="{{ title }}" class="absolute inset-0 h-full w-full object-cover" />
+  <div class="relative grid min-h-[28rem] items-end p-6 md:p-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-center lg:p-12">
+    <div class="max-w-3xl">
+      <div class="mb-4 flex flex-wrap items-center gap-2">
+        {% if badge %}
+          <span class="rounded-full bg-brand-red/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-brand-red">{{ badge }}</span>
+        {% endif %}
+        {% if secondary_badge %}
+          <span class="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-slate-200">{{ secondary_badge }}</span>
+        {% endif %}
+      </div>
+      <h1 class="max-w-2xl font-display text-5xl leading-[0.95] text-white md:text-6xl">{{ title }}</h1>
+      <p class="mt-5 max-w-xl text-base leading-7 text-slate-300 md:text-lg">{{ subtitle }}</p>
+      <div class="mt-8 flex flex-wrap gap-3">
+        <a href="{{ primary_url }}" class="rounded-full bg-brand-red px-6 py-3 text-sm font-semibold text-white transition hover:bg-rose-600">{{ primary_text }}</a>
+        {% if secondary_text and secondary_url %}
+          <a href="{{ secondary_url }}" class="rounded-full border border-white/10 bg-white/5 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10">{{ secondary_text }}</a>
+        {% endif %}
+      </div>
+    </div>
+    <div class="hidden justify-self-end lg:block">
+      <div class="max-w-sm rounded-[1.75rem] border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
+        <p class="text-xs font-semibold uppercase tracking-[0.26em] text-slate-400">Featured Experience</p>
+        <div class="mt-4 space-y-4 text-sm text-slate-300">
+          <div class="flex items-center justify-between gap-4 rounded-2xl bg-slate-950/60 p-4">
+            <span>Premium screens</span>
+            <span class="text-brand-amber">IMAX</span>
+          </div>
+          <div class="flex items-center justify-between gap-4 rounded-2xl bg-slate-950/60 p-4">
+            <span>Fast booking flow</span>
+            <span class="text-brand-sky">Live</span>
+          </div>
+          <div class="flex items-center justify-between gap-4 rounded-2xl bg-slate-950/60 p-4">
+            <span>Deals and promos</span>
+            <span class="text-brand-emerald">Updated</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
