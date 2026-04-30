@@ -1,0 +1,14 @@
+<div class="mb-5 flex items-end justify-between gap-4">
+  <div>
+    {% if eyebrow %}
+      <p class="mb-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-brand-amber">{{ eyebrow }}</p>
+    {% endif %}
+    <h2 class="font-display text-3xl tracking-[0.12em] text-white">{{ title }}</h2>
+    {% if subtitle %}
+      <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-400">{{ subtitle }}</p>
+    {% endif %}
+  </div>
+  {% if view_all_url and view_all_text %}
+    <a href="{{ view_all_url }}" class="shrink-0 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10">{{ view_all_text }}</a>
+  {% endif %}
+</div>

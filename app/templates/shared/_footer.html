@@ -1,0 +1,31 @@
+<footer class="bg-cinema-surface border-t border-slate-700 mt-16 pt-10 pb-8">
+    <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div>
+            <div class="flex items-center gap-2 mb-4">
+                <div class="w-8 h-8 bg-cinema-primary rounded-md flex items-center justify-center">
+                    <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/>
+                    </svg>
+                </div>
+                <span class="font-heading font-bold text-xl text-white">CineMax</span>
+            </div>
+            <p class="text-slate-400 text-sm leading-relaxed">Experience cinema like never before. Premium screens, immersive audio, and unforgettable moments.</p>
+        </div>
+        <div>
+            <h4 class="font-heading font-bold text-white mb-4 uppercase tracking-wider text-sm">Explore</h4>
+            <ul class="space-y-2 text-slate-400 text-sm">
+                <li><a href="{{ url_for('discovery.home') }}" class="hover:text-cinema-primary transition">Home</a></li>
+                <li><a href="{{ url_for('discovery.theaters') }}" class="hover:text-cinema-primary transition">Theaters</a></li>
+                <li><a href="{{ url_for('discovery.deals') }}" class="hover:text-cinema-primary transition">Deals</a></li>
+            </ul>
+        </div>
+        <div>
+            <h4 class="font-heading font-bold text-white mb-4 uppercase tracking-wider text-sm">Support</h4>
+            <ul class="space-y-2 text-slate-400 text-sm">
+                <li><a href="#" class="hover:text-cinema-primary transition">Contact</a></li>
+                <li><a href="#" class="hover:text-cinema-primary transition">Help Center</a></li>
+                <li><a href="#" class="hover:text-cinema-primary transition">Terms</a></li>
+            </ul>
+        </div>
+    </div>
+</footer>
