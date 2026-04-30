@@ -63,13 +63,11 @@
     <div class="mt-6 -mx-4 overflow-x-auto px-4 pb-3">
       <div class="flex gap-5 snap-x snap-mandatory">
         {% for movie in movie_choices %}
-          {% set card_class = 'w-[17rem] shrink-0' %}
-          {% set status_label = movie.status %}
-          {% set favorite_url = url_for('discovery.login') %}
+          {% set card_classes = 'w-[17rem] shrink-0' %}
           {% set show_book_button = False %}
           {% set book_url = url_for('discovery.booking', movie_id=movie.id, theater_id=theater.id) %}
           {% set detail_url = url_for('discovery.movie_detail', movie_id=movie.id) %}
-          {% include 'shared/_movie_card.html' with context %}
+          {% include 'shared/_movie_card.html' %}
         {% endfor %}
       </div>
     </div>

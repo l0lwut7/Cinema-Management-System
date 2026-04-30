@@ -1,4 +1,6 @@
-{% set card_classes = card_classes|default('') %}
+{% if card_classes is not defined %}
+    {% set card_classes = '' %}
+{% endif %}
 <div class="theater-card bg-cinema-surface rounded-xl p-6 cursor-pointer hover:ring-2 hover:ring-cinema-primary transition-all {{ 'ring-2 ring-cinema-primary' if is_selected else '' }} {{ card_classes }}">
     <div class="flex items-start justify-between mb-3 gap-3">
         <div>

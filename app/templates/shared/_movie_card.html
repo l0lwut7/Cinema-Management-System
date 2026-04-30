@@ -1,5 +1,10 @@
-{% set card_classes = card_classes|default('') %}
-<article class="bg-cinema-surface rounded-xl overflow-hidden group hover:ring-2 hover:ring-cinema-primary transition-all {{ card_classes }}">
+{% if card_classes is not defined %}
+    {% set card_classes = '' %}
+{% endif %}
+{% if reveal_delay is not defined %}
+    {% set reveal_delay = 0 %}
+{% endif %}
+<article data-reveal-delay="{{ reveal_delay }}" class="reveal-on-scroll bg-cinema-surface rounded-xl overflow-hidden group hover:ring-2 hover:ring-cinema-primary transition-all {{ card_classes }}">
     <div class="relative aspect-[2/3] overflow-hidden">
         <a href="{{ movie.detail_url }}" class="absolute inset-0 z-10" aria-label="Open {{ movie.title }}"></a>
         <img src="{{ movie.image_url }}" alt="{{ movie.title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">

@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="max-w-7xl mx-auto px-6 py-8">
-    <div class="relative h-[500px] overflow-hidden rounded-2xl mb-12">
+    <div class="reveal-on-scroll relative h-[500px] overflow-hidden rounded-2xl mb-12">
         <div class="absolute inset-0 bg-gradient-to-r from-cinema-bg via-cinema-bg/80 to-transparent z-10"></div>
         <img src="{{ featured_movie.image_url }}" alt="Cinema" class="absolute inset-0 w-full h-full object-cover">
         <div class="relative z-20 max-w-7xl mx-auto px-6 h-full flex items-center">
@@ -23,46 +23,70 @@
         </div>
     </div>
 
-    <div class="mb-12">
+    <div class="reveal-on-scroll mb-12">
         <div class="flex items-center justify-between mb-6">
             <h2 class="font-heading text-3xl font-bold">NOW SHOWING</h2>
-            <a href="{{ url_for('discovery.movies') }}" class="text-cinema-primary hover:text-red-400 font-medium flex items-center gap-1">
-                View All Movies
+            <a href="{{ url_for('discovery.now_showing') }}" class="text-cinema-primary hover:text-red-400 font-medium flex items-center gap-1">
+                View All Now Showing
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                 </svg>
             </a>
         </div>
-        <div class="overflow-x-auto pb-2">
-            <div class="flex gap-6 min-w-max">
+        <div class="relative">
+            <button type="button" aria-label="Scroll now showing left" class="carousel-prev hidden md:flex absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-cinema-surface/90 backdrop-blur rounded-full items-center justify-center border border-slate-700 hover:bg-cinema-primary transition-all" data-carousel="now-showing-carousel" data-direction="-1">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+            </button>
+            <button type="button" aria-label="Scroll now showing right" class="carousel-next hidden md:flex absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-cinema-surface/90 backdrop-blur rounded-full items-center justify-center border border-slate-700 hover:bg-cinema-primary transition-all" data-carousel="now-showing-carousel" data-direction="1">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+            </button>
+            <div id="now-showing-carousel" class="overflow-x-auto scroll-smooth pb-2 snap-x snap-mandatory">
+                <div class="flex gap-6 min-w-max">
                 {% for movie in now_showing %}
-                    {% set movie = movie %}
                     {% set show_book_button = False %}
                     {% set card_classes = 'w-[280px] shrink-0' %}
+                    {% set reveal_delay = loop.index0 * 70 %}
                     {% include 'shared/_movie_card.html' %}
                 {% endfor %}
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="mb-12">
+    <div class="reveal-on-scroll mb-12">
         <div class="flex items-center justify-between mb-6">
             <h2 class="font-heading text-3xl font-bold">COMING SOON</h2>
             <a href="{{ url_for('discovery.coming_soon') }}" class="text-cinema-primary hover:text-red-400 font-medium flex items-center gap-1">
-                View All Movies
+                View All Coming Soon
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                 </svg>
             </a>
         </div>
-        <div class="overflow-x-auto pb-2">
-            <div class="flex gap-6 min-w-max">
+        <div class="relative">
+            <button type="button" aria-label="Scroll coming soon left" class="carousel-prev hidden md:flex absolute -left-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-cinema-surface/90 backdrop-blur rounded-full items-center justify-center border border-slate-700 hover:bg-cinema-primary transition-all" data-carousel="coming-soon-carousel" data-direction="-1">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+            </button>
+            <button type="button" aria-label="Scroll coming soon right" class="carousel-next hidden md:flex absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-cinema-surface/90 backdrop-blur rounded-full items-center justify-center border border-slate-700 hover:bg-cinema-primary transition-all" data-carousel="coming-soon-carousel" data-direction="1">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+            </button>
+            <div id="coming-soon-carousel" class="overflow-x-auto scroll-smooth pb-2 snap-x snap-mandatory">
+                <div class="flex gap-6 min-w-max">
                 {% for movie in coming_soon %}
-                    {% set movie = movie %}
                     {% set show_book_button = False %}
                     {% set card_classes = 'w-[280px] shrink-0' %}
+                    {% set reveal_delay = loop.index0 * 70 %}
                     {% include 'shared/_movie_card.html' %}
                 {% endfor %}
+                </div>
             </div>
         </div>
     </div>

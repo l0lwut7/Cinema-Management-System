@@ -36,6 +36,16 @@
         .font-heading {
             font-family: 'Oswald', sans-serif;
         }
+        .reveal-on-scroll {
+            opacity: 0;
+            transform: translateY(16px);
+            transition: opacity 500ms ease, transform 500ms ease;
+            will-change: opacity, transform;
+        }
+        .reveal-on-scroll.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
     </style>
     {% block head %}{% endblock %}
 </head>
@@ -45,6 +55,40 @@
     <main class="flex-1">{% block content %}{% endblock %}</main>
 
     {% include 'shared/_footer.html' %}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const revealItems = document.querySelectorAll('.reveal-on-scroll');
+            if (revealItems.length) {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('is-visible');
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0.12 });
+
+                revealItems.forEach((item, index) => {
+                    const delay = Number(item.dataset.revealDelay || 0);
+                    item.style.transitionDelay = `${delay + index * 20}ms`;
+                    observer.observe(item);
+                });
+            }
+
+            const scrollCarousel = (carouselId, direction) => {
+                const carousel = document.getElementById(carouselId);
+                if (!carousel) return;
+                const amount = Math.max(320, carousel.clientWidth * 0.8);
+                carousel.scrollBy({ left: amount * direction, behavior: 'smooth' });
+            };
+
+            document.querySelectorAll('.carousel-prev, .carousel-next').forEach((button) => {
+                button.addEventListener('click', () => {
+                    scrollCarousel(button.dataset.carousel, Number(button.dataset.direction));
+                });
+            });
+        });
+    </script>
     {% block scripts %}{% endblock %}
 </body>
 </html>
