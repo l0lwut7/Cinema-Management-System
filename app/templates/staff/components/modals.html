@@ -1,0 +1,44 @@
+<!-- Payment Success Modal -->
+<div id="paymentModal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+    <div class="bg-dark-surface rounded-2xl p-8 max-w-md w-full text-center transform scale-95 opacity-0 transition-all" id="paymentModalContent">
+        <div class="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+            </svg>
+        </div>
+        <h2 class="font-display text-2xl font-bold text-white mb-2">Payment Successful!</h2>
+        <p class="text-gray-400 mb-4">Transaction completed via <span id="paymentMethod" class="text-crimson font-semibold">CARD</span></p>
+        <div class="bg-dark-bg rounded-xl p-4 mb-6">
+            <p class="text-3xl font-bold text-crimson" id="paymentAmount">$47.97</p>
+            <p class="text-sm text-gray-500">Receipt #RC-<span id="receiptNumber">847291</span></p>
+        </div>
+        <div class="flex gap-3">
+            <button onclick="printReceipt()" class="flex-1 bg-dark-elevated hover:bg-dark-border text-white font-semibold py-3 px-4 rounded-xl border border-dark-border transition-all">
+                Print Receipt
+            </button>
+            <button onclick="closePaymentModal()" class="flex-1 bg-crimson hover:bg-rose-600 text-white font-semibold py-3 px-4 rounded-xl transition-all">
+                New Order
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Refund Success Modal -->
+<div id="refundModal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+    <div class="bg-dark-surface rounded-2xl p-8 max-w-md w-full text-center transform scale-95 opacity-0 transition-all" id="refundModalContent">
+        <div class="w-20 h-20 bg-amber rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
+            </svg>
+        </div>
+        <h2 class="font-display text-2xl font-bold text-white mb-2">Refund Processed</h2>
+        <p class="text-gray-400 mb-4">The refund has been authorized and will be processed</p>
+        <div class="bg-dark-bg rounded-xl p-4 mb-6">
+            <p class="text-3xl font-bold text-amber" id="refundAmount">-$47.97</p>
+            <p class="text-sm text-gray-500">Refund ID #RF-<span id="refundId">291847</span></p>
+        </div>
+        <button onclick="closeRefundModal()" class="w-full bg-amber hover:bg-amber/80 text-dark-bg font-semibold py-3 px-4 rounded-xl transition-all">
+            Done
+        </button>
+    </div>
+</div>

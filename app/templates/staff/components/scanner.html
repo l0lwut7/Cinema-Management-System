@@ -1,0 +1,135 @@
+<!-- Ticket Scanner Panel -->
+<div id="tool-scanner" class="tools-content hidden">
+    <div class="mb-6">
+        <h2 class="font-display text-2xl font-bold mb-2">Ticket Scanner</h2>
+        <p class="text-gray-400 text-sm">Validate tickets for theater entry</p>
+    </div>
+
+    <!-- Scanner Input -->
+    <div class="mb-6">
+        <label class="block text-sm font-medium text-gray-300 mb-2">Scan or Enter Ticket ID</label>
+        <div class="relative">
+            <input type="text" id="ticketInput" placeholder="TK-XXXX-XXXX-XXXX"
+                   class="w-full bg-dark-surface border-2 border-dark-border rounded-xl py-4 px-4 pr-24 text-white text-lg font-mono placeholder-gray-500 focus:outline-none focus:border-crimson focus:ring-1 focus:ring-crimson transition-all text-center tracking-wider"
+                   autofocus>
+            <button onclick="validateTicket()" class="absolute right-2 top-1/2 -translate-y-1/2 bg-crimson hover:bg-rose-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors">
+                SCAN
+            </button>
+        </div>
+        <p class="text-xs text-gray-500 mt-2 text-center">Position barcode in front of scanner or type manually</p>
+    </div>
+
+    <!-- Scanner Result Area -->
+    <div id="scannerResult" class="mb-6">
+        <!-- Idle State -->
+        <div id="scannerIdle" class="bg-dark-surface border-2 border-dashed border-dark-border rounded-xl p-8 text-center">
+            <div class="w-20 h-20 bg-dark-elevated rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-10 h-10 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
+                </svg>
+            </div>
+            <h3 class="font-semibold text-gray-400 mb-1">Ready to Scan</h3>
+            <p class="text-sm text-gray-500">Waiting for ticket barcode...</p>
+        </div>
+
+        <!-- Success State -->
+        <div id="scannerSuccess" class="hidden bg-green-500/10 border-2 border-green-500 rounded-xl p-6 text-center success-pulse">
+            <div class="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                </svg>
+            </div>
+            <h3 class="font-display text-2xl font-bold text-green-400 mb-2">VALID TICKET</h3>
+            <p class="text-green-300 font-semibold mb-4" id="successTicketId">TK-8472-9103-AXBZ</p>
+            <div class="bg-dark-surface rounded-lg p-4 text-left">
+                <div class="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                        <p class="text-gray-500">Movie</p>
+                        <p class="text-white font-semibold" id="successMovie">Dune: Part Three</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-500">Showtime</p>
+                        <p class="text-white font-semibold" id="successTime">7:30 PM</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-500">Hall / Seat</p>
+                        <p class="text-white font-semibold" id="successSeat">Hall 1 / G-14</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-500">Guest</p>
+                        <p class="text-white font-semibold" id="successGuest">John Smith</p>
+                    </div>
+                </div>
+            </div>
+            <button onclick="resetScanner()" class="mt-4 w-full bg-green-600 hover:bg-green-500 text-white font-semibold py-3 px-4 rounded-xl transition-all">
+                Scan Next Ticket
+            </button>
+        </div>
+
+        <!-- Fail State -->
+        <div id="scannerFail" class="hidden bg-red-500/10 border-2 border-red-500 rounded-xl p-6 text-center fail-pulse">
+            <div class="w-20 h-20 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </div>
+            <h3 class="font-display text-2xl font-bold text-red-400 mb-2">INVALID TICKET</h3>
+            <p class="text-red-300 font-semibold mb-2" id="failTicketId">TK-0000-0000-0000</p>
+            <p class="text-gray-400 text-sm mb-4" id="failReason">Ticket has already been used or does not exist</p>
+            <button onclick="resetScanner()" class="w-full bg-red-600 hover:bg-red-500 text-white font-semibold py-3 px-4 rounded-xl transition-all">
+                Try Again
+            </button>
+        </div>
+    </div>
+
+    <!-- Daily Stats -->
+    <div class="grid grid-cols-3 gap-3 mb-6">
+        <div class="bg-dark-surface rounded-xl p-4 text-center">
+            <p class="text-2xl font-bold text-green-400" id="validCount">147</p>
+            <p class="text-xs text-gray-500">Valid Today</p>
+        </div>
+        <div class="bg-dark-surface rounded-xl p-4 text-center">
+            <p class="text-2xl font-bold text-red-400" id="invalidCount">3</p>
+            <p class="text-xs text-gray-500">Invalid</p>
+        </div>
+        <div class="bg-dark-surface rounded-xl p-4 text-center">
+            <p class="text-2xl font-bold text-amber" id="pendingCount">52</p>
+            <p class="text-xs text-gray-500">Expected</p>
+        </div>
+    </div>
+
+    <!-- Recent Scans -->
+    <div>
+        <h3 class="font-display font-semibold text-gray-300 mb-3">Recent Scans</h3>
+        <div class="space-y-2" id="recentScans">
+            <div class="flex items-center justify-between bg-dark-surface rounded-lg p-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-green-500/20 rounded-full flex items-center justify-center">
+                        <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-sm font-mono text-white">TK-8471-2938-PQRS</p>
+                        <p class="text-xs text-gray-500">Avatar 4 • Hall 2</p>
+                    </div>
+                </div>
+                <span class="text-xs text-gray-500">2 min ago</span>
+            </div>
+            <div class="flex items-center justify-between bg-dark-surface rounded-lg p-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-red-500/20 rounded-full flex items-center justify-center">
+                        <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-sm font-mono text-white">TK-0000-1234-FAKE</p>
+                        <p class="text-xs text-red-400">Invalid ticket</p>
+                    </div>
+                </div>
+                <span class="text-xs text-gray-500">8 min ago</span>
+            </div>
+        </div>
+    </div>
+</div>

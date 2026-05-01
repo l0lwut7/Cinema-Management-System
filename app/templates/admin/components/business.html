@@ -1,0 +1,213 @@
+<!-- Business Rules Panel -->
+<div id="panel-business" class="content-panel">
+  <header class="mb-8">
+    <h2 class="font-display text-3xl font-bold text-white tracking-wide">BUSINESS RULES</h2>
+    <p class="text-slate-400 mt-1">Manage consumables, deals, and membership tiers</p>
+  </header>
+  
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Consumables Panel -->
+    <div class="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
+      <div class="p-6 border-b border-slate-700">
+        <h3 class="font-display text-lg font-semibold text-white">CONSUMABLES</h3>
+        <p class="text-slate-400 text-sm mt-1">Inventory & pricing</p>
+      </div>
+      <div class="p-4">
+        <button id="btn-add-consumable" class="btn-primary w-full px-4 py-2 rounded-lg text-white text-sm font-medium mb-4">+ Add Item</button>
+        <div class="space-y-3">
+          {% for item in consumables %}
+          <div class="bg-slate-700 rounded-lg p-3 {{ item.wrapper_class }}">
+            <div class="flex items-center justify-between mb-2">
+              <p class="text-white font-medium">{{ item.name }}</p>
+              <span class="text-emerald font-semibold">{{ item.price }}</span>
+            </div>
+            <div class="flex items-center justify-between text-sm">
+              <span class="{{ item.stock_class }}">{{ item.stock }}</span>
+              <button class="text-sky text-xs hover:text-sky/80 btn-edit-consumable">Edit</button>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    
+    <!-- Deals Panel -->
+    <div class="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
+      <div class="p-6 border-b border-slate-700">
+        <h3 class="font-display text-lg font-semibold text-white">DEALS & PROMOTIONS</h3>
+        <p class="text-slate-400 text-sm mt-1">Discount rules & combos</p>
+      </div>
+      <div class="p-4">
+        <button id="btn-add-deal" class="btn-primary w-full px-4 py-2 rounded-lg text-white text-sm font-medium mb-4">+ Create Deal</button>
+        <div class="space-y-3">
+          {% for deal in deals %}
+          <div class="bg-slate-700 rounded-lg p-3">
+            <div class="flex items-center justify-between mb-2">
+              <p class="text-white font-medium">{{ deal.name }}</p>
+              <span class="px-2 py-1 bg-{{ deal.status_color }}/20 text-{{ deal.status_color }} rounded text-xs">{{ deal.status }}</span>
+            </div>
+            <p class="text-slate-400 text-sm mb-2">{{ deal.desc }}</p>
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-slate-500">{{ deal.valid }}</span>
+              <button class="text-sky hover:text-sky/80 btn-edit-deal">Edit</button>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    
+    <!-- Membership Thresholds Panel -->
+    <div class="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
+      <div class="p-6 border-b border-slate-700">
+        <h3 class="font-display text-lg font-semibold text-white">MEMBERSHIP TIERS</h3>
+        <p class="text-slate-400 text-sm mt-1">Thresholds & benefits</p>
+      </div>
+      <div class="p-4">
+        <div class="space-y-4">
+          <div class="bg-slate-700 rounded-lg p-4 border-l-4 {{ vip_tier.border }}">
+            <div class="flex items-center justify-between mb-3">
+              <h4 class="text-{{ vip_tier.color }} font-semibold">{{ vip_tier.name }}</h4>
+              <button id="btn-edit-tier" class="text-sky text-xs hover:text-sky/80">Edit</button>
+            </div>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between">
+                <span class="text-slate-400">Spend Threshold:</span>
+                <span class="text-white">{{ vip_tier.spend }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-400">Discount:</span>
+                <span class="text-{{ vip_tier.discount_color }}">{{ vip_tier.discount }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-400">Points Multiplier:</span>
+                <span class="text-white">{{ vip_tier.points }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="text-slate-500 text-xs mt-4">Thresholds based on annual spending. Tier status resets January 1st.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Consumable Modal -->
+<div id="modal-add-consumable" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+  <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl scale-95 opacity-0 transition-all duration-200" id="modal-add-consumable-content">
+    <div class="p-6 border-b border-slate-700 flex justify-between items-center bg-slate-800/50">
+      <h3 class="font-display text-xl font-bold text-white tracking-wide">ADD CONSUMABLE</h3>
+      <button class="text-slate-400 hover:text-white transition-colors modal-close">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+    </div>
+    <div class="p-6">
+      <form id="form-consumable" class="space-y-5">
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Item Icon</label>
+          <div class="flex gap-3 text-2xl" id="consumable-icons">
+            <button type="button" class="w-12 h-12 rounded-lg bg-slate-900 border-2 border-emerald shadow-[0_0_10px_rgba(16,185,129,0.2)] flex items-center justify-center transition-all icon-btn">🍿</button>
+            <button type="button" class="w-12 h-12 rounded-lg bg-slate-900 border border-slate-700 hover:border-slate-500 flex items-center justify-center transition-all icon-btn">🥤</button>
+            <button type="button" class="w-12 h-12 rounded-lg bg-slate-900 border border-slate-700 hover:border-slate-500 flex items-center justify-center transition-all icon-btn">🌭</button>
+            <button type="button" class="w-12 h-12 rounded-lg bg-slate-900 border border-slate-700 hover:border-slate-500 flex items-center justify-center transition-all icon-btn">🍫</button>
+            <button type="button" class="w-12 h-12 rounded-lg bg-slate-900 border border-slate-700 hover:border-slate-500 flex items-center justify-center transition-all icon-btn">☕</button>
+          </div>
+        </div>
+        
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Item Name</label>
+          <input type="text" required placeholder="e.g. Large Popcorn" class="w-full bg-slate-900 border border-slate-700 rounded-lg py-3 px-4 text-white placeholder-slate-500 focus:border-crimson focus:ring-1 focus:ring-crimson transition-all outline-none">
+        </div>
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Price ($)</label>
+            <input type="number" step="0.01" required placeholder="0.00" class="w-full bg-slate-900 border border-slate-700 rounded-lg py-3 px-4 text-white placeholder-slate-500 focus:border-crimson focus:ring-1 focus:ring-crimson transition-all outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Initial Stock</label>
+            <input type="number" required placeholder="0" class="w-full bg-slate-900 border border-slate-700 rounded-lg py-3 px-4 text-white placeholder-slate-500 focus:border-crimson focus:ring-1 focus:ring-crimson transition-all outline-none">
+          </div>
+        </div>
+        
+        <div class="pt-2 flex gap-3">
+          <button type="submit" class="flex-1 bg-emerald hover:bg-emerald-600 text-white font-semibold py-3 px-4 rounded-lg shadow-lg transition-all active:scale-[0.98]">Save Item</button>
+          <button type="button" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-semibold py-3 px-4 rounded-lg transition-all active:scale-[0.98] modal-close">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Deal Modal -->
+<div id="modal-deal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+  <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl scale-95 opacity-0 transition-all duration-200" id="modal-deal-content">
+    <div class="p-6 border-b border-slate-700 flex justify-between items-center bg-slate-800/50">
+      <h3 class="font-display text-xl font-bold text-white tracking-wide" id="modal-deal-title">CREATE DEAL</h3>
+      <button class="text-slate-400 hover:text-white transition-colors modal-close">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+    </div>
+    <div class="p-6">
+      <form id="form-deal" class="space-y-5">
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Deal Name</label>
+          <input type="text" required placeholder="e.g. Student Discount" class="w-full bg-slate-900 border border-slate-700 rounded-lg py-3 px-4 text-white placeholder-slate-500 focus:border-crimson focus:ring-1 focus:ring-crimson transition-all outline-none">
+        </div>
+        
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Description</label>
+          <input type="text" required placeholder="e.g. 20% off with Student ID" class="w-full bg-slate-900 border border-slate-700 rounded-lg py-3 px-4 text-white placeholder-slate-500 focus:border-crimson focus:ring-1 focus:ring-crimson transition-all outline-none">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Status</label>
+          <select class="w-full bg-slate-900 border border-slate-700 rounded-lg py-3 px-4 text-white placeholder-slate-500 focus:border-crimson focus:ring-1 focus:ring-crimson transition-all outline-none">
+            <option>Active</option>
+            <option>Inactive</option>
+          </select>
+        </div>
+        
+        <div class="pt-2 flex gap-3">
+          <button type="submit" class="flex-1 bg-emerald hover:bg-emerald-600 text-white font-semibold py-3 px-4 rounded-lg shadow-lg transition-all active:scale-[0.98]">Save Deal</button>
+          <button type="button" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-semibold py-3 px-4 rounded-lg transition-all active:scale-[0.98] modal-close">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Edit VIP Tier Modal -->
+<div id="modal-tier" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+  <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl scale-95 opacity-0 transition-all duration-200" id="modal-tier-content">
+    <div class="p-6 border-b border-slate-700 flex justify-between items-center bg-slate-800/50">
+      <h3 class="font-display text-xl font-bold text-amber tracking-wide">EDIT VIP TIER</h3>
+      <button class="text-slate-400 hover:text-white transition-colors modal-close">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+    </div>
+    <div class="p-6">
+      <form id="form-tier" class="space-y-5">
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Spend Threshold</label>
+          <input type="text" required value="$500 Annual Spend" class="w-full bg-slate-900 border border-slate-700 rounded-lg py-3 px-4 text-white placeholder-slate-500 focus:border-amber focus:ring-1 focus:ring-amber transition-all outline-none">
+        </div>
+        
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Discount Benefits</label>
+          <input type="text" required value="15% off tickets & snacks" class="w-full bg-slate-900 border border-slate-700 rounded-lg py-3 px-4 text-white placeholder-slate-500 focus:border-amber focus:ring-1 focus:ring-amber transition-all outline-none">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Points Multiplier</label>
+          <input type="text" required value="2x Points on all purchases" class="w-full bg-slate-900 border border-slate-700 rounded-lg py-3 px-4 text-white placeholder-slate-500 focus:border-amber focus:ring-1 focus:ring-amber transition-all outline-none">
+        </div>
+        
+        <div class="pt-2 flex gap-3">
+          <button type="submit" class="flex-1 bg-amber hover:bg-amber-600 text-white font-semibold py-3 px-4 rounded-lg shadow-lg transition-all active:scale-[0.98]">Update Tier</button>
+          <button type="button" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-semibold py-3 px-4 rounded-lg transition-all active:scale-[0.98] modal-close">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

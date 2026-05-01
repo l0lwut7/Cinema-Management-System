@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Staff Terminal | CineMax POS{% endblock %}</title>
+
+    <!-- Tailwind CDN (staff-only, isolated from public pages) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            bg:       '#0F172A',
+                            surface:  '#1E293B',
+                            elevated: '#334155',
+                            border:   '#475569'
+                        },
+                        crimson: '#E11D48',
+                        amber:   '#F59E0B'
+                    },
+                    fontFamily: {
+                        sans:    ['Inter', 'sans-serif'],
+                        display: ['Oswald', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Staff-specific styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/staff.css') }}">
+
+    {% block styles %}{% endblock %}
+</head>
+<body class="min-h-screen text-gray-100" style="background-color: #0F172A; font-family: 'Inter', sans-serif;">
+
+    {% block content %}{% endblock %}
+
+    <!-- Staff-specific JS -->
+    <script src="{{ url_for('static', filename='js/staff.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

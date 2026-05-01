@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}CineMax - Login & Register{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}?v=1">
+{% endblock %}
+
+{% block content %}
+<div class="min-h-[calc(100vh-73px)] flex items-center justify-center p-6">
+  <div class="w-full max-w-md">
+    <!-- Auth Card -->
+    <div class="glass rounded-2xl p-8 shadow-2xl">
+      <!-- Tab Toggle -->
+      <div class="flex bg-cinema-surface rounded-xl p-1 mb-8">
+        <button id="login-tab" class="tab-btn active flex-1 py-3 rounded-lg font-medium transition-all" onclick="switchAuthTab('login')">
+          Sign In
+        </button>
+        <button id="register-tab" class="tab-btn flex-1 py-3 rounded-lg font-medium text-gray-400 hover:text-white transition-all" onclick="switchAuthTab('register')">
+          Register
+        </button>
+      </div>
+
+      <!-- Login Form -->
+      <form id="login-form" method="POST" action="{{ url_for('auth.login') }}">
+        <h2 class="font-heading text-3xl font-bold mb-2">Welcome Back</h2>
+        <p class="text-gray-400 mb-6">Sign in to access your bookings and favorites</p>
+        
+        <div id="login-error" class="hidden bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg mb-4 text-sm">
+          Invalid email or password. Please try again.
+        </div>
+        
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">Email Address</label>
+            <input type="email" id="login-email" name="email" required placeholder="you@example.com" class="input-field w-full px-4 py-3 rounded-xl text-white placeholder-gray-500">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">Password</label>
+            <div class="relative">
+              <input type="password" id="login-password" name="password" required placeholder="••••••••" class="input-field w-full px-4 py-3 rounded-xl text-white placeholder-gray-500 pr-12">
+              <button type="button" onclick="togglePassword('login-password', this)" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="flex items-center justify-between">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" class="w-4 h-4 rounded border-gray-600 bg-cinema-bg text-cinema-primary focus:ring-cinema-primary">
+              <span class="text-sm text-gray-400">Remember me</span>
+            </label>
+            <a href="#" class="text-sm text-cinema-primary hover:text-rose-400 transition-colors">Forgot password?</a>
+          </div>
+          <button type="submit" class="w-full py-4 bg-gradient-to-r from-cinema-primary to-rose-600 hover:from-rose-600 hover:to-cinema-primary rounded-xl font-semibold text-lg transition-all transform hover:scale-[1.02] shadow-lg shadow-cinema-primary/25">
+            Sign In
+          </button>
+        </div>
+      </form>
+
+      <!-- Register Form -->
+      <form id="register-form" method="POST" action="{{ url_for('auth.register') }}" class="hidden">
+        <h2 class="font-heading text-3xl font-bold mb-2">Create Account</h2>
+        <p class="text-gray-400 mb-6">Join CineMax for exclusive benefits</p>
+        
+        <div id="register-error" class="hidden bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg mb-4 text-sm">
+          Please fill in all required fields correctly.
+        </div>
+        
+        <div class="space-y-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">First Name</label>
+              <input type="text" name="first_name" required placeholder="John" class="input-field w-full px-4 py-3 rounded-xl text-white placeholder-gray-500">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">Last Name</label>
+              <input type="text" name="last_name" required placeholder="Doe" class="input-field w-full px-4 py-3 rounded-xl text-white placeholder-gray-500">
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">Email Address</label>
+            <input type="email" name="email" required placeholder="you@example.com" class="input-field w-full px-4 py-3 rounded-xl text-white placeholder-gray-500">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">Phone Number</label>
+            <input type="tel" name="phone" pattern="[+0-9() -]+" placeholder="+1 (555) 000-0000" class="input-field w-full px-4 py-3 rounded-xl text-white placeholder-gray-500">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">Password</label>
+            <input type="password" name="password" id="register-password" required minlength="8" placeholder="Min. 8 characters" class="input-field w-full px-4 py-3 rounded-xl text-white placeholder-gray-500">
+            <div class="mt-2 flex gap-1" id="password-strength">
+              <div class="h-1 flex-1 rounded bg-cinema-primary"></div>
+              <div class="h-1 flex-1 rounded bg-cinema-primary"></div>
+              <div class="h-1 flex-1 rounded bg-gray-700"></div>
+              <div class="h-1 flex-1 rounded bg-gray-700"></div>
+            </div>
+            <p class="text-xs text-gray-500 mt-1">Use 8+ characters with mix of letters & numbers</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">Confirm Password</label>
+            <input type="password" placeholder="••••••••" class="input-field w-full px-4 py-3 rounded-xl text-white placeholder-gray-500">
+          </div>
+          <label class="flex items-start gap-3 cursor-pointer">
+            <input type="checkbox" class="w-4 h-4 mt-0.5 rounded border-gray-600 bg-cinema-bg text-cinema-primary focus:ring-cinema-primary">
+            <span class="text-sm text-gray-400">I agree to the <a href="#" class="text-cinema-primary hover:underline">Terms of Service</a> and <a href="#" class="text-cinema-primary hover:underline">Privacy Policy</a></span>
+          </label>
+          <button type="submit" class="w-full py-4 bg-gradient-to-r from-cinema-primary to-rose-600 hover:from-rose-600 hover:to-cinema-primary rounded-xl font-semibold text-lg transition-all transform hover:scale-[1.02] shadow-lg shadow-cinema-primary/25">
+            Create Account
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/auth.js') }}?v=1"></script>
+{% endblock %}

@@ -1,0 +1,53 @@
+<!-- Staff Terminal Header -->
+<header class="bg-dark-surface border-b border-dark-border px-6 py-3">
+    <div class="flex items-center justify-between">
+        <!-- Logo + Terminal Label -->
+        <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2">
+                <div class="w-10 h-10 bg-crimson rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/>
+                    </svg>
+                </div>
+                <span class="font-display text-xl font-bold tracking-wide">CINEMAX <span class="text-crimson">POS</span></span>
+            </div>
+            <div class="h-8 w-px bg-dark-border"></div>
+            <span class="text-sm text-gray-400">Staff Operations Terminal</span>
+        </div>
+
+        <!-- Quick Stats + Staff Profile -->
+        <div class="flex items-center gap-6">
+            <!-- Quick Stats (hidden on smaller screens) -->
+            <div class="hidden lg:flex items-center gap-4 text-sm">
+                <div class="flex items-center gap-2 px-3 py-1.5 bg-dark-bg rounded-lg">
+                    <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span class="text-gray-400">Terminal</span>
+                    <span class="font-semibold text-white">{{ staff.terminal }}</span>
+                </div>
+                <div class="flex items-center gap-2 px-3 py-1.5 bg-dark-bg rounded-lg">
+                    <svg class="w-4 h-4 text-amber" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
+                    </svg>
+                    <span class="text-gray-400">Shift:</span>
+                    <span class="font-semibold text-white" id="shiftTime">00:00:00</span>
+                </div>
+            </div>
+
+            <!-- Staff Profile -->
+            <div class="flex items-center gap-3 pl-4 border-l border-dark-border">
+                <div class="text-right">
+                    <p class="font-semibold text-white">{{ staff.name }}</p>
+                    <p class="text-xs text-gray-400">{{ staff.role }}</p>
+                </div>
+                <div class="w-10 h-10 bg-gradient-to-br from-crimson to-rose-700 rounded-full flex items-center justify-center font-display font-bold text-lg">
+                    {{ staff.initials }}
+                </div>
+                <a href="{{ url_for('staff.logout') }}" class="p-2 hover:bg-dark-elevated rounded-lg transition-colors" title="Logout">
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </div>
+</header>

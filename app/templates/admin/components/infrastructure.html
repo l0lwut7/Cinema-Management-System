@@ -1,0 +1,245 @@
+<!-- Infrastructure Panel -->
+<div id="panel-infrastructure" class="content-panel">
+  <header class="mb-8">
+    <h2 class="font-display text-3xl font-bold text-white tracking-wide">INFRASTRUCTURE & SCHEDULING</h2>
+    <p class="text-slate-400 mt-1">Manage saloons, seats, and screenings</p>
+  </header>
+  
+  <!-- Sub-tabs -->
+  <div class="flex gap-2 mb-6">
+    <button class="infra-tab active px-4 py-2 rounded-lg bg-crimson text-white font-medium text-sm" data-subtab="screenings">Screenings</button>
+    <button class="infra-tab px-4 py-2 rounded-lg bg-slate-700 text-slate-300 font-medium text-sm" data-subtab="saloons">Saloons</button>
+    <button class="infra-tab px-4 py-2 rounded-lg bg-slate-700 text-slate-300 font-medium text-sm" data-subtab="seats">Seat Layouts</button>
+  </div>
+  
+  <!-- Screenings Content -->
+  <div id="infra-screenings" class="infra-content">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Add Screening Form -->
+      <div class="bg-slate-800 rounded-xl border border-slate-700 p-6">
+        <h3 class="font-display text-lg font-semibold text-white mb-6">ADD NEW SCREENING</h3>
+        
+        <form id="screening-form" class="space-y-6">
+          <div>
+            <label class="block text-sm font-medium text-slate-300 mb-2">Movie <span class="text-crimson">*</span></label>
+            <select id="screening-movie" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white">
+              <option value="">Select a movie</option>
+              {% for movie in movies %}
+              <option>{{ movie.name }}</option>
+              {% endfor %}
+            </select>
+            <p id="movie-error" class="text-crimson text-xs mt-1 hidden">Please select a movie</p>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-slate-300 mb-2">Saloon <span class="text-crimson">*</span></label>
+            <select id="screening-saloon" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white">
+              <option value="">Select a saloon</option>
+              {% for saloon in saloons %}
+              <option>{{ saloon.name }} - {{ saloon.info.split('•')[0] }}</option>
+              {% endfor %}
+            </select>
+            <p id="saloon-error" class="text-crimson text-xs mt-1 hidden">Please select a saloon</p>
+          </div>
+          
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-slate-300 mb-2">Date <span class="text-crimson">*</span></label>
+              <input type="date" id="screening-date" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white">
+              <p id="date-error" class="text-crimson text-xs mt-1 hidden">Please select a date</p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-300 mb-2">Start Time <span class="text-crimson">*</span></label>
+              <input type="time" id="screening-time" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white">
+              <p id="time-error" class="text-crimson text-xs mt-1 hidden">Please select a time</p>
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-slate-300 mb-2">Base Ticket Price ($) <span class="text-crimson">*</span></label>
+              <input type="number" id="screening-price" placeholder="e.g. 15.00" step="0.01" min="0" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400">
+              <p id="price-error" class="text-crimson text-xs mt-1 hidden">Please enter a valid price</p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-300 mb-2">Premium Seat Multiplier</label>
+              <input type="number" id="screening-premium-price" placeholder="e.g. 1.5" step="0.1" min="1" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400">
+              <p class="text-slate-400 text-xs mt-1">Multiplier for VIP seats</p>
+            </div>
+          </div>
+          
+          <div class="flex items-center gap-3">
+            <input type="checkbox" id="screening-subtitles" class="w-5 h-5 rounded bg-slate-700 border-slate-600 text-crimson focus:ring-crimson focus:ring-offset-slate-800">
+            <label for="screening-subtitles" class="text-sm text-slate-300">Enable subtitles for this screening</label>
+          </div>
+          
+          <div class="flex gap-3">
+            <button type="submit" class="btn-primary flex-1 px-6 py-3 rounded-lg text-white font-medium">Add Screening</button>
+            <button type="button" class="btn-secondary px-6 py-3 rounded-lg text-slate-300 font-medium">Clear</button>
+          </div>
+        </form>
+      </div>
+      
+      <!-- Upcoming Screenings -->
+      <div class="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
+        <div class="p-6 border-b border-slate-700">
+          <h3 class="font-display text-lg font-semibold text-white">UPCOMING SCREENINGS</h3>
+          <p class="text-slate-400 text-sm mt-1">Today and tomorrow</p>
+        </div>
+        <div class="divide-y divide-slate-700 max-h-[500px] overflow-y-auto">
+          {% for screening in upcoming_screenings %}
+          <div class="p-4 hover:bg-slate-700/50 transition-colors">
+            <div class="flex items-center justify-between mb-2">
+              <p class="text-white font-medium">{{ screening.movie }}</p>
+              <span class="px-2 py-1 bg-{{ screening.status_color }}/20 text-{{ screening.status_color }} rounded text-xs">{{ screening.status }}</span>
+            </div>
+            <div class="flex items-center gap-4 text-sm text-slate-400">
+              <span>{{ screening.saloon }}</span>
+              <span>{{ screening.time }}</span>
+              <span>{{ screening.price }}</span>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Saloons Content -->
+  <div id="infra-saloons" class="infra-content hidden">
+    <div class="bg-slate-800 rounded-xl border border-slate-700 p-6">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="font-display text-lg font-semibold text-white">SALOON MANAGEMENT</h3>
+        <button id="btn-add-saloon" class="btn-primary px-4 py-2 rounded-lg text-white text-sm font-medium">+ Add Saloon</button>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {% for saloon in saloons %}
+        <div class="bg-slate-700 rounded-xl p-4 border border-slate-600">
+          <h4 class="text-white font-medium mb-2">{{ saloon.name }}</h4>
+          <p class="text-slate-400 text-sm">{{ saloon.info }}</p>
+          <div class="mt-3 flex gap-2">
+            <span class="px-2 py-1 bg-{{ saloon.status_color }}/20 text-{{ saloon.status_color }} rounded text-xs">{{ saloon.status }}</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  
+  <!-- Seats Content -->
+  <div id="infra-seats" class="infra-content hidden">
+    <div class="bg-slate-800 rounded-xl border border-slate-700 p-6">
+      <h3 class="font-display text-lg font-semibold text-white mb-6">SEAT LAYOUT EDITOR</h3>
+      <p class="text-slate-400 mb-4">Select a saloon to edit seat layout</p>
+      <select class="w-full max-w-xs bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white mb-6">
+        {% for saloon in saloons %}
+        <option>{{ saloon.name }} - {{ saloon.info.split('•')[0] }}</option>
+        {% endfor %}
+      </select>
+      <div class="bg-slate-700 rounded-xl p-6 border border-slate-600">
+        <div class="text-center mb-6">
+          <div class="w-3/4 h-3 bg-slate-500 rounded mx-auto mb-2"></div>
+          <p class="text-slate-400 text-xs">SCREEN</p>
+        </div>
+        <div class="grid grid-cols-12 gap-2 max-w-2xl mx-auto">
+          <!-- Row A -->
+          <div class="col-span-12 flex justify-center gap-2">
+            <span class="w-6 text-slate-400 text-xs flex items-center">A</span>
+            <div class="w-6 h-6 bg-slate-600 rounded cursor-pointer hover:bg-crimson"></div>
+            <div class="w-6 h-6 bg-slate-600 rounded cursor-pointer hover:bg-crimson"></div>
+            <div class="w-6 h-6 bg-crimson rounded"></div>
+            <div class="w-6 h-6 bg-slate-600 rounded cursor-pointer hover:bg-crimson"></div>
+            <div class="w-6 h-6 bg-slate-600 rounded cursor-pointer hover:bg-crimson"></div>
+            <div class="w-3"></div>
+            <div class="w-6 h-6 bg-slate-600 rounded cursor-pointer hover:bg-crimson"></div>
+            <div class="w-6 h-6 bg-amber rounded"></div>
+            <div class="w-6 h-6 bg-slate-600 rounded cursor-pointer hover:bg-crimson"></div>
+            <div class="w-6 h-6 bg-slate-600 rounded cursor-pointer hover:bg-crimson"></div>
+          </div>
+          <!-- Row B -->
+          <div class="col-span-12 flex justify-center gap-2">
+            <span class="w-6 text-slate-400 text-xs flex items-center">B</span>
+            <div class="w-6 h-6 bg-slate-600 rounded cursor-pointer hover:bg-crimson"></div>
+            <div class="w-6 h-6 bg-slate-600 rounded cursor-pointer hover:bg-crimson"></div>
+            <div class="w-6 h-6 bg-slate-600 rounded cursor-pointer hover:bg-crimson"></div>
+            <div class="w-6 h-6 bg-slate-600 rounded cursor-pointer hover:bg-crimson"></div>
+            <div class="w-6 h-6 bg-slate-600 rounded cursor-pointer hover:bg-crimson"></div>
+            <div class="w-3"></div>
+            <div class="w-6 h-6 bg-slate-600 rounded cursor-pointer hover:bg-crimson"></div>
+            <div class="w-6 h-6 bg-slate-600 rounded cursor-pointer hover:bg-crimson"></div>
+            <div class="w-6 h-6 bg-slate-600 rounded cursor-pointer hover:bg-crimson"></div>
+            <div class="w-6 h-6 bg-slate-600 rounded cursor-pointer hover:bg-crimson"></div>
+          </div>
+        </div>
+        <div class="flex justify-center gap-6 mt-6 text-xs">
+          <div class="flex items-center gap-2">
+            <div class="w-4 h-4 bg-slate-600 rounded"></div>
+            <span class="text-slate-400">Available</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-4 h-4 bg-crimson rounded"></div>
+            <span class="text-slate-400">Disabled</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-4 h-4 bg-amber rounded"></div>
+            <span class="text-slate-400">VIP</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Saloon Modal -->
+<div id="modal-add-saloon" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+  <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl scale-95 opacity-0 transition-all duration-200" id="modal-add-saloon-content">
+    <div class="p-6 border-b border-slate-700 flex justify-between items-center bg-slate-800/50">
+      <h3 class="font-display text-xl font-bold text-white tracking-wide">ADD SALOON</h3>
+      <button class="text-slate-400 hover:text-white transition-colors modal-close">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+    </div>
+    <div class="p-6">
+      <form id="form-add-saloon" class="space-y-5">
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Saloon Name/ID</label>
+          <input type="text" required placeholder="e.g. Saloon A" class="w-full bg-slate-900 border border-slate-700 rounded-lg py-3 px-4 text-white placeholder-slate-500 focus:border-crimson focus:ring-1 focus:ring-crimson transition-all outline-none">
+        </div>
+        
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Layout Template</label>
+          <div class="space-y-3">
+            <label class="flex items-start gap-3 p-3 rounded-xl border border-emerald/50 bg-emerald/10 cursor-pointer transition-colors relative overflow-hidden">
+              <input type="radio" name="layout" value="small" class="mt-1 text-emerald focus:ring-emerald bg-slate-900 border-slate-600" checked>
+              <div>
+                <span class="block text-white font-medium">Standard Small</span>
+                <span class="block text-sm text-slate-400">40 Seats (4 rows x 10)</span>
+              </div>
+            </label>
+            
+            <label class="flex items-start gap-3 p-3 rounded-xl border border-slate-700 bg-slate-900 cursor-pointer hover:border-slate-500 transition-colors">
+              <input type="radio" name="layout" value="medium" class="mt-1 text-crimson focus:ring-crimson bg-slate-900 border-slate-600">
+              <div>
+                <span class="block text-white font-medium">Standard Medium</span>
+                <span class="block text-sm text-slate-400">80 Seats (8 rows x 10)</span>
+              </div>
+            </label>
+            
+            <label class="flex items-start gap-3 p-3 rounded-xl border border-slate-700 bg-slate-900 cursor-pointer hover:border-slate-500 transition-colors">
+              <input type="radio" name="layout" value="large" class="mt-1 text-crimson focus:ring-crimson bg-slate-900 border-slate-600">
+              <div>
+                <span class="block text-white font-medium">IMAX Large</span>
+                <span class="block text-sm text-slate-400">150 Seats (10 rows x 15)</span>
+              </div>
+            </label>
+          </div>
+        </div>
+        
+        <div class="pt-2 flex gap-3">
+          <button type="submit" class="flex-1 bg-emerald hover:bg-emerald-600 text-white font-semibold py-3 px-4 rounded-lg shadow-lg transition-all active:scale-[0.98]">Create Saloon</button>
+          <button type="button" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-semibold py-3 px-4 rounded-lg transition-all active:scale-[0.98] modal-close">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
