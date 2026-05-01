@@ -1,8 +1,8 @@
 VIP_SPENDERS = [
-    {"initials": "JD", "color": "amber", "name": "John Davidson", "email": "john.d@email.com", "tier": "Gold", "tier_color": "amber", "spent": "$2,450", "visits": 18, "avg": "$136.11"},
-    {"initials": "SM", "color": "slate-400", "name": "Sarah Mitchell", "email": "sarah.m@email.com", "tier": "Platinum", "tier_color": "slate-400", "spent": "$1,890", "visits": 14, "avg": "$135.00"},
-    {"initials": "MR", "color": "amber", "name": "Michael Roberts", "email": "m.roberts@email.com", "tier": "Gold", "tier_color": "amber", "spent": "$1,675", "visits": 12, "avg": "$139.58"},
-    {"initials": "EW", "color": "sky", "name": "Emily Watson", "email": "emily.w@email.com", "tier": "Silver", "tier_color": "sky", "spent": "$1,420", "visits": 11, "avg": "$129.09"}
+    {"initials": "JD", "color": "amber", "name": "John Davidson", "email": "john.d@email.com", "tier": "VIP", "tier_color": "amber", "spent": "$2,450", "visits": 18, "avg": "$136.11"},
+    {"initials": "SM", "color": "slate-400", "name": "Sarah Mitchell", "email": "sarah.m@email.com", "tier": "VIP", "tier_color": "amber", "spent": "$1,890", "visits": 14, "avg": "$135.00"},
+    {"initials": "MR", "color": "amber", "name": "Michael Roberts", "email": "m.roberts@email.com", "tier": "VIP", "tier_color": "amber", "spent": "$1,675", "visits": 12, "avg": "$139.58"},
+    {"initials": "EW", "color": "sky", "name": "Emily Watson", "email": "emily.w@email.com", "tier": "Standard", "tier_color": "slate-400", "spent": "$420", "visits": 5, "avg": "$84.00"}
 ]
 
 EMPLOYEES = [

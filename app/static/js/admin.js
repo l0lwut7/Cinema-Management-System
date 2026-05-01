@@ -77,6 +77,19 @@ document.addEventListener('DOMContentLoaded', () => {
             chip.classList.toggle('text-slate-300');
         });
     });
+
+    // Consumable Icon Selector
+    const iconBtns = document.querySelectorAll('#consumable-icons .icon-btn');
+    iconBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            iconBtns.forEach(b => {
+                b.classList.remove('border-2', 'border-emerald', 'shadow-[0_0_10px_rgba(16,185,129,0.2)]');
+                b.classList.add('border', 'border-slate-700');
+            });
+            btn.classList.remove('border', 'border-slate-700');
+            btn.classList.add('border-2', 'border-emerald', 'shadow-[0_0_10px_rgba(16,185,129,0.2)]');
+        });
+    });
     
     // Screening Form Validation
     const screeningForm = document.getElementById('screening-form');
@@ -198,6 +211,51 @@ document.addEventListener('DOMContentLoaded', () => {
         btnAddSaloon.addEventListener('click', () => openModal('modal-add-saloon'));
     }
 
+    // Employee Modals
+    const btnAddEmployee = document.getElementById('btn-add-employee');
+    if (btnAddEmployee) {
+        btnAddEmployee.addEventListener('click', () => {
+            const title = document.getElementById('modal-employee-title');
+            if (title) title.textContent = "ADD EMPLOYEE";
+            openModal('modal-employee');
+        });
+    }
+
+    document.querySelectorAll('.btn-edit-employee').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const title = document.getElementById('modal-employee-title');
+            if (title) title.textContent = "EDIT EMPLOYEE";
+            openModal('modal-employee');
+        });
+    });
+
+    // Business Modals
+    document.querySelectorAll('.btn-edit-consumable').forEach(btn => {
+        btn.addEventListener('click', () => openModal('modal-add-consumable'));
+    });
+
+    const btnAddDeal = document.getElementById('btn-add-deal');
+    if (btnAddDeal) {
+        btnAddDeal.addEventListener('click', () => {
+            const title = document.getElementById('modal-deal-title');
+            if (title) title.textContent = "CREATE DEAL";
+            openModal('modal-deal');
+        });
+    }
+
+    document.querySelectorAll('.btn-edit-deal').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const title = document.getElementById('modal-deal-title');
+            if (title) title.textContent = "EDIT DEAL";
+            openModal('modal-deal');
+        });
+    });
+
+    const btnEditTier = document.getElementById('btn-edit-tier');
+    if (btnEditTier) {
+        btnEditTier.addEventListener('click', () => openModal('modal-tier'));
+    }
+
     // Bind Close Buttons
     document.querySelectorAll('.modal-close').forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -287,5 +345,53 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    // Top Spenders Sort and Filter Logic
+    const spendersFilter = document.getElementById('spenders-filter');
+    const spendersSort = document.getElementById('spenders-sort');
+    const spendersTbody = document.getElementById('spenders-tbody');
+
+    function updateSpendersTable() {
+        if (!spendersFilter || !spendersSort || !spendersTbody) return;
+
+        const filterValue = spendersFilter.value; // "all", "vip", "standard"
+        const sortValue = spendersSort.value;     // "amount_desc", "amount_asc", "visits_desc"
+        const rows = Array.from(spendersTbody.querySelectorAll('.spender-row'));
+
+        // Filter
+        rows.forEach(row => {
+            const tier = row.dataset.tier;
+            if (filterValue === 'all') {
+                row.style.display = '';
+            } else if (filterValue === 'vip' && tier === 'vip') {
+                row.style.display = '';
+            } else if (filterValue === 'standard' && tier === 'standard') {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        // Sort
+        const visibleRows = rows.filter(row => row.style.display !== 'none');
+        
+        visibleRows.sort((a, b) => {
+            const aAmount = parseFloat(a.dataset.amount);
+            const bAmount = parseFloat(b.dataset.amount);
+            const aVisits = parseInt(a.dataset.visits);
+            const bVisits = parseInt(b.dataset.visits);
+
+            if (sortValue === 'amount_desc') return bAmount - aAmount;
+            if (sortValue === 'amount_asc') return aAmount - bAmount;
+            if (sortValue === 'visits_desc') return bVisits - aVisits;
+            return 0;
+        });
+
+        // Re-append to DOM in new order
+        visibleRows.forEach(row => spendersTbody.appendChild(row));
+    }
+
+    if (spendersFilter) spendersFilter.addEventListener('change', updateSpendersTable);
+    if (spendersSort) spendersSort.addEventListener('change', updateSpendersTable);
 
 });
