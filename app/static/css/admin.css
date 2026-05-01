@@ -1,0 +1,76 @@
+.sidebar-tab {
+  transition: all 0.2s ease;
+}
+.sidebar-tab:hover {
+  background-color: #334155;
+}
+.sidebar-tab.active {
+  background-color: #E11D48;
+  border-left: 4px solid #F59E0B;
+}
+
+.content-panel {
+  display: none;
+}
+.content-panel.active {
+  display: block;
+}
+
+.kpi-card {
+  transition: transform 0.2s ease;
+}
+.kpi-card:hover {
+  transform: translateY(-2px);
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: #E11D48;
+  box-shadow: 0 0 0 2px rgba(225, 29, 72, 0.2);
+}
+
+.chip {
+  transition: all 0.15s ease;
+}
+.chip:hover {
+  opacity: 0.8;
+}
+.chip.selected {
+  background-color: #E11D48;
+  border-color: #E11D48;
+}
+
+.btn-primary {
+  background-color: #E11D48;
+  transition: all 0.2s ease;
+}
+.btn-primary:hover {
+  background-color: #BE123C;
+}
+
+.btn-secondary {
+  background-color: #334155;
+  transition: all 0.2s ease;
+}
+.btn-secondary:hover {
+  background-color: #475569;
+}
+
+.table-row:hover {
+  background-color: #334155;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #1E293B;
+}
+::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #64748B;
+}

@@ -1,0 +1,94 @@
+{% extends "admin/base.html" %}
+
+{% block body %}
+<div class="flex min-h-screen">
+  <!-- Sidebar -->
+  <aside class="w-64 bg-slate-800 border-r border-slate-700 flex flex-col fixed h-full">
+    <!-- Logo -->
+    <div class="p-6 border-b border-slate-700 flex items-center justify-between">
+      <div>
+        <h1 class="font-display text-2xl font-bold text-white tracking-wide">CINEMAX</h1>
+        <p class="text-xs text-slate-400 mt-1">Admin Portal</p>
+      </div>
+      <a href="{{ url_for('discovery.home') }}" class="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded transition-colors" title="Go to Website">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+        </svg>
+      </a>
+    </div>
+    
+    <!-- Navigation -->
+    <nav class="flex-1 py-4">
+      <ul class="space-y-1 px-3">
+        <li>
+          <button class="sidebar-tab active w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-white" data-tab="analytics">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            </svg>
+            <span class="font-medium">Analytics</span>
+          </button>
+        </li>
+        <li>
+          <button class="sidebar-tab w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-slate-300" data-tab="staff">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+            </svg>
+            <span class="font-medium">Staff</span>
+          </button>
+        </li>
+        <li>
+          <button class="sidebar-tab w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-slate-300" data-tab="catalog">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"/>
+            </svg>
+            <span class="font-medium">Catalog</span>
+          </button>
+        </li>
+        <li>
+          <button class="sidebar-tab w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-slate-300" data-tab="infrastructure">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+            </svg>
+            <span class="font-medium">Infrastructure</span>
+          </button>
+        </li>
+        <li>
+          <button class="sidebar-tab w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-slate-300" data-tab="business">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+            </svg>
+            <span class="font-medium">Business Rules</span>
+          </button>
+        </li>
+      </ul>
+    </nav>
+    
+    <!-- Admin Info -->
+    <div class="p-4 border-t border-slate-700 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-crimson flex items-center justify-center text-white font-bold">
+          AD
+        </div>
+        <div>
+          <p class="text-sm font-medium text-white">Admin User</p>
+          <p class="text-xs text-slate-400">Super Admin</p>
+        </div>
+      </div>
+      <a href="{{ url_for('admin.logout') }}" class="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded transition-colors" title="Logout">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+        </svg>
+      </a>
+    </div>
+  </aside>
+  
+  <!-- Main Content -->
+  <main class="flex-1 ml-64 p-6">
+    {% include "admin/components/analytics.html" %}
+    {% include "admin/components/staff.html" %}
+    {% include "admin/components/catalog.html" %}
+    {% include "admin/components/infrastructure.html" %}
+    {% include "admin/components/business.html" %}
+  </main>
+</div>
+{% endblock %}

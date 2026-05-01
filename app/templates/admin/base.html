@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}CineMax Admin CMS{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'slate-950': '#0F172A',
+            'slate-800': '#1E293B',
+            'slate-700': '#334155',
+            'slate-600': '#475569',
+            'slate-400': '#94A3B8',
+            'slate-300': '#CBD5E1',
+            'crimson': '#E11D48',
+            'crimson-dark': '#BE123C',
+            'amber': '#F59E0B',
+            'amber-dark': '#D97706',
+            'emerald': '#10B981',
+            'sky': '#0EA5E9',
+          },
+          fontFamily: {
+            'sans': ['Inter', 'sans-serif'],
+            'display': ['Oswald', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body class="min-h-screen text-slate-300 bg-slate-950">
+  {% block body %}{% endblock %}
+  <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+</body>
+</html>
