@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Login - CineMax</title>
+    <title>Register - CineMax</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
 <body class="bg-slate-950 text-white min-h-screen flex items-center justify-center">
 
 <div class="w-full max-w-md bg-slate-900 rounded-2xl p-8 shadow-lg">
-    <h1 class="text-3xl font-bold mb-6">Login</h1>
+    <h1 class="text-3xl font-bold mb-6">Create Account</h1>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
@@ -23,7 +23,31 @@
         {% endif %}
     {% endwith %}
 
-    <form method="POST" action="{{ url_for('auth.login') }}" class="space-y-4">
+    <form method="POST" action="{{ url_for('auth.register') }}" class="space-y-4">
+        <div>
+            <label class="block text-sm text-slate-400 mb-1">First Name</label>
+            <input type="text" name="first_name" required
+                   class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3">
+        </div>
+
+        <div>
+            <label class="block text-sm text-slate-400 mb-1">Last Name</label>
+            <input type="text" name="last_name" required
+                   class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3">
+        </div>
+
+        <div>
+            <label class="block text-sm text-slate-400 mb-1">Phone Number</label>
+            <input type="text" name="phone_number"
+                   class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3">
+        </div>
+
+        <div>
+            <label class="block text-sm text-slate-400 mb-1">Birth Date</label>
+            <input type="date" name="birth_date"
+                   class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3">
+        </div>
+
         <div>
             <label class="block text-sm text-slate-400 mb-1">Email</label>
             <input type="email" name="email" required
@@ -38,13 +62,13 @@
 
         <button type="submit"
                 class="w-full bg-red-600 hover:bg-red-700 rounded-lg py-3 font-semibold">
-            Login
+            Register
         </button>
     </form>
 
     <p class="text-slate-400 mt-6 text-sm">
-        Don't have an account?
-        <a href="{{ url_for('auth.register') }}" class="text-red-400">Register</a>
+        Already have an account?
+        <a href="{{ url_for('auth.login') }}" class="text-red-400">Login</a>
     </p>
 </div>
 

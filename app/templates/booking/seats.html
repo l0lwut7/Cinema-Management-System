@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Select Seats</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        .step-hidden {
+            display: block;
+        }
+
+        .screen-curve {
+            background: linear-gradient(to bottom, #e5e7eb, transparent);
+            border-radius: 0 0 50% 50%;
+        }
+
+        body {
+            background: #0f172a;
+            color: white;
+        }
+
+        .bg-background {
+            background-color: #0f172a;
+        }
+
+        .bg-surface {
+            background-color: #1e293b;
+        }
+
+        .bg-surfaceLight {
+            background-color: #334155;
+        }
+
+        .text-crimson {
+            color: #dc2626;
+        }
+
+        .bg-crimson {
+            background-color: #dc2626;
+        }
+
+        .hover\:bg-crimsonHover:hover {
+            background-color: #b91c1c;
+        }
+
+        .border-surfaceLight {
+            border-color: #334155;
+        }
+    </style>
+</head>
+
+<body>
+    <main class="max-w-6xl mx-auto p-8">
+
+        {% include "booking/components/step2_seats.html" %}
+
+    </main>
+
+    <script>
+        const screeningData = {
+            screeningId: "{{ screening.screening_id }}",
+            movieTitle: "{{ screening.movie_title }}",
+            theaterName: "{{ screening.theater_name }}",
+            saloonNumber: "{{ screening.saloon_number }}",
+            saloonType: "{{ screening.saloon_type }}",
+            startTime: "{{ screening.start_time }}",
+            basePrice: Number("{{ screening.base_price }}")
+        };
+
+        const seatsByRow = {{ seats_by_row | tojson }};
+        const selectedSeats = [];
+
+        document.getElementById("seatMovieInfo").textContent = screeningData.movieTitle;
+        document.getElementById("seatShowtimeInfo").textContent =
+            screeningData.startTime + " - " + screeningData.saloonType;
+        document.getElementById("seatTheaterInfo").textContent = screeningData.theaterName;
+
+        const seatMap = document.getElementById("seatMap");
+        const selectedSeatsDisplay = document.getElementById("selectedSeatsDisplay");
+        const seatsSubtotal = document.getElementById("seatsSubtotal");
+        const step2Next = document.getElementById("step2Next");
+        step2Next.addEventListener("click", function () {
+            createBooking();
+            });
+
+
+        function createBooking() {
+    if (selectedSeats.length === 0) {
+        alert("Please select at least one seat.");
+        return;
+    }
+
+    fetch("/booking/create", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            screening_id: Number(screeningData.screeningId),
+            selected_seats: selectedSeats
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("Booking response:", data);
+
+        if (data.success) {
+            alert("Booking created successfully! Booking ID: " + data.booking_id);
+            window.location.reload();
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(error => {
+        console.error("Booking error:", error);
+        alert("Something went wrong while creating booking.");
+    });
+}
+    .then(data => {
+        if (data.success) {
+            alert("Booking created successfully! Booking ID: " + data.booking_id);
+
+            window.location.reload();
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(error => {
+        console.error("Booking error:", error);
+        alert("Something went wrong while creating booking.");
+    });
+}
+
+        function renderSeats() {
+            seatMap.innerHTML = "";
+
+            Object.keys(seatsByRow).forEach(rowLetter => {
+                const rowDiv = document.createElement("div");
+                rowDiv.className = "flex items-center gap-2";
+
+                const rowLabel = document.createElement("div");
+                rowLabel.className = "w-8 text-slate-400 font-semibold";
+                rowLabel.textContent = rowLetter;
+                rowDiv.appendChild(rowLabel);
+
+                seatsByRow[rowLetter].forEach(seat => {
+                    const button = document.createElement("button");
+                    button.type = "button";
+                    button.textContent = seat.seat_number;
+                    button.dataset.row = seat.row_letter;
+                    button.dataset.number = seat.seat_number;
+
+                    button.className = "w-10 h-10 rounded text-sm font-semibold transition-colors ";
+
+                    if (seat.is_occupied === 1) {
+                        button.className += "bg-slate-600 opacity-50 cursor-not-allowed";
+                        button.disabled = true;
+                    } else {
+                        button.className += "bg-surfaceLight hover:bg-crimson text-white";
+                        button.addEventListener("click", function () {
+                            toggleSeat(button);
+                        });
+                    }
+
+                    rowDiv.appendChild(button);
+                });
+
+                seatMap.appendChild(rowDiv);
+            });
+        }
+
+        function toggleSeat(button) {
+            const row = button.dataset.row;
+            const number = button.dataset.number;
+
+            const index = selectedSeats.findIndex(
+                seat => seat.row === row && seat.number === number
+            );
+
+            if (index >= 0) {
+                selectedSeats.splice(index, 1);
+                button.classList.remove("bg-crimson");
+                button.classList.add("bg-surfaceLight");
+            } else {
+                selectedSeats.push({
+                    row: row,
+                    number: number
+                });
+                button.classList.remove("bg-surfaceLight");
+                button.classList.add("bg-crimson");
+            }
+
+            updateSummary();
+        }
+
+        function updateSummary() {
+            if (selectedSeats.length === 0) {
+                selectedSeatsDisplay.textContent = "None selected";
+                seatsSubtotal.textContent = "$0.00";
+                step2Next.disabled = true;
+                return;
+            }
+
+            selectedSeatsDisplay.textContent = selectedSeats
+                .map(seat => seat.row + seat.number)
+                .join(", ");
+
+            const subtotal = selectedSeats.length * screeningData.basePrice;
+            seatsSubtotal.textContent = "$" + subtotal.toFixed(2);
+
+            step2Next.disabled = false;
+        }
+
+        renderSeats();
+    </script>
+</body>
+</html>

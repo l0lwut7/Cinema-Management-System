@@ -4,10 +4,14 @@ const state = {
   theater: '',
   movie: '',
   showtime: '',
+  screeningId: null,
+  saloonType: '',
+  basePrice: 0,
   selectedSeats: [],
   tickets: { adult: 0, child: 0, senior: 0 },
   consumables: { popcorn: 0, soda: 0, candy: 0, hotdog: 0 },
 };
+const realScreenings = window.BOOKING_SCREENINGS || [];
 
 const prices = {
   adult: 15.00,
@@ -20,25 +24,10 @@ const prices = {
   serviceFee: 2.50
 };
 
-const movieNames = {
-  dune2: 'Dune: Part Two',
-  oppenheimer: 'Oppenheimer',
-  barbie: 'Barbie',
-  mission: 'Mission: Impossible - Dead Reckoning'
-};
-
-const theaterNames = {
-  downtown: 'CineBook Downtown IMAX',
-  westside: 'CineBook Westside Multiplex',
-  central: 'CineBook Central Plaza'
-};
-
-const showtimes = ['10:00 AM', '12:30 PM', '3:00 PM', '5:30 PM', '7:30 PM', '9:45 PM'];
-
 // Seat map configuration
 const seatRows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 const seatsPerRow = 12;
-const occupiedSeats = ['A3', 'A4', 'B5', 'B6', 'B7', 'C8', 'D5', 'D6', 'E2', 'E3', 'F7', 'F8', 'G4', 'H1', 'H12'];
+let occupiedSeats = [];
 const disabledSeats = ['A1', 'A12', 'H2', 'H11'];
 
 // ==================== DOM ELEMENTS ====================
@@ -88,10 +77,26 @@ function goToStep(step) {
   state.currentStep = step;
 
   // Step-specific updates
-  if (step === 2) {
-    renderSeatMap();
-    updateSeatInfo();
-  }
+if (step === 2) {
+  fetch(`/booking/occupied-seats/${state.screeningId}`)
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        occupiedSeats = data.occupied_seats;
+      } else {
+        occupiedSeats = [];
+      }
+
+      renderSeatMap();
+      updateSeatInfo();
+    })
+    .catch(error => {
+      console.error("Occupied seats error:", error);
+      occupiedSeats = [];
+      renderSeatMap();
+      updateSeatInfo();
+    });
+}
   if (step === 3) {
     updateStep3Summary();
     autoDistributeTickets();
@@ -116,6 +121,9 @@ function updateShowtimes() {
   state.theater = theaterSelect.value;
   state.movie = movieSelect.value;
   state.showtime = '';
+  state.screeningId = null;
+  state.saloonType = '';
+  state.basePrice = 0;
   step1Next.disabled = true;
 
   if (!state.theater || !state.movie) {
@@ -125,8 +133,12 @@ function updateShowtimes() {
     return;
   }
 
-  // Simulate no screenings for certain combinations
-  if (state.theater === 'central' && state.movie === 'dune2') {
+  const filteredScreenings = realScreenings.filter(screening => {
+    return String(screening.theater_id) === String(state.theater)
+      && String(screening.movie_id) === String(state.movie);
+  });
+
+  if (filteredScreenings.length === 0) {
     emptyState.classList.add('hidden');
     noScreenings.classList.remove('hidden');
     showtimesGrid.classList.add('hidden');
@@ -137,24 +149,41 @@ function updateShowtimes() {
   noScreenings.classList.add('hidden');
   showtimesGrid.classList.remove('hidden');
 
-  // Render showtimes
-  showtimesList.innerHTML = showtimes.map(time => `
-        <button class="showtime-btn bg-background hover:bg-crimson/20 border border-surfaceLight hover:border-crimson text-white px-4 py-3 rounded-lg text-center transition-all" data-time="${time}">
-          <span class="block font-semibold">${time}</span>
-          <span class="block text-xs text-slate-400 mt-1">${state.theater === 'downtown' ? 'IMAX' : 'Standard'}</span>
-        </button>
-      `).join('');
+  showtimesList.innerHTML = filteredScreenings.map(screening => `
+    <button
+      class="showtime-btn bg-background hover:bg-crimson/20 border border-surfaceLight hover:border-crimson text-white px-4 py-3 rounded-lg text-center transition-all"
+      data-screening-id="${screening.screening_id}"
+      data-time="${screening.start_time_display}"
+      data-saloon-type="${screening.saloon_type}"
+      data-base-price="${screening.base_price}">
+      <span class="block font-semibold">${screening.start_time_display}</span>
+      <span class="block text-xs text-slate-400 mt-1">
+        Saloon ${screening.saloon_number} - ${screening.saloon_type}
+      </span>
+      <span class="block text-xs text-slate-400 mt-1">
+        ${screening.base_price} TL
+      </span>
+    </button>
+  `).join('');
 
-  // Add click handlers
   document.querySelectorAll('.showtime-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.showtime-btn').forEach(b => {
         b.classList.remove('bg-crimson', 'border-crimson');
         b.classList.add('bg-background', 'border-surfaceLight');
       });
+
       btn.classList.remove('bg-background', 'border-surfaceLight');
       btn.classList.add('bg-crimson', 'border-crimson');
+
+      state.screeningId = Number(btn.dataset.screeningId);
       state.showtime = btn.dataset.time;
+      state.saloonType = btn.dataset.saloonType;
+      state.basePrice = Number(btn.dataset.basePrice);
+
+      state.selectedSeats = [];
+      loadOccupiedSeats(state.screeningId);
+
       step1Next.disabled = false;
     });
   });
@@ -172,6 +201,24 @@ const seatMap = document.getElementById('seatMap');
 const selectedSeatsDisplay = document.getElementById('selectedSeatsDisplay');
 const seatsSubtotal = document.getElementById('seatsSubtotal');
 const step2Next = document.getElementById('step2Next');
+
+function loadOccupiedSeats(screeningId) {
+  fetch(`/booking/occupied-seats/${screeningId}`)
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        occupiedSeats = data.occupied_seats;
+        console.log("Occupied seats loaded:", occupiedSeats);
+      } else {
+        occupiedSeats = [];
+        console.log("Occupied seats could not be loaded:", data.message);
+      }
+    })
+    .catch(error => {
+      occupiedSeats = [];
+      console.error("Occupied seats error:", error);
+    });
+}
 
 function renderSeatMap() {
   seatMap.innerHTML = seatRows.map(row => `
@@ -245,9 +292,12 @@ function updateSeatDisplay() {
 }
 
 function updateSeatInfo() {
-  document.getElementById('seatMovieInfo').textContent = movieNames[state.movie] || 'Movie';
-  document.getElementById('seatShowtimeInfo').textContent = `${state.showtime} - ${state.theater === 'downtown' ? 'IMAX' : 'Standard'}`;
-  document.getElementById('seatTheaterInfo').textContent = theaterNames[state.theater] || 'Theater';
+  const selectedMovieText = movieSelect.options[movieSelect.selectedIndex]?.text || 'Movie';
+  const selectedTheaterText = theaterSelect.options[theaterSelect.selectedIndex]?.text || 'Theater';
+
+  document.getElementById('seatMovieInfo').textContent = selectedMovieText;
+  document.getElementById('seatShowtimeInfo').textContent = `${state.showtime} - ${state.saloonType}`;
+  document.getElementById('seatTheaterInfo').textContent = selectedTheaterText;
 }
 
 document.getElementById('step2Back').addEventListener('click', () => goToStep(1));
@@ -378,9 +428,12 @@ const checkoutForm = document.getElementById('checkoutForm');
 const confirmationScreen = document.getElementById('confirmationScreen');
 
 function updateReview() {
-  document.getElementById('reviewMovie').textContent = movieNames[state.movie];
-  document.getElementById('reviewShowtime').textContent = `Today, ${state.showtime} - ${state.theater === 'downtown' ? 'IMAX' : 'Standard'}`;
-  document.getElementById('reviewTheater').textContent = theaterNames[state.theater];
+const selectedMovieText = movieSelect.options[movieSelect.selectedIndex]?.text || 'Movie';
+const selectedTheaterText = theaterSelect.options[theaterSelect.selectedIndex]?.text || 'Theater';
+
+document.getElementById('reviewMovie').textContent = selectedMovieText;
+document.getElementById('reviewShowtime').textContent = `${state.showtime} - ${state.saloonType}`;
+document.getElementById('reviewTheater').textContent = selectedTheaterText;
   document.getElementById('reviewSeats').textContent = state.selectedSeats.join(', ');
 
   // Calculate total
@@ -499,24 +552,87 @@ function validateForm() {
   return isValid;
 }
 
-document.getElementById('payButton').addEventListener('click', function () {
+
+function createBookingInDatabase() {
+  console.log("createBookingInDatabase çalıştı");
+  console.log("Selected seats:", state.selectedSeats);
+
+  if (!state.selectedSeats || state.selectedSeats.length === 0) {
+    alert("Please select at least one seat.");
+    return;
+  }
+
+const screeningId = state.screeningId;
+
+if (!screeningId) {
+  alert("Please select a screening.");
+  return;
+}
+  const formattedSeats = state.selectedSeats.map(seatId => {
+    return {
+      row: seatId.charAt(0),
+      number: Number(seatId.slice(1))
+    };
+  });
+
+  const requestBody = {
+    screening_id: screeningId,
+    selected_seats: formattedSeats,
+      consumables: state.consumables
+  };
+
+  console.log("Sending to backend:", requestBody);
+
+  fetch("/booking/create", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(requestBody)
+  })
+    .then(response => {
+      console.log("Backend response status:", response.status);
+      return response.json();
+    })
+    .then(data => {
+      console.log("Booking response:", data);
+
+      if (data.success) {
+        showConfirmation(data.booking_id, data.total_amount);
+      } else {
+        alert(data.message || "Booking could not be created.");
+      }
+    })
+    .catch(error => {
+      console.error("Booking error:", error);
+      alert("Something went wrong while creating booking.");
+    });
+}
+
+document.getElementById("payButton").addEventListener("click", function () {
+  console.log("PAY BUTTON CLICKED");
+
   if (validateForm()) {
-    showConfirmation();
+    console.log("FORM VALID, CREATING BOOKING");
+    createBookingInDatabase();
+  } else {
+    console.log("FORM NOT VALID");
+    alert("Please fill payment form correctly.");
   }
 });
 
-function showConfirmation() {
+function showConfirmation(bookingIdFromDb = null, totalAmountFromDb = null) {
   checkoutForm.classList.add('hidden');
   confirmationScreen.classList.remove('hidden');
 
-  // Generate booking ID
-  const bookingId = 'CB-2024-' + Math.random().toString(36).substr(2, 5).toUpperCase();
-  document.getElementById('bookingId').textContent = bookingId;
+    const bookingId = bookingIdFromDb ? "CB-" + bookingIdFromDb : 'CB-2024-' + Math.random().toString(36).substr(2, 5).toUpperCase();
+    document.getElementById('bookingId').textContent = bookingId;
+    const selectedMovieText = movieSelect.options[movieSelect.selectedIndex]?.text || 'Movie';
+const selectedTheaterText = theaterSelect.options[theaterSelect.selectedIndex]?.text || 'Theater';
 
-  // Update confirmation details
-  document.getElementById('confirmMovie').textContent = movieNames[state.movie];
-  document.getElementById('confirmShowtime').textContent = `Today, ${state.showtime}`;
-  document.getElementById('confirmTheater').textContent = theaterNames[state.theater];
+document.getElementById('confirmMovie').textContent = selectedMovieText;
+document.getElementById('confirmShowtime').textContent = state.showtime;
+document.getElementById('confirmTheater').textContent = selectedTheaterText;
   document.getElementById('confirmSeats').textContent = state.selectedSeats.join(', ');
 
   // Calculate and show total
@@ -531,7 +647,12 @@ function showConfirmation() {
     state.consumables.hotdog * prices.hotdog;
   const grandTotal = ticketTotal + consumableTotal + prices.serviceFee;
 
+  if (totalAmountFromDb !== null) {
+  document.getElementById('confirmTotal').textContent = `$${Number(totalAmountFromDb).toFixed(2)}`;
+} else {
   document.getElementById('confirmTotal').textContent = `$${grandTotal.toFixed(2)}`;
+}
+
 }
 
 document.getElementById('step4Back').addEventListener('click', () => {
@@ -576,16 +697,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // 2. If an ID was passed, update the dropdown menu
       if (initialMovieId !== null) {
         // Map the backend integer IDs to the frontend mockup string values
-        const movieMapping = {
-          1: 'dune2',
-          2: 'oppenheimer',
-          3: 'barbie',
-          4: 'mission'
-        };
-
-        if (movieMapping[initialMovieId]) {
-          movieSelect.value = movieMapping[initialMovieId];
-        }
+        movieSelect.value = String(initialMovieId);
       }
     } catch (e) {
       console.error("Error reading initial movie ID:", e);
