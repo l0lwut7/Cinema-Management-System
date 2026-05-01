@@ -7,22 +7,24 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
           <div>
             <label class="block text-sm text-slate-400 mb-2">Theater</label>
-            <select id="theaterSelect" class="w-full bg-background border border-surfaceLight rounded-lg px-4 py-3 text-white">
-              <option value="">Select Theater</option>
-              <option value="downtown">CineBook Downtown IMAX</option>
-              <option value="westside">CineBook Westside Multiplex</option>
-              <option value="central">CineBook Central Plaza</option>
-            </select>
+
+              <select id="theaterSelect" class="w-full bg-background border border-surfaceLight rounded-lg px-4 py-3 text-white">
+  <option value="">Select Theater</option>
+
+  {% for theater in theaters_with_screenings %}
+    <option value="{{ theater.theater_id }}">
+      {{ theater.theater_name }}
+    </option>
+  {% endfor %}
+</select>
           </div>
           <div>
             <label class="block text-sm text-slate-400 mb-2">Movie</label>
-            <select id="movieSelect" class="w-full bg-background border border-surfaceLight rounded-lg px-4 py-3 text-white">
-              <option value="">Select Movie</option>
-              <option value="dune2">Dune: Part Two</option>
-              <option value="oppenheimer">Oppenheimer</option>
-              <option value="barbie">Barbie</option>
-              <option value="mission">Mission: Impossible - Dead Reckoning</option>
-            </select>
+           <select id="movieSelect" class="w-full bg-background border border-surfaceLight rounded-lg px-4 py-3 text-white">
+  <option value="{{ movie.id }}" selected>
+    {{ movie.title }}
+  </option>
+</select>
           </div>
         </div>
 

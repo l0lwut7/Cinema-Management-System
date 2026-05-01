@@ -58,5 +58,8 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/booking.js') }}?v=2"></script>
+<script>
+  window.BOOKING_SCREENINGS = {{ screenings | tojson }};
+</script>
+<script src="{{ url_for('static', filename='js/booking.js') }}?v=30"></script>
 {% endblock %}
