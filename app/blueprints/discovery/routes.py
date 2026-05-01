@@ -1,6 +1,6 @@
 from flask import Blueprint, abort, redirect, render_template, request, url_for
 
-from .data import BOOKING_DEFAULTS, COMING_SOON, DEALS, MOVIES, NAV_ITEMS, REVIEWS, THEATER_SCREENS, THEATERS
+from .data import COMING_SOON, DEALS, MOVIES, NAV_ITEMS, REVIEWS, THEATER_SCREENS, THEATERS
 
 
 discovery_bp = Blueprint("discovery", __name__)
@@ -9,7 +9,6 @@ discovery_bp = Blueprint("discovery", __name__)
 def build_movie(movie):
     item = movie.copy()
     item["detail_url"] = url_for("discovery.movie_detail", movie_id=item["id"])
-    item["book_url"] = url_for("discovery.booking", movie_id=item["id"])
     return item
 
 
@@ -139,33 +138,6 @@ def theater_detail(theater_id):
     context["saloons"] = THEATER_SCREENS.get(theater_id, [])
     context["movie_choices"] = get_now_showing_movies()
     return render_template("discovery/theater_detail.html", **context)
-
-
-@discovery_bp.route("/booking")
-@discovery_bp.route("/book/<int:movie_id>")
-def booking(movie_id=None):
-    if movie_id is None:
-        movie_id = request.args.get("movie_id", type=int)
-    if movie_id is None:
-        movie_id = BOOKING_DEFAULTS["movie_id"]
-
-    theater_id = request.args.get("theater_id", type=int)
-    if theater_id is None:
-        theater_id = BOOKING_DEFAULTS["theater_id"]
-
-    showtime = request.args.get("showtime")
-    if not showtime:
-        showtime = BOOKING_DEFAULTS["showtime"]
-
-    movie = build_movie(get_movie(movie_id))
-    theater = get_theater(theater_id)
-
-    context = get_base_context("movies", "Booking - " + movie["title"])
-    context["movie"] = movie
-    context["theater"] = theater
-    context["selected_showtime"] = showtime
-    context["screens"] = THEATER_SCREENS.get(theater_id, [])
-    return render_template("discovery/booking.html", **context)
 
 
 @discovery_bp.route("/deals")

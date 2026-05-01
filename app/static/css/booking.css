@@ -1,0 +1,29 @@
+body {
+      font-family: 'Inter', sans-serif;
+      background-color: #0F172A;
+    }
+    .font-display {
+      font-family: 'Oswald', sans-serif;
+    }
+    .screen-curve {
+      background: linear-gradient(180deg, #64748B 0%, #334155 100%);
+      border-radius: 0 0 50% 50%;
+      box-shadow: 0 10px 40px rgba(100, 116, 139, 0.3);
+    }
+    .seat {
+      transition: all 0.2s ease;
+    }
+    .seat:not(.occupied):not(.disabled):hover {
+      transform: scale(1.1);
+    }
+    .step-hidden {
+      display: none;
+    }
+    .step-active {
+      display: block;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #E11D48;
+      box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.2);
+    }
