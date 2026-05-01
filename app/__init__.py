@@ -4,6 +4,7 @@ from app.blueprints.discovery import discovery_bp
 from app.blueprints.booking.routes import booking_bp
 from app.blueprints.auth.routes import auth_bp
 from app.blueprints.dashboard.routes import dashboard_bp
+from app.blueprints.staff.routes import staff_bp
 
 def create_app():
     app = Flask(__name__)
@@ -12,6 +13,7 @@ def create_app():
     app.register_blueprint(booking_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
+    app.register_blueprint(staff_bp)
     
     @app.context_processor
     def inject_auth():

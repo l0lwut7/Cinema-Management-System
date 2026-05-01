@@ -1,0 +1,25 @@
+{% extends "staff/base.html" %}
+
+{% block title %}Staff Operations Terminal | CineMax POS{% endblock %}
+
+{% block content %}
+    <!-- Top Navigation Bar -->
+    {% include "staff/components/header.html" %}
+
+    <!-- Main Content — Split Screen -->
+    <main class="flex h-[calc(100vh-65px)]">
+
+        <!-- LEFT: POS System -->
+        <section class="w-1/2 xl:w-3/5 border-r border-dark-border flex flex-col">
+            {% include "staff/components/pos_panel.html" %}
+            {% include "staff/components/cart.html" %}
+        </section>
+
+        <!-- RIGHT: Tools Panel -->
+        {% include "staff/components/tools_panel.html" %}
+
+    </main>
+
+    <!-- Modals -->
+    {% include "staff/components/modals.html" %}
+{% endblock %}

@@ -1,0 +1,28 @@
+<!-- Tools Panel (Right side) -->
+<section class="w-1/2 xl:w-2/5 flex flex-col bg-dark-bg">
+    <!-- Tools Tabs -->
+    <div class="flex bg-dark-surface border-b border-dark-border">
+        <button class="tools-tab-btn active flex-1 px-6 py-4 font-display font-semibold text-sm uppercase tracking-wider border-b-2 border-crimson text-crimson" data-tool="refund">
+            <div class="flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
+                </svg>
+                Refund Management
+            </div>
+        </button>
+        <button class="tools-tab-btn flex-1 px-6 py-4 font-display font-semibold text-sm uppercase tracking-wider border-b-2 border-transparent text-gray-400 hover:text-white transition-all" data-tool="scanner">
+            <div class="flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
+                </svg>
+                Ticket Scanner
+            </div>
+        </button>
+    </div>
+
+    <!-- Tools Content -->
+    <div class="flex-1 overflow-y-auto p-6">
+        {% include "staff/components/refund.html" %}
+        {% include "staff/components/scanner.html" %}
+    </div>
+</section>

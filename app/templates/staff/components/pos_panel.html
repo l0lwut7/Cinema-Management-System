@@ -1,0 +1,38 @@
+<!-- POS Category Tabs -->
+<div class="flex bg-dark-surface border-b border-dark-border">
+    <button class="pos-category-btn active flex-1 px-6 py-4 font-display font-semibold text-sm uppercase tracking-wider border-b-2 border-crimson text-crimson bg-dark-bg/50" data-category="movies">
+        <div class="flex items-center justify-center gap-2">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/>
+            </svg>
+            Tickets
+        </div>
+    </button>
+    <button class="pos-category-btn flex-1 px-6 py-4 font-display font-semibold text-sm uppercase tracking-wider border-b-2 border-transparent text-gray-400 hover:text-white hover:bg-dark-elevated/50 transition-all" data-category="snacks">
+        <div class="flex items-center justify-center gap-2">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M4 19h16v2H4zm5-4h2v3H9zm4 0h2v3h-2zm-8-8L3 3h2l2 4h3L8 3h2l2 4h3l-2-4h2l2 4h3l-2-4h2l1.33 2.67L17.5 7H21v2H3V7h3.5L4 7zm-1 3h14l-1 8H4l-1-8z"/>
+            </svg>
+            Snacks
+        </div>
+    </button>
+    <button class="pos-category-btn flex-1 px-6 py-4 font-display font-semibold text-sm uppercase tracking-wider border-b-2 border-transparent text-gray-400 hover:text-white hover:bg-dark-elevated/50 transition-all" data-category="drinks">
+        <div class="flex items-center justify-center gap-2">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M3 2l2.01 18.23C5.13 21.23 5.97 22 7 22h10c1.03 0 1.87-.77 1.99-1.77L21 2H3zm9 17c-1.66 0-3-1.34-3-3 0-2 3-5.4 3-5.4s3 3.4 3 5.4c0 1.66-1.34 3-3 3zm6.33-11H5.67l-.44-4h13.53l-.43 4z"/>
+            </svg>
+            Drinks
+        </div>
+    </button>
+    <button class="pos-category-btn flex-1 px-6 py-4 font-display font-semibold text-sm uppercase tracking-wider border-b-2 border-transparent text-gray-400 hover:text-white hover:bg-dark-elevated/50 transition-all" data-category="combos">
+        <div class="flex items-center justify-center gap-2">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/>
+            </svg>
+            Combos
+        </div>
+    </button>
+</div>
+
+<!-- Product Grids -->
+{% include "staff/components/pos_categories.html" %}
