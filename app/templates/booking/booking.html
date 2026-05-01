@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/booking.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen text-white">
+  <div class="max-w-5xl mx-auto p-6">
+
+    <!-- Progress Bar -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between relative">
+        <!-- Progress Line Background -->
+        <div class="absolute top-5 left-0 right-0 h-1 bg-surface rounded-full"></div>
+        <!-- Progress Line Active -->
+        <div id="progressLine" class="absolute top-5 left-0 h-1 bg-crimson rounded-full transition-all duration-500"
+          style="width: 0%"></div>
+
+        <!-- Step 1 -->
+        <div class="relative z-10 flex flex-col items-center">
+          <div id="step1Indicator"
+            class="w-10 h-10 rounded-full bg-crimson flex items-center justify-center font-semibold text-sm transition-all duration-300">
+            1</div>
+          <span class="mt-2 text-sm text-slate-300">Selection</span>
+        </div>
+        <!-- Step 2 -->
+        <div class="relative z-10 flex flex-col items-center">
+          <div id="step2Indicator"
+            class="w-10 h-10 rounded-full bg-surface flex items-center justify-center font-semibold text-sm transition-all duration-300">
+            2</div>
+          <span class="mt-2 text-sm text-slate-300">Seats</span>
+        </div>
+        <!-- Step 3 -->
+        <div class="relative z-10 flex flex-col items-center">
+          <div id="step3Indicator"
+            class="w-10 h-10 rounded-full bg-surface flex items-center justify-center font-semibold text-sm transition-all duration-300">
+            3</div>
+          <span class="mt-2 text-sm text-slate-300">Extras</span>
+        </div>
+        <!-- Step 4 -->
+        <div class="relative z-10 flex flex-col items-center">
+          <div id="step4Indicator"
+            class="w-10 h-10 rounded-full bg-surface flex items-center justify-center font-semibold text-sm transition-all duration-300">
+            4</div>
+          <span class="mt-2 text-sm text-slate-300">Checkout</span>
+        </div>
+      </div>
+    </div>
+
+    {% include 'booking/components/step1_selection.html' %}
+    {% include 'booking/components/step2_seats.html' %}
+    {% include 'booking/components/step3_extras.html' %}
+    {% include 'booking/components/step4_checkout.html' %}
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/booking.js') }}"></script>
+{% endblock %}

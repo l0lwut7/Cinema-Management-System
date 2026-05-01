@@ -15,10 +15,19 @@
                     colors: {
                         'cinema-bg': '#0F172A',
                         'cinema-surface': '#1E293B',
+                        'cinema-surfaceLight': '#334155',
                         'cinema-primary': '#E11D48',
                         'cinema-secondary': '#F59E0B',
                         'cinema-text': '#F8FAFC',
-                        'cinema-muted': '#94A3B8'
+                        'cinema-muted': '#94A3B8',
+                        'amber': '#F59E0B',
+                        'amberLight': '#FCD34D',
+                        // Aliases for booking components from index2.html
+                        'background': '#0F172A',
+                        'surface': '#1E293B',
+                        'surfaceLight': '#334155',
+                        'crimson': '#E11D48',
+                        'crimsonHover': '#BE123C',
                     },
                     fontFamily: {
                         'heading': ['Oswald', 'sans-serif'],
@@ -47,6 +56,7 @@
             transform: translateY(0);
         }
     </style>
+    {% block styles %}{% endblock %}
     {% block head %}{% endblock %}
 </head>
 <body class="bg-cinema-bg text-cinema-text min-h-screen flex flex-col">
