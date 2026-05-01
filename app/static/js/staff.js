@@ -143,40 +143,33 @@ function printReceipt() {
 }
 
 // =====================
-// CATEGORY TABS
+// POS TAB SWITCHING
 // =====================
-document.querySelectorAll('.pos-category-btn').forEach(btn => {
+document.querySelectorAll('.pos-tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-        document.querySelectorAll('.pos-category-btn').forEach(b => {
-            b.classList.remove('active', 'border-crimson', 'text-crimson', 'bg-dark-bg/50');
+        document.querySelectorAll('.pos-tab-btn').forEach(b => {
+            b.classList.remove('border-crimson', 'text-crimson', 'bg-dark-bg/50');
             b.classList.add('border-transparent', 'text-gray-400');
+            const icon = b.querySelector('svg');
+            if (b.dataset.tab !== 'refund' && b.dataset.tab !== 'scanner') {
+                icon.setAttribute('fill', 'currentColor');
+                icon.removeAttribute('stroke');
+            }
         });
-        btn.classList.add('active', 'border-crimson', 'text-crimson', 'bg-dark-bg/50');
+        btn.classList.add('border-crimson', 'text-crimson', 'bg-dark-bg/50');
         btn.classList.remove('border-transparent', 'text-gray-400');
 
-        const category = btn.dataset.category;
-        document.querySelectorAll('.pos-category-content').forEach(c => c.classList.add('hidden'));
-        document.getElementById('category-' + category).classList.remove('hidden');
+        const tabId = btn.dataset.tab;
+        document.querySelectorAll('.pos-tab-content').forEach(c => c.classList.add('hidden'));
+        document.getElementById('tab-' + tabId).classList.remove('hidden');
+        
+        // Hide ticket selector if switching away from movies
+        if (tabId !== 'movies' && typeof closeTicketSelector === 'function') {
+            closeTicketSelector();
+        }
     });
 });
 
-// =====================
-// TOOLS TABS
-// =====================
-document.querySelectorAll('.tools-tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        document.querySelectorAll('.tools-tab-btn').forEach(b => {
-            b.classList.remove('active', 'border-crimson', 'text-crimson');
-            b.classList.add('border-transparent', 'text-gray-400');
-        });
-        btn.classList.add('active', 'border-crimson', 'text-crimson');
-        btn.classList.remove('border-transparent', 'text-gray-400');
-
-        const tool = btn.dataset.tool;
-        document.querySelectorAll('.tools-content').forEach(c => c.classList.add('hidden'));
-        document.getElementById('tool-' + tool).classList.remove('hidden');
-    });
-});
 
 // =====================
 // REFUND FUNCTIONS
@@ -325,3 +318,135 @@ function updateShiftTime() {
 
 setInterval(updateShiftTime, 1000);
 updateShiftTime();
+
+// =====================
+// LAYOUT RESIZER
+// =====================
+const resizeHandle = document.getElementById('resizeHandle');
+const leftPanel = document.getElementById('leftPanel');
+let isResizing = false;
+
+if (resizeHandle && leftPanel) {
+    resizeHandle.addEventListener('mousedown', function(e) {
+        isResizing = true;
+        document.body.style.cursor = 'col-resize';
+        resizeHandle.classList.add('active');
+        e.preventDefault(); // prevent text selection
+    });
+
+    document.addEventListener('mousemove', function(e) {
+        if (!isResizing) return;
+        
+        // Calculate new width for left panel
+        // constrain to a min width of 420px and max of ~75% screen width
+        let newWidth = e.clientX;
+        const minWidth = 420;
+        const maxWidth = window.innerWidth * 0.75;
+        
+        if (newWidth < minWidth) newWidth = minWidth;
+        if (newWidth > maxWidth) newWidth = maxWidth;
+        
+        leftPanel.style.width = newWidth + 'px';
+        leftPanel.style.flex = 'none'; // remove flex-1 if present
+    });
+
+    document.addEventListener('mouseup', function(e) {
+        if (isResizing) {
+            isResizing = false;
+            document.body.style.cursor = 'default';
+            resizeHandle.classList.remove('active');
+        }
+    });
+}
+
+// =====================
+// TICKET SELECTION FLOW
+// =====================
+let currentSelectedTicket = null;
+let currentSelectedSeats = [];
+
+function openTicketSelector(id, name, price, gradient) {
+    currentSelectedTicket = { id, name, price };
+    currentSelectedSeats = [];
+    
+    document.getElementById('tsMovieName').textContent = name;
+    
+    // reset selection UI
+    document.getElementById('tsShowtimeSelect').value = '';
+    document.getElementById('tsSeatsContainer').classList.add('hidden');
+    document.getElementById('tsAddToCartBtn').disabled = true;
+    document.getElementById('tsAddToCartBtn').classList.add('opacity-50', 'cursor-not-allowed');
+    document.getElementById('tsSelectedCount').textContent = '0 seats selected';
+    document.getElementById('tsTotalPrice').textContent = '$0.00';
+    
+    // clear selected seats
+    document.querySelectorAll('.seat-pos').forEach(seat => {
+        seat.classList.remove('selected');
+    });
+
+    document.getElementById('ticketSelector').classList.remove('hidden');
+}
+
+function closeTicketSelector() {
+    document.getElementById('ticketSelector').classList.add('hidden');
+    currentSelectedTicket = null;
+    currentSelectedSeats = [];
+}
+
+function onShowtimeChange(selectElement) {
+    const seatsContainer = document.getElementById('tsSeatsContainer');
+    if (selectElement.value) {
+        seatsContainer.classList.remove('hidden');
+    } else {
+        seatsContainer.classList.add('hidden');
+    }
+}
+
+function toggleSeat(seatElement, seatId) {
+    if (seatElement.classList.contains('occupied')) return;
+    
+    const isSelected = seatElement.classList.contains('selected');
+    
+    if (isSelected) {
+        seatElement.classList.remove('selected');
+        currentSelectedSeats = currentSelectedSeats.filter(s => s !== seatId);
+    } else {
+        seatElement.classList.add('selected');
+        currentSelectedSeats.push(seatId);
+    }
+    
+    updateTicketSelectorFooter();
+}
+
+function updateTicketSelectorFooter() {
+    const count = currentSelectedSeats.length;
+    const btn = document.getElementById('tsAddToCartBtn');
+    
+    document.getElementById('tsSelectedCount').textContent = `${count} seat${count !== 1 ? 's' : ''} selected`;
+    
+    if (count > 0 && currentSelectedTicket) {
+        const total = count * currentSelectedTicket.price;
+        document.getElementById('tsTotalPrice').textContent = '$' + total.toFixed(2);
+        btn.disabled = false;
+        btn.classList.remove('opacity-50', 'cursor-not-allowed');
+    } else {
+        document.getElementById('tsTotalPrice').textContent = '$0.00';
+        btn.disabled = true;
+        btn.classList.add('opacity-50', 'cursor-not-allowed');
+    }
+}
+
+function addSelectedTicketsToCart() {
+    if (!currentSelectedTicket || currentSelectedSeats.length === 0) return;
+    
+    const showtime = document.getElementById('tsShowtimeSelect').value;
+    
+    // Add each seat as a separate line item
+    currentSelectedSeats.forEach(seat => {
+        const itemName = `${currentSelectedTicket.name} (${showtime} - Seat ${seat})`;
+        addToCart(itemName, currentSelectedTicket.price, 'ticket');
+    });
+    
+    closeTicketSelector();
+}
+

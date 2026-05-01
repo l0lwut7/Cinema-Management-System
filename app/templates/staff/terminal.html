@@ -1,25 +1,25 @@
 {% extends "staff/base.html" %}
-
 {% block title %}Staff Operations Terminal | CineMax POS{% endblock %}
 
 {% block content %}
-    <!-- Top Navigation Bar -->
-    {% include "staff/components/header.html" %}
+  {% include "staff/components/header.html" %}
 
-    <!-- Main Content — Split Screen -->
-    <main class="flex h-[calc(100vh-65px)]">
+  <main class="flex overflow-hidden" id="mainLayout" style="height: calc(100vh - 65px);">
 
-        <!-- LEFT: POS System -->
-        <section class="w-1/2 xl:w-3/5 border-r border-dark-border flex flex-col">
-            {% include "staff/components/pos_panel.html" %}
-            {% include "staff/components/cart.html" %}
-        </section>
+    <!-- LEFT: Work Area (all tabs) -->
+    <section class="flex flex-col border-r border-dark-border bg-dark-bg" id="leftPanel" style="width:62%; min-width:420px;">
+      {% include "staff/components/pos_panel.html" %}
+    </section>
 
-        <!-- RIGHT: Tools Panel -->
-        {% include "staff/components/tools_panel.html" %}
+    <!-- Resize Handle -->
+    <div id="resizeHandle" class="resize-handle"></div>
 
-    </main>
+    <!-- RIGHT: Persistent Order Panel -->
+    <section class="flex flex-col bg-dark-surface" id="rightPanel" style="flex:1; min-width:320px;">
+      {% include "staff/components/order_panel.html" %}
+    </section>
 
-    <!-- Modals -->
-    {% include "staff/components/modals.html" %}
+  </main>
+
+  {% include "staff/components/modals.html" %}
 {% endblock %}
