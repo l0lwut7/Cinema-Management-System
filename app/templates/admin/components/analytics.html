@@ -10,28 +10,49 @@
     <div class="kpi-card bg-slate-800 rounded-xl p-6 border border-slate-700">
       <div class="flex items-center justify-between mb-4">
         <span class="text-slate-400 text-sm">Total Revenue</span>
-        <span class="text-emerald text-xs font-medium bg-emerald/10 px-2 py-1 rounded">+12.5%</span>
+        <select class="bg-transparent text-xs text-slate-400 focus:outline-none cursor-pointer">
+          <option>Today</option>
+          <option selected>This Month</option>
+          <option>This Year</option>
+        </select>
       </div>
       <p class="text-3xl font-bold text-white">$284,520</p>
-      <p class="text-slate-400 text-sm mt-2">This month</p>
+      <div class="flex items-center gap-2 mt-2">
+        <span class="text-emerald text-xs font-medium bg-emerald/10 px-2 py-1 rounded">+12.5%</span>
+        <p class="text-slate-400 text-xs">vs last period</p>
+      </div>
     </div>
     
     <div class="kpi-card bg-slate-800 rounded-xl p-6 border border-slate-700">
       <div class="flex items-center justify-between mb-4">
         <span class="text-slate-400 text-sm">Occupancy Rate</span>
-        <span class="text-emerald text-xs font-medium bg-emerald/10 px-2 py-1 rounded">+3.2%</span>
+        <select class="bg-transparent text-xs text-slate-400 focus:outline-none cursor-pointer">
+          <option>Today</option>
+          <option selected>This Week</option>
+          <option>This Month</option>
+        </select>
       </div>
       <p class="text-3xl font-bold text-white">78.4%</p>
-      <p class="text-slate-400 text-sm mt-2">Average this week</p>
+      <div class="flex items-center gap-2 mt-2">
+        <span class="text-emerald text-xs font-medium bg-emerald/10 px-2 py-1 rounded">+3.2%</span>
+        <p class="text-slate-400 text-xs">vs last period</p>
+      </div>
     </div>
     
     <div class="kpi-card bg-slate-800 rounded-xl p-6 border border-slate-700">
       <div class="flex items-center justify-between mb-4">
         <span class="text-slate-400 text-sm">Tickets Sold</span>
-        <span class="text-crimson text-xs font-medium bg-crimson/10 px-2 py-1 rounded">-2.1%</span>
+        <select class="bg-transparent text-xs text-slate-400 focus:outline-none cursor-pointer">
+          <option>Today</option>
+          <option>This Week</option>
+          <option selected>This Month</option>
+        </select>
       </div>
       <p class="text-3xl font-bold text-white">12,847</p>
-      <p class="text-slate-400 text-sm mt-2">This month</p>
+      <div class="flex items-center gap-2 mt-2">
+        <span class="text-crimson text-xs font-medium bg-crimson/10 px-2 py-1 rounded">-2.1%</span>
+        <p class="text-slate-400 text-xs">vs last period</p>
+      </div>
     </div>
     
     <div class="kpi-card bg-slate-800 rounded-xl p-6 border border-slate-700">
@@ -44,25 +65,39 @@
     </div>
   </div>
   
-  <!-- Chart Placeholder -->
+  <!-- Chart Section -->
   <div class="bg-slate-800 rounded-xl p-6 border border-slate-700 mb-8">
-    <h3 class="font-display text-xl font-semibold text-white mb-4">REVENUE BY THEATER</h3>
-    <div class="h-64 flex items-center justify-center border-2 border-dashed border-slate-600 rounded-lg">
-      <div class="text-center">
-        <svg class="w-16 h-16 text-slate-500 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-        </svg>
-        <p class="text-slate-400">Revenue Chart Placeholder</p>
-        <p class="text-slate-500 text-sm">Data visualization will render here</p>
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h3 class="font-display text-xl font-semibold text-white">REVENUE BY THEATER</h3>
+        <p class="text-slate-400 text-sm">Last 7 Days</p>
       </div>
+      <button class="text-sky hover:text-sky/80 text-sm font-medium">Export CSV</button>
+    </div>
+    <div class="h-72 w-full relative">
+      <canvas id="revenueChart"></canvas>
     </div>
   </div>
   
   <!-- Top VIP Spenders Table -->
   <div class="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
-    <div class="p-6 border-b border-slate-700">
-      <h3 class="font-display text-xl font-semibold text-white">TOP VIP SPENDERS</h3>
-      <p class="text-slate-400 text-sm mt-1">Highest spending VIP members this month</p>
+    <div class="p-6 border-b border-slate-700 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <h3 class="font-display text-xl font-semibold text-white">TOP SPENDERS</h3>
+        <p class="text-slate-400 text-sm mt-1">Highest spending members this month</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <select class="bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-300 focus:border-crimson focus:ring-1 focus:ring-crimson outline-none">
+          <option>All Members</option>
+          <option selected>VIP Only</option>
+          <option>Standard</option>
+        </select>
+        <select class="bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm text-slate-300 focus:border-crimson focus:ring-1 focus:ring-crimson outline-none">
+          <option value="amount_desc" selected>Spend: High to Low</option>
+          <option value="amount_asc">Spend: Low to High</option>
+          <option value="visits_desc">Visits: High to Low</option>
+        </select>
+      </div>
     </div>
     <div class="overflow-x-auto">
       <table class="w-full">

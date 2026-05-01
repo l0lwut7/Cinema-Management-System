@@ -13,7 +13,7 @@
         <p class="text-slate-400 text-sm mt-1">Inventory & pricing</p>
       </div>
       <div class="p-4">
-        <button class="btn-primary w-full px-4 py-2 rounded-lg text-white text-sm font-medium mb-4">+ Add Item</button>
+        <button id="btn-add-consumable" class="btn-primary w-full px-4 py-2 rounded-lg text-white text-sm font-medium mb-4">+ Add Item</button>
         <div class="space-y-3">
           {% for item in consumables %}
           <div class="bg-slate-700 rounded-lg p-3 {{ item.wrapper_class }}">
@@ -65,31 +65,75 @@
       </div>
       <div class="p-4">
         <div class="space-y-4">
-          {% for tier in tiers %}
-          <div class="bg-slate-700 rounded-lg p-4 border-l-4 {{ tier.border }}">
+          <div class="bg-slate-700 rounded-lg p-4 border-l-4 {{ vip_tier.border }}">
             <div class="flex items-center justify-between mb-3">
-              <h4 class="text-{{ tier.color }} font-semibold">{{ tier.name }}</h4>
+              <h4 class="text-{{ vip_tier.color }} font-semibold">{{ vip_tier.name }}</h4>
               <button class="text-sky text-xs">Edit</button>
             </div>
             <div class="space-y-2 text-sm">
               <div class="flex justify-between">
                 <span class="text-slate-400">Spend Threshold:</span>
-                <span class="text-white">{{ tier.spend }}</span>
+                <span class="text-white">{{ vip_tier.spend }}</span>
               </div>
               <div class="flex justify-between">
                 <span class="text-slate-400">Discount:</span>
-                <span class="text-{{ tier.discount_color }}">{{ tier.discount }}</span>
+                <span class="text-{{ vip_tier.discount_color }}">{{ vip_tier.discount }}</span>
               </div>
               <div class="flex justify-between">
                 <span class="text-slate-400">Points Multiplier:</span>
-                <span class="text-white">{{ tier.points }}</span>
+                <span class="text-white">{{ vip_tier.points }}</span>
               </div>
             </div>
           </div>
-          {% endfor %}
         </div>
         <p class="text-slate-500 text-xs mt-4">Thresholds based on annual spending. Tier status resets January 1st.</p>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Consumable Modal -->
+<div id="modal-add-consumable" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+  <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl scale-95 opacity-0 transition-all duration-200" id="modal-add-consumable-content">
+    <div class="p-6 border-b border-slate-700 flex justify-between items-center bg-slate-800/50">
+      <h3 class="font-display text-xl font-bold text-white tracking-wide">ADD CONSUMABLE</h3>
+      <button class="text-slate-400 hover:text-white transition-colors modal-close">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+    </div>
+    <div class="p-6">
+      <form id="form-add-consumable" class="space-y-5">
+        <!-- Image Upload Placeholder -->
+        <div class="border-2 border-dashed border-slate-600 rounded-xl p-4 text-center hover:border-slate-500 hover:bg-slate-700/30 transition-colors cursor-pointer group">
+          <div class="w-12 h-12 rounded-full bg-slate-700 flex items-center justify-center mx-auto mb-3 group-hover:bg-slate-600 transition-colors">
+            <svg class="w-6 h-6 text-slate-400 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+          </div>
+          <p class="text-sm text-slate-300 font-medium">Click to upload photo</p>
+          <p class="text-xs text-slate-500 mt-1">PNG, JPG up to 2MB</p>
+          <input type="file" class="hidden" accept="image/*">
+        </div>
+        
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Item Name</label>
+          <input type="text" required placeholder="e.g. Large Popcorn" class="w-full bg-slate-900 border border-slate-700 rounded-lg py-3 px-4 text-white placeholder-slate-500 focus:border-crimson focus:ring-1 focus:ring-crimson transition-all outline-none">
+        </div>
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Price ($)</label>
+            <input type="number" step="0.01" required placeholder="0.00" class="w-full bg-slate-900 border border-slate-700 rounded-lg py-3 px-4 text-white placeholder-slate-500 focus:border-crimson focus:ring-1 focus:ring-crimson transition-all outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Initial Stock</label>
+            <input type="number" required placeholder="0" class="w-full bg-slate-900 border border-slate-700 rounded-lg py-3 px-4 text-white placeholder-slate-500 focus:border-crimson focus:ring-1 focus:ring-crimson transition-all outline-none">
+          </div>
+        </div>
+        
+        <div class="pt-2 flex gap-3">
+          <button type="submit" class="flex-1 bg-emerald hover:bg-emerald-600 text-white font-semibold py-3 px-4 rounded-lg shadow-lg transition-all active:scale-[0.98]">Save Item</button>
+          <button type="button" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-semibold py-3 px-4 rounded-lg transition-all active:scale-[0.98] modal-close">Cancel</button>
+        </div>
+      </form>
     </div>
   </div>
 </div>

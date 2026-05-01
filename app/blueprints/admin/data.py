@@ -5,12 +5,6 @@ VIP_SPENDERS = [
     {"initials": "EW", "color": "sky", "name": "Emily Watson", "email": "emily.w@email.com", "tier": "Silver", "tier_color": "sky", "spent": "$1,420", "visits": 11, "avg": "$129.09"}
 ]
 
-PENDING_APPROVALS = [
-    {"initials": "AJ", "color": "crimson", "name": "Alex Johnson", "role": "Cashier Position"},
-    {"initials": "LK", "color": "emerald", "name": "Lisa Kim", "role": "Projectionist Position"},
-    {"initials": "DM", "color": "sky", "name": "David Miller", "role": "Concession Staff"}
-]
-
 EMPLOYEES = [
     {"initials": "JW", "color": "emerald", "name": "James Wilson", "role": "Theater Manager", "auth_level": "Admin", "auth_color": "crimson", "salary": "$65,000"},
     {"initials": "RC", "color": "amber", "name": "Rachel Chen", "role": "Senior Cashier", "auth_level": "Moderator", "auth_color": "amber", "salary": "$42,000"},
@@ -51,8 +45,15 @@ DEALS = [
     {"name": "Early Bird Special", "status": "Inactive", "status_color": "slate-600", "desc": "20% off shows before 12pm", "valid": "Expired: Dec 31"}
 ]
 
-TIERS = [
-    {"name": "Silver", "color": "sky", "border": "border-sky", "spend": "$0 - $499", "discount": "5% off tickets", "discount_color": "emerald", "points": "1x"},
-    {"name": "Gold", "color": "amber", "border": "border-amber", "spend": "$500 - $1,499", "discount": "10% off + free upgrades", "discount_color": "emerald", "points": "1.5x"},
-    {"name": "Platinum", "color": "slate-200", "border": "border-slate-300", "spend": "$1,500+", "discount": "15% off + VIP lounge", "discount_color": "emerald", "points": "2x"}
-]
+VIP_TIER = {
+    "name": "VIP Member", 
+    "color": "amber", 
+    "border": "border-amber", 
+    "spend": "$500 Annual Spend", 
+    "discount": "15% off tickets & snacks", 
+    "points": "2x Points on all purchases"
+}
+
+GENRES = ["Action", "Comedy", "Drama", "Horror", "Sci-Fi", "Thriller", "Romance", "Animation", "Documentary"]
+
+FORMATS = ["2D", "3D", "IMAX", "4DX"]

@@ -67,6 +67,16 @@ document.addEventListener('DOMContentLoaded', () => {
             chip.classList.toggle('text-slate-300');
         });
     });
+
+    // Format Chips Toggle
+    const formatChips = document.querySelectorAll('#format-chips .chip');
+    formatChips.forEach(chip => {
+        chip.addEventListener('click', () => {
+            chip.classList.toggle('selected');
+            chip.classList.toggle('text-white');
+            chip.classList.toggle('text-slate-300');
+        });
+    });
     
     // Screening Form Validation
     const screeningForm = document.getElementById('screening-form');
@@ -148,6 +158,133 @@ document.addEventListener('DOMContentLoaded', () => {
         movieForm.addEventListener('submit', (e) => {
             e.preventDefault();
             alert('Movie saved successfully!');
+        });
+    }
+
+    // Modal Logic
+    function openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        const content = document.getElementById(`${modalId}-content`);
+        if (modal && content) {
+            modal.classList.remove('hidden');
+            // small delay to allow display:block to apply before animating opacity
+            setTimeout(() => {
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+    }
+
+    function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        const content = document.getElementById(`${modalId}-content`);
+        if (modal && content) {
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200); // Wait for transition
+        }
+    }
+
+    // Bind Modals
+    const btnAddConsumable = document.getElementById('btn-add-consumable');
+    if (btnAddConsumable) {
+        btnAddConsumable.addEventListener('click', () => openModal('modal-add-consumable'));
+    }
+
+    const btnAddSaloon = document.getElementById('btn-add-saloon');
+    if (btnAddSaloon) {
+        btnAddSaloon.addEventListener('click', () => openModal('modal-add-saloon'));
+    }
+
+    // Bind Close Buttons
+    document.querySelectorAll('.modal-close').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const modal = e.target.closest('.fixed.inset-0');
+            if (modal) {
+                closeModal(modal.id);
+            }
+        });
+    });
+
+    // Layout Radio Logic in Saloon Modal
+    const layoutRadios = document.querySelectorAll('input[name="layout"]');
+    if (layoutRadios) {
+        layoutRadios.forEach(radio => {
+            radio.addEventListener('change', () => {
+                // Reset all
+                layoutRadios.forEach(r => {
+                    const label = r.closest('label');
+                    label.classList.remove('border-emerald/50', 'bg-emerald/10');
+                    label.classList.add('border-slate-700', 'bg-slate-900', 'hover:border-slate-500');
+                });
+                // Highlight selected
+                if (radio.checked) {
+                    const label = radio.closest('label');
+                    label.classList.remove('border-slate-700', 'bg-slate-900', 'hover:border-slate-500');
+                    label.classList.add('border-emerald/50', 'bg-emerald/10');
+                }
+            });
+        });
+    }
+
+    // Initialize Chart.js for Revenue
+    const ctx = document.getElementById('revenueChart');
+    if (ctx) {
+        // Sample mock data for prototype
+        const data = {
+            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            datasets: [{
+                label: 'Saloon A (IMAX)',
+                data: [1200, 1900, 3000, 2500, 4200, 5800, 4900],
+                borderColor: '#10B981', // emerald
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                tension: 0.4,
+                fill: true
+            }, {
+                label: 'Saloon B (Standard)',
+                data: [800, 1200, 1500, 1800, 2900, 3500, 3000],
+                borderColor: '#0EA5E9', // sky
+                backgroundColor: 'rgba(14, 165, 233, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        };
+
+        new Chart(ctx, {
+            type: 'line',
+            data: data,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#94A3B8' // slate-400
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: '#334155' // slate-700
+                        },
+                        ticks: {
+                            color: '#94A3B8'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: '#334155'
+                        },
+                        ticks: {
+                            color: '#94A3B8'
+                        }
+                    }
+                }
+            }
         });
     }
 
