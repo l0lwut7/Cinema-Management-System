@@ -564,5 +564,36 @@ document.getElementById('newBookingBtn').addEventListener('click', function () {
   goToStep(1);
 });
 
-// Initialize
-updateShowtimes();
+// ==================== INITIALIZATION ====================
+document.addEventListener('DOMContentLoaded', () => {
+  const bookingApp = document.getElementById('booking-app');
+
+  if (bookingApp && bookingApp.dataset.movieId) {
+    try {
+      // 1. Safely parse the JSON we passed from Jinja (handles "null" cleanly)
+      const initialMovieId = JSON.parse(bookingApp.dataset.movieId);
+
+      // 2. If an ID was passed, update the dropdown menu
+      if (initialMovieId !== null) {
+        // Map the backend integer IDs to the frontend mockup string values
+        const movieMapping = {
+          1: 'dune2',
+          2: 'oppenheimer',
+          3: 'barbie',
+          4: 'mission'
+        };
+
+        if (movieMapping[initialMovieId]) {
+          movieSelect.value = movieMapping[initialMovieId];
+        }
+      }
+    } catch (e) {
+      console.error("Error reading initial movie ID:", e);
+    }
+  }
+
+  // 3. Trigger the initial render. 
+  // This will read the values from the dropdowns, update state.movie, 
+  // and show/hide the correct grids!
+  updateShowtimes();
+});

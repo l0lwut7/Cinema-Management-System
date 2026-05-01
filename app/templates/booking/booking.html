@@ -6,7 +6,7 @@
 
 {% block content %}
 <div class="min-h-screen text-white">
-  <div class="max-w-5xl mx-auto p-6">
+  <div id="booking-app" data-movie-id="{{ movie_id | default(none) | tojson }}" class="max-w-5xl mx-auto p-6">
 
     <!-- Progress Bar -->
     <div class="mb-8">
@@ -58,5 +58,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/booking.js') }}"></script>
+<script src="{{ url_for('static', filename='js/booking.js') }}?v=2"></script>
 {% endblock %}
