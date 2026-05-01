@@ -101,3 +101,41 @@ document.getElementById('new-password')?.addEventListener('input', function(e) {
     }
   });
 });
+
+// Bookings Filter and Sort
+function filterAndSortBookings() {
+  const tbody = document.getElementById('bookings-tbody');
+  if (!tbody) return;
+  
+  const sortValue = document.getElementById('sort-bookings').value;
+  const statusValue = document.getElementById('filter-status').value;
+  
+  const rows = Array.from(tbody.querySelectorAll('.booking-row'));
+  
+  // Filtering
+  rows.forEach(row => {
+    const status = row.getAttribute('data-status');
+    if (statusValue === 'all' || status === statusValue) {
+      row.style.display = '';
+    } else {
+      row.style.display = 'none';
+    }
+  });
+  
+  // Sorting
+  rows.sort((a, b) => {
+    if (sortValue === 'date-desc' || sortValue === 'date-asc') {
+      const dateA = new Date(a.getAttribute('data-date'));
+      const dateB = new Date(b.getAttribute('data-date'));
+      return sortValue === 'date-desc' ? dateB - dateA : dateA - dateB;
+    } else if (sortValue === 'price-desc' || sortValue === 'price-asc') {
+      const priceA = parseFloat(a.getAttribute('data-price'));
+      const priceB = parseFloat(b.getAttribute('data-price'));
+      return sortValue === 'price-desc' ? priceB - priceA : priceA - priceB;
+    }
+    return 0;
+  });
+  
+  // Re-append rows in new order
+  rows.forEach(row => tbody.appendChild(row));
+}

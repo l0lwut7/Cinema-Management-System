@@ -35,41 +35,6 @@ function togglePassword(inputId, button) {
   }
 }
 
-// Accordion Toggle
-function toggleAccordion(button) {
-  const item = button.parentElement;
-  const isOpen = item.classList.contains('open');
-  
-  // Close all accordions
-  document.querySelectorAll('.accordion-item').forEach(acc => acc.classList.remove('open'));
-  
-  // Open clicked if it was closed
-  if (!isOpen) {
-    item.classList.add('open');
-  }
-}
-
-// Form Handlers
-function handleLogin() {
-  const email = document.getElementById('login-email').value;
-  const password = document.getElementById('login-password').value;
-  
-  if (!email || !password) {
-    document.getElementById('login-error').classList.remove('hidden');
-    return;
-  }
-  
-  document.getElementById('login-error').classList.add('hidden');
-  
-  // Simulate login by redirecting to dashboard
-  window.location.href = '/dashboard';
-}
-
-function handleRegister() {
-  // Simulate registration by redirecting to dashboard
-  window.location.href = '/dashboard';
-}
-
 // Password Strength Indicator
 document.getElementById('register-password')?.addEventListener('input', function(e) {
   const password = e.target.value;
@@ -84,14 +49,15 @@ document.getElementById('register-password')?.addEventListener('input', function
   if (/[^A-Za-z0-9]/.test(password)) strength++;
   
   bars.forEach((bar, index) => {
+    // Reset all classes
+    bar.classList.remove('bg-gray-700', 'bg-red-500', 'bg-amber', 'bg-emerald-500', 'bg-cinema-primary');
+    
     if (index < strength) {
-      bar.classList.remove('bg-gray-700');
       if (strength <= 1) bar.classList.add('bg-red-500');
       else if (strength <= 2) bar.classList.add('bg-amber');
       else bar.classList.add('bg-emerald-500');
     } else {
       bar.classList.add('bg-gray-700');
-      bar.classList.remove('bg-red-500', 'bg-amber', 'bg-emerald-500');
     }
   });
 });

@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, session
 
 from app.blueprints.discovery import discovery_bp
 from app.blueprints.booking.routes import booking_bp
@@ -12,4 +12,9 @@ def create_app():
     app.register_blueprint(booking_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
+    
+    @app.context_processor
+    def inject_auth():
+        return dict(is_authenticated='user_id' in session)
+        
     return app

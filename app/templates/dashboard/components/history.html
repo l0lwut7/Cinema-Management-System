@@ -46,11 +46,18 @@
   <div class="bg-cinema-surface rounded-xl border border-white/5 overflow-hidden">
     <div class="px-6 py-4 border-b border-white/5 flex items-center justify-between">
       <h3 class="font-semibold">Recent Bookings</h3>
-      <div class="flex items-center gap-2">
-        <select class="bg-cinema-bg border border-white/10 rounded-lg px-3 py-2 text-sm">
-          <option>All Time</option>
-          <option>This Month</option>
-          <option>Last 3 Months</option>
+      <div class="flex items-center gap-4">
+        <select id="sort-bookings" class="bg-cinema-bg border border-white/10 rounded-lg px-3 py-2 text-sm" onchange="filterAndSortBookings()">
+          <option value="date-desc">Newest First</option>
+          <option value="date-asc">Oldest First</option>
+          <option value="price-desc">Highest Price</option>
+          <option value="price-asc">Lowest Price</option>
+        </select>
+        <select id="filter-status" class="bg-cinema-bg border border-white/10 rounded-lg px-3 py-2 text-sm" onchange="filterAndSortBookings()">
+          <option value="all">All Status</option>
+          <option value="completed">Completed</option>
+          <option value="upcoming">Upcoming</option>
+          <option value="refunded">Refunded</option>
         </select>
       </div>
     </div>
@@ -66,16 +73,16 @@
             <th class="px-6 py-4 font-medium">Action</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-white/5">
-          <tr class="hover:bg-cinema-surfaceLight/30 transition-colors">
+        <tbody id="bookings-tbody" class="divide-y divide-white/5">
+          <tr class="booking-row hover:bg-cinema-surfaceLight/30 transition-colors" data-date="2024-03-15" data-price="45.00" data-status="completed">
             <td class="px-6 py-4">
-              <div class="flex items-center gap-3">
+              <a href="{{ url_for('discovery.movie_detail', movie_id=1) }}" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
                 <div class="w-12 h-16 rounded-lg bg-gradient-to-br from-violet-600 to-purple-800 flex items-center justify-center text-xs font-bold">D2</div>
                 <div>
                   <p class="font-medium">Dune: Part Two</p>
                   <p class="text-sm text-gray-400">IMAX 3D</p>
                 </div>
-              </div>
+              </a>
             </td>
             <td class="px-6 py-4">
               <p>Mar 15, 2024</p>
@@ -90,15 +97,15 @@
               <button class="text-gray-400 hover:text-white text-sm">View Ticket</button>
             </td>
           </tr>
-          <tr class="hover:bg-cinema-surfaceLight/30 transition-colors">
+          <tr class="booking-row hover:bg-cinema-surfaceLight/30 transition-colors" data-date="2024-03-20" data-price="67.50" data-status="upcoming">
             <td class="px-6 py-4">
-              <div class="flex items-center gap-3">
+              <a href="{{ url_for('discovery.movie_detail', movie_id=2) }}" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
                 <div class="w-12 h-16 rounded-lg bg-gradient-to-br from-red-600 to-orange-600 flex items-center justify-center text-xs font-bold">OP</div>
                 <div>
                   <p class="font-medium">Oppenheimer</p>
                   <p class="text-sm text-gray-400">70mm IMAX</p>
                 </div>
-              </div>
+              </a>
             </td>
             <td class="px-6 py-4">
               <p>Mar 20, 2024</p>
@@ -113,15 +120,15 @@
               <button onclick="showRefundModal()" class="px-4 py-2 bg-cinema-primary/20 text-cinema-primary hover:bg-cinema-primary hover:text-white rounded-lg text-sm transition-colors">Request Refund</button>
             </td>
           </tr>
-          <tr class="hover:bg-cinema-surfaceLight/30 transition-colors">
+          <tr class="booking-row hover:bg-cinema-surfaceLight/30 transition-colors" data-date="2024-02-28" data-price="38.00" data-status="completed">
             <td class="px-6 py-4">
-              <div class="flex items-center gap-3">
+              <a href="{{ url_for('discovery.movie_detail', movie_id=3) }}" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
                 <div class="w-12 h-16 rounded-lg bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center text-xs font-bold">AV</div>
                 <div>
                   <p class="font-medium">Avatar: The Way of Water</p>
                   <p class="text-sm text-gray-400">3D Dolby</p>
                 </div>
-              </div>
+              </a>
             </td>
             <td class="px-6 py-4">
               <p>Feb 28, 2024</p>
@@ -136,15 +143,15 @@
               <button class="text-gray-400 hover:text-white text-sm">View Ticket</button>
             </td>
           </tr>
-          <tr class="hover:bg-cinema-surfaceLight/30 transition-colors">
+          <tr class="booking-row hover:bg-cinema-surfaceLight/30 transition-colors" data-date="2024-02-10" data-price="15.00" data-status="refunded">
             <td class="px-6 py-4">
-              <div class="flex items-center gap-3">
+              <a href="{{ url_for('discovery.movie_detail', movie_id=4) }}" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
                 <div class="w-12 h-16 rounded-lg bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center text-xs font-bold">KB</div>
                 <div>
                   <p class="font-medium">Kill Bill Vol. 3</p>
                   <p class="text-sm text-gray-400">Standard</p>
                 </div>
-              </div>
+              </a>
             </td>
             <td class="px-6 py-4">
               <p>Feb 10, 2024</p>

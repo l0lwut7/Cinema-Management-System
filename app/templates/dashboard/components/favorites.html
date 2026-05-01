@@ -8,7 +8,7 @@
   <div class="grid grid-cols-4 gap-6">
     <!-- Movie Card 1 -->
     <div class="group relative bg-cinema-surface rounded-xl overflow-hidden border border-white/5 hover:border-cinema-primary/50 transition-all">
-      <div class="aspect-[2/3] bg-gradient-to-br from-violet-600 to-purple-800 relative">
+      <a href="{{ url_for('discovery.movie_detail', movie_id=1) }}" class="block aspect-[2/3] bg-gradient-to-br from-violet-600 to-purple-800 relative">
         <div class="absolute inset-0 bg-gradient-to-t from-cinema-bg/90 via-transparent to-transparent"></div>
         <button class="absolute top-3 right-3 w-8 h-8 bg-cinema-bg/80 backdrop-blur rounded-full flex items-center justify-center text-cinema-primary hover:bg-cinema-primary hover:text-white transition-colors">
           <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -23,17 +23,17 @@
             <span class="text-sm font-medium">8.8</span>
           </div>
         </div>
-      </div>
+      </a>
       <div class="p-4">
-        <h3 class="font-semibold mb-1 truncate">Dune: Part Two</h3>
+        <h3 class="font-semibold mb-1 truncate"><a href="{{ url_for('discovery.movie_detail', movie_id=1) }}" class="hover:text-cinema-primary transition-colors">Dune: Part Two</a></h3>
         <p class="text-sm text-gray-400 mb-3">Action, Sci-Fi</p>
-        <button class="w-full py-2 bg-cinema-primary hover:bg-rose-600 rounded-lg text-sm font-medium transition-colors">Book Now</button>
+        <a href="{{ url_for('booking.booking', movie_id=1) }}" class="block w-full text-center py-2 bg-cinema-primary hover:bg-rose-600 rounded-lg text-sm font-medium transition-colors">Book Now</a>
       </div>
     </div>
 
     <!-- Movie Card 2 -->
     <div class="group relative bg-cinema-surface rounded-xl overflow-hidden border border-white/5 hover:border-cinema-primary/50 transition-all">
-      <div class="aspect-[2/3] bg-gradient-to-br from-red-600 to-orange-600 relative">
+      <a href="{{ url_for('discovery.movie_detail', movie_id=2) }}" class="block aspect-[2/3] bg-gradient-to-br from-red-600 to-orange-600 relative">
         <div class="absolute inset-0 bg-gradient-to-t from-cinema-bg/90 via-transparent to-transparent"></div>
         <button class="absolute top-3 right-3 w-8 h-8 bg-cinema-bg/80 backdrop-blur rounded-full flex items-center justify-center text-cinema-primary hover:bg-cinema-primary hover:text-white transition-colors">
           <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -48,17 +48,17 @@
             <span class="text-sm font-medium">9.0</span>
           </div>
         </div>
-      </div>
+      </a>
       <div class="p-4">
-        <h3 class="font-semibold mb-1 truncate">Oppenheimer</h3>
+        <h3 class="font-semibold mb-1 truncate"><a href="{{ url_for('discovery.movie_detail', movie_id=2) }}" class="hover:text-cinema-primary transition-colors">Oppenheimer</a></h3>
         <p class="text-sm text-gray-400 mb-3">Drama, History</p>
-        <button class="w-full py-2 bg-cinema-primary hover:bg-rose-600 rounded-lg text-sm font-medium transition-colors">Book Now</button>
+        <a href="{{ url_for('booking.booking', movie_id=2) }}" class="block w-full text-center py-2 bg-cinema-primary hover:bg-rose-600 rounded-lg text-sm font-medium transition-colors">Book Now</a>
       </div>
     </div>
 
     <!-- Movie Card 3 -->
     <div class="group relative bg-cinema-surface rounded-xl overflow-hidden border border-white/5 hover:border-cinema-primary/50 transition-all">
-      <div class="aspect-[2/3] bg-gradient-to-br from-emerald-600 to-teal-700 relative">
+      <a href="{{ url_for('discovery.movie_detail', movie_id=3) }}" class="block aspect-[2/3] bg-gradient-to-br from-emerald-600 to-teal-700 relative">
         <div class="absolute inset-0 bg-gradient-to-t from-cinema-bg/90 via-transparent to-transparent"></div>
         <button class="absolute top-3 right-3 w-8 h-8 bg-cinema-bg/80 backdrop-blur rounded-full flex items-center justify-center text-cinema-primary hover:bg-cinema-primary hover:text-white transition-colors">
           <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -73,17 +73,17 @@
             <span class="text-sm font-medium">8.5</span>
           </div>
         </div>
-      </div>
+      </a>
       <div class="p-4">
-        <h3 class="font-semibold mb-1 truncate">Poor Things</h3>
+        <h3 class="font-semibold mb-1 truncate"><a href="{{ url_for('discovery.movie_detail', movie_id=3) }}" class="hover:text-cinema-primary transition-colors">Poor Things</a></h3>
         <p class="text-sm text-gray-400 mb-3">Comedy, Drama</p>
-        <button class="w-full py-2 bg-cinema-primary hover:bg-rose-600 rounded-lg text-sm font-medium transition-colors">Book Now</button>
+        <a href="{{ url_for('booking.booking', movie_id=3) }}" class="block w-full text-center py-2 bg-cinema-primary hover:bg-rose-600 rounded-lg text-sm font-medium transition-colors">Book Now</a>
       </div>
     </div>
 
     <!-- Movie Card 4 -->
     <div class="group relative bg-cinema-surface rounded-xl overflow-hidden border border-white/5 hover:border-cinema-primary/50 transition-all">
-      <div class="aspect-[2/3] bg-gradient-to-br from-blue-600 to-indigo-700 relative">
+      <a href="{{ url_for('discovery.movie_detail', movie_id=4) }}" class="block aspect-[2/3] bg-gradient-to-br from-blue-600 to-indigo-700 relative">
         <div class="absolute inset-0 bg-gradient-to-t from-cinema-bg/90 via-transparent to-transparent"></div>
         <button class="absolute top-3 right-3 w-8 h-8 bg-cinema-bg/80 backdrop-blur rounded-full flex items-center justify-center text-cinema-primary hover:bg-cinema-primary hover:text-white transition-colors">
           <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -98,17 +98,17 @@
             <span class="text-sm font-medium">7.9</span>
           </div>
         </div>
-      </div>
+      </a>
       <div class="p-4">
-        <h3 class="font-semibold mb-1 truncate">The Batman</h3>
+        <h3 class="font-semibold mb-1 truncate"><a href="{{ url_for('discovery.movie_detail', movie_id=4) }}" class="hover:text-cinema-primary transition-colors">The Batman</a></h3>
         <p class="text-sm text-gray-400 mb-3">Action, Crime</p>
-        <button class="w-full py-2 bg-cinema-primary hover:bg-rose-600 rounded-lg text-sm font-medium transition-colors">Book Now</button>
+        <a href="{{ url_for('booking.booking', movie_id=4) }}" class="block w-full text-center py-2 bg-cinema-primary hover:bg-rose-600 rounded-lg text-sm font-medium transition-colors">Book Now</a>
       </div>
     </div>
 
     <!-- Movie Card 5 -->
     <div class="group relative bg-cinema-surface rounded-xl overflow-hidden border border-white/5 hover:border-cinema-primary/50 transition-all">
-      <div class="aspect-[2/3] bg-gradient-to-br from-pink-600 to-rose-700 relative">
+      <a href="{{ url_for('discovery.movie_detail', movie_id=5) }}" class="block aspect-[2/3] bg-gradient-to-br from-pink-600 to-rose-700 relative">
         <div class="absolute inset-0 bg-gradient-to-t from-cinema-bg/90 via-transparent to-transparent"></div>
         <button class="absolute top-3 right-3 w-8 h-8 bg-cinema-bg/80 backdrop-blur rounded-full flex items-center justify-center text-cinema-primary hover:bg-cinema-primary hover:text-white transition-colors">
           <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -123,17 +123,17 @@
             <span class="text-sm font-medium">8.3</span>
           </div>
         </div>
-      </div>
+      </a>
       <div class="p-4">
-        <h3 class="font-semibold mb-1 truncate">Barbie</h3>
+        <h3 class="font-semibold mb-1 truncate"><a href="{{ url_for('discovery.movie_detail', movie_id=5) }}" class="hover:text-cinema-primary transition-colors">Barbie</a></h3>
         <p class="text-sm text-gray-400 mb-3">Comedy, Fantasy</p>
-        <button class="w-full py-2 bg-cinema-primary hover:bg-rose-600 rounded-lg text-sm font-medium transition-colors">Book Now</button>
+        <a href="{{ url_for('booking.booking', movie_id=5) }}" class="block w-full text-center py-2 bg-cinema-primary hover:bg-rose-600 rounded-lg text-sm font-medium transition-colors">Book Now</a>
       </div>
     </div>
 
     <!-- Movie Card 6 -->
     <div class="group relative bg-cinema-surface rounded-xl overflow-hidden border border-white/5 hover:border-cinema-primary/50 transition-all">
-      <div class="aspect-[2/3] bg-gradient-to-br from-yellow-600 to-amber-700 relative">
+      <a href="{{ url_for('discovery.movie_detail', movie_id=6) }}" class="block aspect-[2/3] bg-gradient-to-br from-yellow-600 to-amber-700 relative">
         <div class="absolute inset-0 bg-gradient-to-t from-cinema-bg/90 via-transparent to-transparent"></div>
         <button class="absolute top-3 right-3 w-8 h-8 bg-cinema-bg/80 backdrop-blur rounded-full flex items-center justify-center text-cinema-primary hover:bg-cinema-primary hover:text-white transition-colors">
           <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -148,11 +148,11 @@
             <span class="text-sm font-medium">8.1</span>
           </div>
         </div>
-      </div>
+      </a>
       <div class="p-4">
-        <h3 class="font-semibold mb-1 truncate">Killers of the Flower Moon</h3>
+        <h3 class="font-semibold mb-1 truncate"><a href="{{ url_for('discovery.movie_detail', movie_id=6) }}" class="hover:text-cinema-primary transition-colors">Killers of the Flower Moon</a></h3>
         <p class="text-sm text-gray-400 mb-3">Crime, Drama</p>
-        <button class="w-full py-2 bg-cinema-primary hover:bg-rose-600 rounded-lg text-sm font-medium transition-colors">Book Now</button>
+        <a href="{{ url_for('booking.booking', movie_id=6) }}" class="block w-full text-center py-2 bg-cinema-primary hover:bg-rose-600 rounded-lg text-sm font-medium transition-colors">Book Now</a>
       </div>
     </div>
   </div>
