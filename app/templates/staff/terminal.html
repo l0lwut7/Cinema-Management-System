@@ -1,0 +1,25 @@
+{% extends "staff/base.html" %}
+{% block title %}Staff Operations Terminal | CineMax POS{% endblock %}
+
+{% block content %}
+  {% include "staff/components/header.html" %}
+
+  <main class="flex overflow-hidden" id="mainLayout" style="height: calc(100vh - 65px);">
+
+    <!-- LEFT: Work Area (all tabs) -->
+    <section class="flex flex-col border-r border-dark-border bg-dark-bg" id="leftPanel" style="width:62%; min-width:420px;">
+      {% include "staff/components/pos_panel.html" %}
+    </section>
+
+    <!-- Resize Handle -->
+    <div id="resizeHandle" class="resize-handle"></div>
+
+    <!-- RIGHT: Persistent Order Panel -->
+    <section class="flex flex-col bg-dark-surface" id="rightPanel" style="flex:1; min-width:320px;">
+      {% include "staff/components/order_panel.html" %}
+    </section>
+
+  </main>
+
+  {% include "staff/components/modals.html" %}
+{% endblock %}
