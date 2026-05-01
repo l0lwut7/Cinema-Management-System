@@ -59,8 +59,6 @@ def get_base_context(active_page, title):
     context["nav_items"] = NAV_ITEMS
     context["is_authenticated"] = False
     context["user_name"] = "Guest"
-    context["login_url"] = url_for("discovery.login")
-    context["profile_url"] = url_for("discovery.profile")
     context["search_url"] = url_for("discovery.now_showing")
     context["deals_url"] = url_for("discovery.deals")
     return context
@@ -146,18 +144,3 @@ def deals():
     context["deals"] = DEALS
     return render_template("discovery/deals.html", **context)
 
-
-@discovery_bp.route("/auth/login")
-def login():
-    context = get_base_context("home", "Login - CineMax")
-    context["page_heading"] = "Login"
-    context["page_description"] = "Authentication flow can be plugged in here later."
-    return render_template("auth/login.html", **context)
-
-
-@discovery_bp.route("/profile")
-def profile():
-    context = get_base_context("home", "Profile - CineMax")
-    context["page_heading"] = "Profile"
-    context["page_description"] = "Profile details can be added here later."
-    return render_template("auth/login.html", **context)

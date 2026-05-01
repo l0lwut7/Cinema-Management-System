@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}CineMax - Dashboard{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}?v=1">
+{% endblock %}
+
+{% block content %}
+<div class="flex min-h-[calc(100vh-73px)]">
+  {% include 'dashboard/components/sidebar.html' %}
+  
+  <main class="flex-1 p-8">
+    {% include 'dashboard/components/history.html' %}
+    {% include 'dashboard/components/favorites.html' %}
+    {% include 'dashboard/components/profile.html' %}
+  </main>
+</div>
+
+{% include 'dashboard/components/refund_modal.html' %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}?v=1"></script>
+{% endblock %}
