@@ -1,0 +1,168 @@
+    <!-- Step 3: Cart/Consumables -->
+    <div id="step3" class="step-hidden">
+      <div class="bg-surface rounded-xl p-6">
+        <h2 class="font-display text-2xl font-bold mb-6 text-white">ADD EXTRAS</h2>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Consumables List -->
+          <div class="lg:col-span-2 space-y-4">
+            <!-- Ticket Types -->
+            <div class="bg-background rounded-xl p-4">
+              <h3 class="font-semibold text-lg mb-4 text-slate-200">Ticket Types</h3>
+              <div class="space-y-3">
+                <div class="flex items-center justify-between p-3 bg-surface rounded-lg">
+                  <div>
+                    <p class="font-medium">Adult</p>
+                    <p class="text-slate-400 text-sm">$15.00 each</p>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <button class="ticket-minus w-8 h-8 rounded-lg bg-surfaceLight hover:bg-crimson flex items-center justify-center transition-colors" data-type="adult">−</button>
+                    <span id="adultCount" class="w-8 text-center font-semibold">0</span>
+                    <button class="ticket-plus w-8 h-8 rounded-lg bg-surfaceLight hover:bg-crimson flex items-center justify-center transition-colors" data-type="adult">+</button>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-surface rounded-lg">
+                  <div>
+                    <p class="font-medium">Child (3-12)</p>
+                    <p class="text-slate-400 text-sm">$10.00 each</p>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <button class="ticket-minus w-8 h-8 rounded-lg bg-surfaceLight hover:bg-crimson flex items-center justify-center transition-colors" data-type="child">−</button>
+                    <span id="childCount" class="w-8 text-center font-semibold">0</span>
+                    <button class="ticket-plus w-8 h-8 rounded-lg bg-surfaceLight hover:bg-crimson flex items-center justify-center transition-colors" data-type="child">+</button>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-surface rounded-lg">
+                  <div>
+                    <p class="font-medium">Senior (65+)</p>
+                    <p class="text-slate-400 text-sm">$12.00 each</p>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <button class="ticket-minus w-8 h-8 rounded-lg bg-surfaceLight hover:bg-crimson flex items-center justify-center transition-colors" data-type="senior">−</button>
+                    <span id="seniorCount" class="w-8 text-center font-semibold">0</span>
+                    <button class="ticket-plus w-8 h-8 rounded-lg bg-surfaceLight hover:bg-crimson flex items-center justify-center transition-colors" data-type="senior">+</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Consumables -->
+            <div class="bg-background rounded-xl p-4">
+              <h3 class="font-semibold text-lg mb-4 text-slate-200">Snacks & Drinks</h3>
+              <div class="space-y-3">
+                <div class="flex items-center justify-between p-3 bg-surface rounded-lg">
+                  <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-amber/20 rounded-lg flex items-center justify-center text-2xl">🍿</div>
+                    <div>
+                      <p class="font-medium">Large Popcorn</p>
+                      <p class="text-slate-400 text-sm">$8.50</p>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <button class="consumable-minus w-8 h-8 rounded-lg bg-surfaceLight hover:bg-crimson flex items-center justify-center transition-colors" data-item="popcorn">−</button>
+                    <span id="popcornCount" class="w-8 text-center font-semibold">0</span>
+                    <button class="consumable-plus w-8 h-8 rounded-lg bg-surfaceLight hover:bg-crimson flex items-center justify-center transition-colors" data-item="popcorn">+</button>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-surface rounded-lg">
+                  <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-amber/20 rounded-lg flex items-center justify-center text-2xl">🥤</div>
+                    <div>
+                      <p class="font-medium">Large Soda</p>
+                      <p class="text-slate-400 text-sm">$6.00</p>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <button class="consumable-minus w-8 h-8 rounded-lg bg-surfaceLight hover:bg-crimson flex items-center justify-center transition-colors" data-item="soda">−</button>
+                    <span id="sodaCount" class="w-8 text-center font-semibold">0</span>
+                    <button class="consumable-plus w-8 h-8 rounded-lg bg-surfaceLight hover:bg-crimson flex items-center justify-center transition-colors" data-item="soda">+</button>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-surface rounded-lg">
+                  <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-amber/20 rounded-lg flex items-center justify-center text-2xl">🍫</div>
+                    <div>
+                      <p class="font-medium">Candy Box</p>
+                      <p class="text-slate-400 text-sm">$5.00</p>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <button class="consumable-minus w-8 h-8 rounded-lg bg-surfaceLight hover:bg-crimson flex items-center justify-center transition-colors" data-item="candy">−</button>
+                    <span id="candyCount" class="w-8 text-center font-semibold">0</span>
+                    <button class="consumable-plus w-8 h-8 rounded-lg bg-surfaceLight hover:bg-crimson flex items-center justify-center transition-colors" data-item="candy">+</button>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between p-3 bg-surface rounded-lg">
+                  <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-amber/20 rounded-lg flex items-center justify-center text-2xl">🌭</div>
+                    <div>
+                      <p class="font-medium">Hot Dog</p>
+                      <p class="text-slate-400 text-sm">$7.00</p>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <button class="consumable-minus w-8 h-8 rounded-lg bg-surfaceLight hover:bg-crimson flex items-center justify-center transition-colors" data-item="hotdog">−</button>
+                    <span id="hotdogCount" class="w-8 text-center font-semibold">0</span>
+                    <button class="consumable-plus w-8 h-8 rounded-lg bg-surfaceLight hover:bg-crimson flex items-center justify-center transition-colors" data-item="hotdog">+</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Order Summary (Sticky) -->
+          <div class="lg:col-span-1">
+            <div class="bg-background rounded-xl p-4 lg:sticky lg:top-6">
+              <h3 class="font-semibold text-lg mb-4 text-slate-200">Order Summary</h3>
+              
+              <div class="space-y-3 mb-4">
+                <div class="flex justify-between text-slate-300">
+                  <span>Selected Seats</span>
+                  <span id="summarySeats">-</span>
+                </div>
+                <div class="border-t border-surfaceLight my-3"></div>
+                
+                <div id="ticketSummary" class="space-y-2">
+                  <!-- Dynamic ticket summary -->
+                </div>
+                
+                <div class="border-t border-surfaceLight my-3"></div>
+                
+                <div id="consumableSummary" class="space-y-2">
+                  <!-- Dynamic consumable summary -->
+                </div>
+              </div>
+
+              <div class="border-t border-surfaceLight pt-4 mt-4">
+                <div class="flex justify-between items-center mb-2">
+                  <span class="text-slate-400">Tickets</span>
+                  <span id="ticketTotal" class="text-white">$0.00</span>
+                </div>
+                <div class="flex justify-between items-center mb-2">
+                  <span class="text-slate-400">Consumables</span>
+                  <span id="consumableTotal" class="text-white">$0.00</span>
+                </div>
+                <div class="flex justify-between items-center mb-2">
+                  <span class="text-slate-400">Service Fee</span>
+                  <span id="serviceFee" class="text-white">$2.50</span>
+                </div>
+                <div class="flex justify-between items-center pt-3 border-t border-surfaceLight">
+                  <span class="font-semibold text-lg">Total</span>
+                  <span id="grandTotal" class="text-2xl font-bold text-crimson">$2.50</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="mt-8 flex justify-between">
+          <button id="step3Back" class="border border-surfaceLight hover:bg-surfaceLight text-white font-semibold px-8 py-3 rounded-xl transition-colors">
+            ← Back
+          </button>
+          <button id="step3Next" class="bg-crimson hover:bg-crimsonHover text-white font-semibold px-8 py-3 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+            Proceed to Checkout →
+          </button>
+        </div>
+      </div>
+    </div>

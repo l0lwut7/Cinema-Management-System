@@ -1,0 +1,38 @@
+{% if card_classes is not defined %}
+    {% set card_classes = '' %}
+{% endif %}
+{% if reveal_delay is not defined %}
+    {% set reveal_delay = 0 %}
+{% endif %}
+<article data-reveal-delay="{{ reveal_delay }}" class="reveal-on-scroll bg-cinema-surface rounded-xl overflow-hidden group hover:ring-2 hover:ring-cinema-primary transition-all {{ card_classes }}">
+    <div class="relative aspect-[2/3] overflow-hidden">
+        <a href="{{ movie.detail_url }}" class="absolute inset-0 z-10" aria-label="Open {{ movie.title }}"></a>
+        <img src="{{ movie.image_url }}" alt="{{ movie.title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+        <button type="button" class="favorite-btn absolute top-3 right-3 w-10 h-10 bg-cinema-bg/80 backdrop-blur rounded-full flex items-center justify-center hover:bg-cinema-primary transition-all z-20">
+            <svg class="w-5 h-5 heart-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+            </svg>
+        </button>
+        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-cinema-bg to-transparent p-4">
+            <div class="flex items-center gap-2">
+                <span class="flex items-center gap-1 text-cinema-secondary">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    {{ movie.rating if movie.rating else movie.avg_rating }}
+                </span>
+                <span class="text-cinema-muted text-sm">|</span>
+                <span class="text-cinema-muted text-sm">{{ movie.duration if movie.duration else movie.runtime_label }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="p-4">
+        <h3 class="font-heading text-xl font-semibold mb-1">{{ movie.title }}</h3>
+        <p class="text-cinema-muted text-sm mb-4">{{ movie.genres }}</p>
+        {% if show_book_button %}
+            <a href="{{ movie.book_url }}" class="block w-full bg-cinema-primary hover:bg-red-700 text-white py-2.5 rounded-lg font-semibold transition-all text-center">Book Now</a>
+        {% else %}
+            <a href="{{ movie.detail_url }}" class="block w-full bg-cinema-primary hover:bg-red-700 text-white py-2.5 rounded-lg font-semibold transition-all text-center">View Details</a>
+        {% endif %}
+    </div>
+</article>
