@@ -17,9 +17,9 @@
                 <a href="{{ url_for('discovery.theaters') }}" class="tab-btn px-6 py-2 rounded-lg font-medium transition-all {% if active_page == 'theaters' %}bg-cinema-primary text-white{% else %}bg-slate-700 text-cinema-muted hover:bg-slate-600{% endif %}">Theaters</a>
                 <a href="{{ url_for('discovery.deals') }}" class="tab-btn px-6 py-2 rounded-lg font-medium transition-all {% if active_page == 'deals' %}bg-cinema-primary text-white{% else %}bg-slate-700 text-cinema-muted hover:bg-slate-600{% endif %}">Deals</a>
                 {% if is_authenticated %}
-                    <a href="{{ profile_url }}" class="tab-btn px-6 py-2 rounded-lg font-medium transition-all bg-cinema-primary text-white">Profile</a>
+                    <a href="{{ url_for('dashboard.dashboard') }}" class="tab-btn px-6 py-2 rounded-lg font-medium transition-all bg-cinema-primary text-white">Profile</a>
                 {% else %}
-                    <a href="{{ login_url }}" class="tab-btn px-6 py-2 rounded-lg font-medium transition-all bg-slate-700 text-cinema-muted hover:bg-slate-600">Login</a>
+                    <a href="{{ url_for('auth.login') }}" class="tab-btn px-6 py-2 rounded-lg font-medium transition-all bg-slate-700 text-cinema-muted hover:bg-slate-600">Login</a>
                 {% endif %}
             </div>
         </div>

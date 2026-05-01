@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+
+{% block title %}CineMax - Login & Register{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}?v=1">
+{% endblock %}
+
+{% block content %}
+<div class="min-h-[calc(100vh-73px)] flex items-center justify-center p-6">
+  <div class="w-full max-w-md">
+    <!-- Auth Card -->
+    <div class="glass rounded-2xl p-8 shadow-2xl">
+      <!-- Tab Toggle -->
+      <div class="flex bg-cinema-surface rounded-xl p-1 mb-8">
+        <button id="login-tab" class="tab-btn active flex-1 py-3 rounded-lg font-medium transition-all" onclick="switchAuthTab('login')">
+          Sign In
+        </button>
+        <button id="register-tab" class="tab-btn flex-1 py-3 rounded-lg font-medium text-gray-400 hover:text-white transition-all" onclick="switchAuthTab('register')">
+          Register
+        </button>
+      </div>
+
+      <!-- Login Form -->
+      <div id="login-form">
+        <h2 class="font-heading text-3xl font-bold mb-2">Welcome Back</h2>
+        <p class="text-gray-400 mb-6">Sign in to access your bookings and favorites</p>
+        
+        <div id="login-error" class="hidden bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg mb-4 text-sm">
+          Invalid email or password. Please try again.
+        </div>
+        
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">Email Address</label>
+            <input type="email" id="login-email" placeholder="you@example.com" class="input-field w-full px-4 py-3 rounded-xl text-white placeholder-gray-500">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">Password</label>
+            <div class="relative">
+              <input type="password" id="login-password" placeholder="••••••••" class="input-field w-full px-4 py-3 rounded-xl text-white placeholder-gray-500 pr-12">
+              <button type="button" onclick="togglePassword('login-password', this)" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="flex items-center justify-between">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" class="w-4 h-4 rounded border-gray-600 bg-cinema-bg text-cinema-primary focus:ring-cinema-primary">
+              <span class="text-sm text-gray-400">Remember me</span>
+            </label>
+            <a href="#" class="text-sm text-cinema-primary hover:text-rose-400 transition-colors">Forgot password?</a>
+          </div>
+          <button onclick="handleLogin()" class="w-full py-4 bg-gradient-to-r from-cinema-primary to-rose-600 hover:from-rose-600 hover:to-cinema-primary rounded-xl font-semibold text-lg transition-all transform hover:scale-[1.02] shadow-lg shadow-cinema-primary/25">
+            Sign In
+          </button>
+        </div>
+        
+        <div class="mt-6 flex items-center gap-4">
+          <div class="flex-1 h-px bg-gray-700"></div>
+          <span class="text-sm text-gray-500">or continue with</span>
+          <div class="flex-1 h-px bg-gray-700"></div>
+        </div>
+        
+        <div class="mt-6 grid grid-cols-2 gap-4">
+          <button class="flex items-center justify-center gap-2 py-3 bg-cinema-bg hover:bg-cinema-surfaceLight border border-white/10 rounded-xl transition-colors">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+            </svg>
+            <span class="text-sm font-medium">Google</span>
+          </button>
+          <button class="flex items-center justify-center gap-2 py-3 bg-cinema-bg hover:bg-cinema-surfaceLight border border-white/10 rounded-xl transition-colors">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0012 2z"/>
+            </svg>
+            <span class="text-sm font-medium">GitHub</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Register Form -->
+      <div id="register-form" class="hidden">
+        <h2 class="font-heading text-3xl font-bold mb-2">Create Account</h2>
+        <p class="text-gray-400 mb-6">Join CineMax for exclusive benefits</p>
+        
+        <div id="register-error" class="hidden bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg mb-4 text-sm">
+          Please fill in all required fields correctly.
+        </div>
+        
+        <div class="space-y-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">First Name</label>
+              <input type="text" placeholder="John" class="input-field w-full px-4 py-3 rounded-xl text-white placeholder-gray-500">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-300 mb-2">Last Name</label>
+              <input type="text" placeholder="Doe" class="input-field w-full px-4 py-3 rounded-xl text-white placeholder-gray-500">
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">Email Address</label>
+            <input type="email" placeholder="you@example.com" class="input-field w-full px-4 py-3 rounded-xl text-white placeholder-gray-500">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">Phone Number</label>
+            <input type="tel" placeholder="+1 (555) 000-0000" class="input-field w-full px-4 py-3 rounded-xl text-white placeholder-gray-500">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">Password</label>
+            <input type="password" id="register-password" placeholder="Min. 8 characters" class="input-field w-full px-4 py-3 rounded-xl text-white placeholder-gray-500">
+            <div class="mt-2 flex gap-1" id="password-strength">
+              <div class="h-1 flex-1 rounded bg-cinema-primary"></div>
+              <div class="h-1 flex-1 rounded bg-cinema-primary"></div>
+              <div class="h-1 flex-1 rounded bg-gray-700"></div>
+              <div class="h-1 flex-1 rounded bg-gray-700"></div>
+            </div>
+            <p class="text-xs text-gray-500 mt-1">Use 8+ characters with mix of letters & numbers</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-300 mb-2">Confirm Password</label>
+            <input type="password" placeholder="••••••••" class="input-field w-full px-4 py-3 rounded-xl text-white placeholder-gray-500">
+          </div>
+          <label class="flex items-start gap-3 cursor-pointer">
+            <input type="checkbox" class="w-4 h-4 mt-0.5 rounded border-gray-600 bg-cinema-bg text-cinema-primary focus:ring-cinema-primary">
+            <span class="text-sm text-gray-400">I agree to the <a href="#" class="text-cinema-primary hover:underline">Terms of Service</a> and <a href="#" class="text-cinema-primary hover:underline">Privacy Policy</a></span>
+          </label>
+          <button onclick="handleRegister()" class="w-full py-4 bg-gradient-to-r from-cinema-primary to-rose-600 hover:from-rose-600 hover:to-cinema-primary rounded-xl font-semibold text-lg transition-all transform hover:scale-[1.02] shadow-lg shadow-cinema-primary/25">
+            Create Account
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAQ Accordion -->
+    <div class="mt-8 glass rounded-2xl p-6">
+      <h3 class="font-heading text-xl font-bold mb-4 flex items-center gap-2">
+        <svg class="w-5 h-5 text-amber" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/>
+        </svg>
+        Frequently Asked Questions
+      </h3>
+      
+      <div class="space-y-3">
+        <div class="accordion-item border border-white/10 rounded-xl overflow-hidden">
+          <button onclick="toggleAccordion(this)" class="w-full flex items-center justify-between p-4 text-left hover:bg-cinema-surfaceLight/50 transition-colors">
+            <span class="font-medium">How do I reset my password?</span>
+            <svg class="accordion-icon w-5 h-5 text-gray-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="accordion-content px-4 text-gray-400 text-sm">
+            <p class="pb-4">Click on "Forgot password?" on the login page. Enter your email address and we'll send you a link to reset your password. The link is valid for 24 hours.</p>
+          </div>
+        </div>
+        
+        <div class="accordion-item border border-white/10 rounded-xl overflow-hidden">
+          <button onclick="toggleAccordion(this)" class="w-full flex items-center justify-between p-4 text-left hover:bg-cinema-surfaceLight/50 transition-colors">
+            <span class="font-medium">Can I change my email address?</span>
+            <svg class="accordion-icon w-5 h-5 text-gray-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="accordion-content px-4 text-gray-400 text-sm">
+            <p class="pb-4">Yes! Go to your Profile Settings after logging in. You can update your email in the "Edit Profile" section. A verification email will be sent to confirm the change.</p>
+          </div>
+        </div>
+        
+        <div class="accordion-item border border-white/10 rounded-xl overflow-hidden">
+          <button onclick="toggleAccordion(this)" class="w-full flex items-center justify-between p-4 text-left hover:bg-cinema-surfaceLight/50 transition-colors">
+            <span class="font-medium">How do I request a refund?</span>
+            <svg class="accordion-icon w-5 h-5 text-gray-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="accordion-content px-4 text-gray-400 text-sm">
+            <p class="pb-4">Refunds can be requested up to 2 hours before showtime. Go to "Booking History" in your dashboard and click "Request Refund" on the booking. Refunds are processed within 5-7 business days.</p>
+          </div>
+        </div>
+        
+        <div class="accordion-item border border-white/10 rounded-xl overflow-hidden">
+          <button onclick="toggleAccordion(this)" class="w-full flex items-center justify-between p-4 text-left hover:bg-cinema-surfaceLight/50 transition-colors">
+            <span class="font-medium">Need more help?</span>
+            <svg class="accordion-icon w-5 h-5 text-gray-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="accordion-content px-4 text-gray-400 text-sm">
+            <div class="pb-4">
+              <p class="mb-3">Contact our support team:</p>
+              <div class="flex items-center gap-2 mb-2">
+                <svg class="w-4 h-4 text-cinema-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                </svg>
+                <span>support@cinemax.com</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-cinema-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                </svg>
+                <span>1-800-CINEMAX</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/auth.js') }}?v=1"></script>
+{% endblock %}
