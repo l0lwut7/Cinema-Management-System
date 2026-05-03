@@ -84,6 +84,26 @@
   
   <!-- Main Content -->
   <main class="flex-1 ml-64 p-6">
+      <main class="flex-1 ml-64 p-6">
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="mb-6 space-y-3">
+        {% for category, message in messages %}
+          <div class="rounded-xl px-4 py-3 text-sm border
+                      {% if category == 'success' %}
+                        bg-emerald/10 border-emerald/40 text-emerald
+                      {% else %}
+                        bg-crimson/10 border-crimson/40 text-crimson
+                      {% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  {% include "admin/components/analytics.html" %}
     {% include "admin/components/analytics.html" %}
     {% include "admin/components/staff.html" %}
     {% include "admin/components/catalog.html" %}

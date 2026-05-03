@@ -1,43 +1,1593 @@
 from flask import Blueprint, render_template, session, redirect, url_for, request, flash
-from .data import VIP_SPENDERS, EMPLOYEES, MOVIES, UPCOMING_SCREENINGS, SALOONS, CONSUMABLES, DEALS, VIP_TIER, GENRES, FORMATS
+from werkzeug.security import check_password_hash, generate_password_hash
+from datetime import datetime
+from app.db import get_db_connection
+
 
 admin_bp = Blueprint("admin", __name__)
 
 @admin_bp.route("/admin/login", methods=["GET", "POST"], strict_slashes=False)
 def login():
-    if request.method == "POST":
-        username = request.form.get("username")
-        password = request.form.get("password")
-        
-        # Mock admin auth
-        if username == "admin" and password == "admin":
-            session['admin_id'] = 1
-            return redirect(url_for('admin.dashboard'))
-        else:
+    if request.method == "GET":
+        return render_template("admin/login.html")
+
+    username = request.form.get("username")
+    password = request.form.get("password")
+
+    if not username or not password:
+        flash("Username and password are required.", "error")
+        return redirect(url_for("admin.login"))
+
+    connection = get_db_connection()
+
+    if connection is None:
+        flash("Database connection failed.", "error")
+        return redirect(url_for("admin.login"))
+
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+        cursor.execute(
+            """
+            SELECT
+                u.user_id,
+                u.first_name,
+                u.last_name,
+                u.email,
+                u.password_hash,
+                e.role,
+                e.account_status,
+                e.auth_level
+            FROM user u
+            JOIN employee e ON u.user_id = e.user_id
+            WHERE u.email = %s
+            """,
+            (username,)
+        )
+
+        admin_user = cursor.fetchone()
+
+        if admin_user is None:
             flash("Invalid credentials", "error")
-            
-    return render_template("admin/login.html")
+            return redirect(url_for("admin.login"))
+
+        if admin_user["account_status"] != "Active":
+            flash("This employee account is not active.", "error")
+            return redirect(url_for("admin.login"))
+
+        auth_level = int(admin_user["auth_level"])
+
+        if auth_level < 3:
+            flash("You do not have admin access.", "error")
+            return redirect(url_for("admin.login"))
+
+        if not check_password_hash(admin_user["password_hash"], password):
+            flash("Invalid credentials", "error")
+            return redirect(url_for("admin.login"))
+
+        session["admin_id"] = admin_user["user_id"]
+        session["admin_name"] = admin_user["first_name"]
+        session["admin_role"] = admin_user["role"]
+        session["admin_auth_level"] = admin_user["auth_level"]
+
+        return redirect(url_for("admin.dashboard"))
+
+    finally:
+        cursor.close()
+        connection.close()
 
 @admin_bp.route("/admin/logout", strict_slashes=False)
 def logout():
-    session.pop('admin_id', None)
-    return redirect(url_for('admin.login'))
+    session.pop("admin_id", None)
+    session.pop("admin_name", None)
+    session.pop("admin_role", None)
+    session.pop("admin_auth_level", None)
+
+    return redirect(url_for("admin.login"))
 
 @admin_bp.route("/admin/dashboard", strict_slashes=False)
 def dashboard():
-    if 'admin_id' not in session:
-        return redirect(url_for('admin.login'))
-        
+    if "admin_id" not in session:
+        return redirect(url_for("admin.login"))
+
     return render_template(
         "admin/dashboard.html",
-        vip_spenders=VIP_SPENDERS,
-        employees=EMPLOYEES,
-        movies=MOVIES,
-        upcoming_screenings=UPCOMING_SCREENINGS,
-        saloons=SALOONS,
-        consumables=CONSUMABLES,
-        deals=DEALS,
-        vip_tier=VIP_TIER,
-        genres=GENRES,
-        formats=FORMATS
+        analytics_summary=fetch_analytics_summary(),
+        revenue_by_theater=fetch_revenue_by_theater(),
+        vip_spenders=fetch_vip_spenders(),
+        employees=fetch_employees(),
+        movies=fetch_movies_for_admin(),
+        upcoming_screenings=fetch_upcoming_screenings(),
+        saloons=fetch_saloons(),
+        consumables=fetch_consumables(),
+        deals=fetch_deals(),
+        vip_tier=get_vip_tier_info(),
+        genres=fetch_genres(),
+        formats=fetch_formats()
     )
+
+@admin_bp.route("/admin/screenings/add", methods=["POST"], strict_slashes=False)
+def add_screening():
+    if "admin_id" not in session:
+        return redirect(url_for("admin.login"))
+
+    movie_id = request.form.get("movie_id", "").strip()
+    saloon_value = request.form.get("saloon_value", "").strip()
+    screening_date = request.form.get("screening_date", "").strip()
+    screening_time = request.form.get("screening_time", "").strip()
+    base_price = request.form.get("base_price", "").strip()
+    is_subtitled = 1 if request.form.get("is_subtitled") == "on" else 0
+
+    if not movie_id or not saloon_value or not screening_date or not screening_time or not base_price:
+        flash("Please fill all required screening fields.", "error")
+        return redirect(url_for("admin.dashboard"))
+
+    try:
+        theater_id, saloon_number = saloon_value.split("|")
+        movie_id = int(movie_id)
+        theater_id = int(theater_id)
+        saloon_number = int(saloon_number)
+        base_price = float(base_price)
+        start_time = datetime.strptime(
+            f"{screening_date} {screening_time}",
+            "%Y-%m-%d %H:%M"
+        )
+    except ValueError:
+        flash("Invalid screening data.", "error")
+        return redirect(url_for("admin.dashboard"))
+
+    connection = get_db_connection()
+
+    if connection is None:
+        flash("Database connection failed.", "error")
+        return redirect(url_for("admin.dashboard"))
+
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+        cursor.execute(
+            """
+            SELECT movie_id
+            FROM movie
+            WHERE movie_id = %s
+            """,
+            (movie_id,)
+        )
+        movie = cursor.fetchone()
+
+        if not movie:
+            flash("Selected movie does not exist.", "error")
+            return redirect(url_for("admin.dashboard"))
+
+        cursor.execute(
+            """
+            SELECT theater_id, number
+            FROM saloon
+            WHERE theater_id = %s AND number = %s AND is_active = 1
+            """,
+            (theater_id, saloon_number)
+        )
+        saloon = cursor.fetchone()
+
+        if not saloon:
+            flash("Selected saloon does not exist or is inactive.", "error")
+            return redirect(url_for("admin.dashboard"))
+
+        cursor.execute(
+            """
+            INSERT INTO screening
+                (movie_id, theater_id, saloon_number, start_time, base_price, is_subtitled)
+            VALUES
+                (%s, %s, %s, %s, %s, %s)
+            """,
+            (
+                movie_id,
+                theater_id,
+                saloon_number,
+                start_time,
+                base_price,
+                is_subtitled
+            )
+        )
+
+        connection.commit()
+        flash("Screening added successfully.", "success")
+
+    except Exception as error:
+        connection.rollback()
+        flash(f"Screening could not be added: {error}", "error")
+
+    finally:
+        cursor.close()
+        connection.close()
+
+    return redirect(url_for("admin.dashboard"))
+
+@admin_bp.route("/admin/movies/add", methods=["POST"], strict_slashes=False)
+def add_movie():
+    if "admin_id" not in session:
+        return redirect(url_for("admin.login"))
+
+    title = request.form.get("title", "").strip()
+    director = request.form.get("director", "").strip()
+    duration_mins = request.form.get("duration_mins", "").strip()
+    rating_age = request.form.get("rating_age", "").strip()
+    release_date = request.form.get("release_date", "").strip()
+    summary = request.form.get("summary", "").strip()
+
+    genre_ids = request.form.getlist("genre_ids")
+    format_ids = request.form.getlist("format_ids")
+
+    if not title or not director or not duration_mins or not rating_age or not release_date:
+        flash("Please fill all required movie fields.", "error")
+        return redirect(url_for("admin.dashboard"))
+
+    try:
+        duration_mins = int(duration_mins)
+        rating_age = int(rating_age)
+    except ValueError:
+        flash("Duration and rating age must be valid numbers.", "error")
+        return redirect(url_for("admin.dashboard"))
+
+    connection = get_db_connection()
+
+    if connection is None:
+        flash("Database connection failed.", "error")
+        return redirect(url_for("admin.dashboard"))
+
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+        cursor.execute(
+            """
+            INSERT INTO movie
+                (title, director, duration_mins, rating_age, release_date, summary)
+            VALUES
+                (%s, %s, %s, %s, %s, %s)
+            """,
+            (
+                title,
+                director,
+                duration_mins,
+                rating_age,
+                release_date,
+                summary
+            )
+        )
+
+        movie_id = cursor.lastrowid
+
+        for genre_id in genre_ids:
+            cursor.execute(
+                """
+                INSERT INTO movie_genre
+                    (movie_id, genre_id)
+                VALUES
+                    (%s, %s)
+                """,
+                (movie_id, genre_id)
+            )
+
+        for format_id in format_ids:
+            cursor.execute(
+                """
+                INSERT INTO movie_format
+                    (movie_id, format_id)
+                VALUES
+                    (%s, %s)
+                """,
+                (movie_id, format_id)
+            )
+
+        connection.commit()
+        flash("Movie added successfully.", "success")
+
+    except Exception as error:
+        connection.rollback()
+        flash(f"Movie could not be added: {error}", "error")
+
+    finally:
+        cursor.close()
+        connection.close()
+
+    return redirect(url_for("admin.dashboard"))
+
+@admin_bp.route("/admin/employees/add", methods=["POST"], strict_slashes=False)
+def add_employee():
+    if "admin_id" not in session:
+        return redirect(url_for("admin.login"))
+
+    first_name = request.form.get("first_name", "").strip()
+    last_name = request.form.get("last_name", "").strip()
+    phone_number = request.form.get("phone_number", "").strip()
+    email = request.form.get("email", "").strip()
+    password = request.form.get("password", "").strip()
+
+    role = request.form.get("role", "").strip()
+    salary = request.form.get("salary", "").strip()
+    auth_level = request.form.get("auth_level", "").strip()
+    work_shift = request.form.get("work_shift", "").strip()
+    theater_id = request.form.get("theater_id", "").strip()
+
+    if not first_name or not last_name or not email or not password or not role or not auth_level:
+        flash("Please fill all required employee fields.", "error")
+        return redirect(url_for("admin.dashboard"))
+
+    try:
+        auth_level = int(auth_level)
+    except ValueError:
+        flash("Invalid auth level.", "error")
+        return redirect(url_for("admin.dashboard"))
+
+    if auth_level not in [1, 2, 3]:
+        flash("Auth level must be 1, 2, or 3.", "error")
+        return redirect(url_for("admin.dashboard"))
+
+    salary_value = float(salary) if salary else 0.00
+    theater_id_value = int(theater_id) if theater_id else None
+    password_hash = generate_password_hash(password)
+
+    connection = get_db_connection()
+
+    if connection is None:
+        flash("Database connection failed.", "error")
+        return redirect(url_for("admin.dashboard"))
+
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+        cursor.execute(
+            "SELECT user_id FROM user WHERE email = %s",
+            (email,)
+        )
+
+        existing_user = cursor.fetchone()
+
+        if existing_user:
+            flash("A user with this email already exists.", "error")
+            return redirect(url_for("admin.dashboard"))
+
+        cursor.execute(
+            """
+            INSERT INTO user
+                (first_name, last_name, phone_number, email, password_hash, created_at)
+            VALUES
+                (%s, %s, %s, %s, %s, NOW())
+            """,
+            (
+                first_name,
+                last_name,
+                phone_number,
+                email,
+                password_hash
+            )
+        )
+
+        new_user_id = cursor.lastrowid
+
+        cursor.execute(
+            """
+            INSERT INTO employee
+                (user_id, role, salary, account_status, auth_level, work_shift, theater_id)
+            VALUES
+                (%s, %s, %s, %s, %s, %s, %s)
+            """,
+            (
+                new_user_id,
+                role,
+                salary_value,
+                "Active",
+                auth_level,
+                work_shift,
+                theater_id_value
+            )
+        )
+
+        connection.commit()
+        flash("Employee added successfully.", "success")
+
+    except Exception as error:
+        connection.rollback()
+        flash(f"Employee could not be added: {error}", "error")
+
+    finally:
+        cursor.close()
+        connection.close()
+
+    return redirect(url_for("admin.dashboard"))
+
+@admin_bp.route("/admin/employees/edit/<int:user_id>", methods=["POST"], strict_slashes=False)
+def edit_employee(user_id):
+    if "admin_id" not in session:
+        return redirect(url_for("admin.login"))
+
+    first_name = request.form.get("first_name", "").strip()
+    last_name = request.form.get("last_name", "").strip()
+    phone_number = request.form.get("phone_number", "").strip()
+    email = request.form.get("email", "").strip()
+
+    role = request.form.get("role", "").strip()
+    salary = request.form.get("salary", "").strip()
+    auth_level = request.form.get("auth_level", "").strip()
+    account_status = request.form.get("account_status", "").strip()
+    work_shift = request.form.get("work_shift", "").strip()
+    theater_id = request.form.get("theater_id", "").strip()
+
+    if not first_name or not last_name or not email or not role or not auth_level:
+        flash("Please fill all required employee fields.", "error")
+        return redirect(url_for("admin.dashboard"))
+
+    try:
+        auth_level = int(auth_level)
+    except ValueError:
+        flash("Invalid auth level.", "error")
+        return redirect(url_for("admin.dashboard"))
+
+    if auth_level not in [1, 2, 3]:
+        flash("Auth level must be 1, 2, or 3.", "error")
+        return redirect(url_for("admin.dashboard"))
+
+    salary_value = float(salary) if salary else 0.00
+    theater_id_value = int(theater_id) if theater_id else None
+
+    if account_status not in ["Active", "Inactive"]:
+        account_status = "Active"
+
+    connection = get_db_connection()
+
+    if connection is None:
+        flash("Database connection failed.", "error")
+        return redirect(url_for("admin.dashboard"))
+
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+        cursor.execute(
+            """
+            SELECT user_id
+            FROM user
+            WHERE email = %s AND user_id != %s
+            """,
+            (email, user_id)
+        )
+
+        existing_user = cursor.fetchone()
+
+        if existing_user:
+            flash("Another user already uses this email.", "error")
+            return redirect(url_for("admin.dashboard"))
+
+        cursor.execute(
+            """
+            UPDATE user
+            SET
+                first_name = %s,
+                last_name = %s,
+                phone_number = %s,
+                email = %s
+            WHERE user_id = %s
+            """,
+            (
+                first_name,
+                last_name,
+                phone_number,
+                email,
+                user_id
+            )
+        )
+
+        cursor.execute(
+            """
+            UPDATE employee
+            SET
+                role = %s,
+                salary = %s,
+                account_status = %s,
+                auth_level = %s,
+                work_shift = %s,
+                theater_id = %s
+            WHERE user_id = %s
+            """,
+            (
+                role,
+                salary_value,
+                account_status,
+                auth_level,
+                work_shift,
+                theater_id_value,
+                user_id
+            )
+        )
+
+        connection.commit()
+        flash("Employee updated successfully.", "success")
+
+    except Exception as error:
+        connection.rollback()
+        flash(f"Employee could not be updated: {error}", "error")
+
+    finally:
+        cursor.close()
+        connection.close()
+
+    return redirect(url_for("admin.dashboard"))
+
+@admin_bp.route("/admin/employees/deactivate/<int:user_id>", methods=["POST"], strict_slashes=False)
+def deactivate_employee(user_id):
+    if "admin_id" not in session:
+        return redirect(url_for("admin.login"))
+
+    # Admin kendini yanlışlıkla pasifleştirmesin
+    if session.get("admin_id") == user_id:
+        flash("You cannot deactivate your own admin account.", "error")
+        return redirect(url_for("admin.dashboard"))
+
+    connection = get_db_connection()
+
+    if connection is None:
+        flash("Database connection failed.", "error")
+        return redirect(url_for("admin.dashboard"))
+
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+        cursor.execute(
+            """
+            UPDATE employee
+            SET account_status = 'Inactive'
+            WHERE user_id = %s
+            """,
+            (user_id,)
+        )
+
+        connection.commit()
+        flash("Employee deactivated successfully.", "success")
+
+    except Exception as error:
+        connection.rollback()
+        flash(f"Employee could not be deactivated: {error}", "error")
+
+    finally:
+        cursor.close()
+        connection.close()
+
+    return redirect(url_for("admin.dashboard"))
+
+def fetch_employees():
+    connection = get_db_connection()
+
+    if connection is None:
+        return []
+
+    cursor = connection.cursor(dictionary=True)
+
+    cursor.execute(
+        """
+        SELECT u.user_id,
+               u.first_name,
+               u.last_name,
+               u.phone_number,
+               u.email,
+               e.role,
+               e.salary,
+               e.auth_level,
+               e.account_status,
+               e.work_shift,
+               e.theater_id
+        FROM employee e
+                 JOIN user u
+        ON e.user_id = u.user_id
+        ORDER BY u.user_id DESC
+        """
+    )
+
+    rows = cursor.fetchall()
+
+    cursor.close()
+    connection.close()
+
+    employees = []
+    colors = ["crimson", "amber", "emerald", "sky"]
+
+    for index, row in enumerate(rows):
+        name = f"{row['first_name']} {row['last_name']}"
+        initials = f"{row['first_name'][0]}{row['last_name'][0]}".upper()
+
+        auth_level = int(row["auth_level"])
+
+        if auth_level == 3:
+            auth_label = "Admin"
+            auth_color = "crimson"
+        elif auth_level == 2:
+            auth_label = "Moderator"
+            auth_color = "amber"
+        else:
+            auth_label = "Staff"
+            auth_color = "slate-600"
+
+        employees.append({
+            "id": row["user_id"],
+            "initials": initials,
+            "color": colors[index % len(colors)],
+            "name": name,
+
+            "first_name": row["first_name"],
+            "last_name": row["last_name"],
+            "phone_number": row["phone_number"],
+            "email": row["email"],
+
+            "role": row["role"],
+            "auth_level": auth_label,
+            "auth_level_value": auth_level,
+            "auth_color": auth_color,
+
+            "salary": f"${float(row['salary']):,.2f}" if row["salary"] is not None else "$0.00",
+            "salary_value": float(row["salary"]) if row["salary"] is not None else 0,
+
+            "account_status": row["account_status"],
+            "work_shift": row["work_shift"],
+            "theater_id": row["theater_id"] if row["theater_id"] is not None else ""
+        })
+
+    return employees
+
+def fetch_movies_for_admin():
+    connection = get_db_connection()
+
+    if connection is None:
+        return []
+
+    cursor = connection.cursor(dictionary=True)
+
+    cursor.execute(
+        """
+        SELECT
+            m.movie_id,
+            m.title,
+            m.director,
+            m.duration_mins,
+            m.rating_age,
+            m.release_date,
+            m.summary,
+            GROUP_CONCAT(DISTINCT g.name SEPARATOR ', ') AS genre_names,
+            GROUP_CONCAT(DISTINCT g.genre_id SEPARATOR ',') AS genre_ids,
+            GROUP_CONCAT(DISTINCT f.format_id SEPARATOR ',') AS format_ids
+        FROM movie m
+        LEFT JOIN movie_genre mg ON m.movie_id = mg.movie_id
+        LEFT JOIN genre g ON mg.genre_id = g.genre_id
+        LEFT JOIN movie_format mf ON m.movie_id = mf.movie_id
+        LEFT JOIN format f ON mf.format_id = f.format_id
+        GROUP BY
+            m.movie_id,
+            m.title,
+            m.director,
+            m.duration_mins,
+            m.rating_age,
+            m.release_date,
+            m.summary
+        ORDER BY m.movie_id DESC
+        """
+    )
+
+    rows = cursor.fetchall()
+
+    cursor.close()
+    connection.close()
+
+    movies = []
+    genre_colors = ["crimson", "amber", "emerald", "sky"]
+
+    for row in rows:
+        raw_genres = row["genre_names"].split(", ") if row["genre_names"] else []
+
+        genres = []
+        for index, genre_name in enumerate(raw_genres):
+            genres.append((genre_name, genre_colors[index % len(genre_colors)]))
+
+        release_date = row["release_date"]
+        release_date_value = release_date.strftime("%Y-%m-%d") if hasattr(release_date, "strftime") else str(release_date or "")
+
+        movies.append({
+            "id": row["movie_id"],
+            "name": row["title"],
+            "title": row["title"],
+            "director": row["director"] or "",
+            "duration_mins": row["duration_mins"],
+            "duration": f"{row['duration_mins']} min",
+            "rating_age": row["rating_age"],
+            "release_date": release_date_value,
+            "summary": row["summary"] or "",
+            "genres": genres,
+            "genre_ids": row["genre_ids"] or "",
+            "format_ids": row["format_ids"] or ""
+        })
+
+    return movies
+
+@admin_bp.route("/admin/movies/edit/<int:movie_id>", methods=["POST"], strict_slashes=False)
+def edit_movie(movie_id):
+    if "admin_id" not in session:
+        return redirect(url_for("admin.login"))
+
+    title = request.form.get("title", "").strip()
+    director = request.form.get("director", "").strip()
+    duration_mins = request.form.get("duration_mins", "").strip()
+    rating_age = request.form.get("rating_age", "").strip()
+    release_date = request.form.get("release_date", "").strip()
+    summary = request.form.get("summary", "").strip()
+
+    genre_ids = request.form.getlist("genre_ids")
+    format_ids = request.form.getlist("format_ids")
+
+    if not title or not director or not duration_mins or not rating_age or not release_date:
+        flash("Please fill all required movie fields.", "error")
+        return redirect(url_for("admin.dashboard"))
+
+    try:
+        duration_mins = int(duration_mins)
+        rating_age = int(rating_age)
+    except ValueError:
+        flash("Duration and rating age must be valid numbers.", "error")
+        return redirect(url_for("admin.dashboard"))
+
+    connection = get_db_connection()
+
+    if connection is None:
+        flash("Database connection failed.", "error")
+        return redirect(url_for("admin.dashboard"))
+
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+        cursor.execute(
+            """
+            SELECT movie_id
+            FROM movie
+            WHERE movie_id = %s
+            """,
+            (movie_id,)
+        )
+
+        existing_movie = cursor.fetchone()
+
+        if not existing_movie:
+            flash("Movie not found.", "error")
+            return redirect(url_for("admin.dashboard"))
+
+        cursor.execute(
+            """
+            UPDATE movie
+            SET
+                title = %s,
+                director = %s,
+                duration_mins = %s,
+                rating_age = %s,
+                release_date = %s,
+                summary = %s
+            WHERE movie_id = %s
+            """,
+            (
+                title,
+                director,
+                duration_mins,
+                rating_age,
+                release_date,
+                summary,
+                movie_id
+            )
+        )
+
+        cursor.execute(
+            """
+            DELETE FROM movie_genre
+            WHERE movie_id = %s
+            """,
+            (movie_id,)
+        )
+
+        for genre_id in genre_ids:
+            cursor.execute(
+                """
+                INSERT INTO movie_genre
+                    (movie_id, genre_id)
+                VALUES
+                    (%s, %s)
+                """,
+                (movie_id, genre_id)
+            )
+
+        cursor.execute(
+            """
+            DELETE FROM movie_format
+            WHERE movie_id = %s
+            """,
+            (movie_id,)
+        )
+
+        for format_id in format_ids:
+            cursor.execute(
+                """
+                INSERT INTO movie_format
+                    (movie_id, format_id)
+                VALUES
+                    (%s, %s)
+                """,
+                (movie_id, format_id)
+            )
+
+        connection.commit()
+        flash("Movie updated successfully.", "success")
+
+    except Exception as error:
+        connection.rollback()
+        flash(f"Movie could not be updated: {error}", "error")
+
+    finally:
+        cursor.close()
+        connection.close()
+
+    return redirect(url_for("admin.dashboard"))
+
+@admin_bp.route("/admin/consumables/add", methods=["POST"], strict_slashes=False)
+def add_consumable():
+    if "admin_id" not in session:
+        return redirect(url_for("admin.login"))
+
+    name = request.form.get("name", "").strip()
+    unit_price = request.form.get("unit_price", "").strip()
+    stock_quantity = request.form.get("stock_quantity", "").strip()
+
+    if not name or not unit_price or not stock_quantity:
+        flash("Please fill all required consumable fields.", "error")
+        return redirect(url_for("admin.dashboard"))
+
+    try:
+        unit_price = float(unit_price)
+        stock_quantity = int(stock_quantity)
+    except ValueError:
+        flash("Price and stock quantity must be valid numbers.", "error")
+        return redirect(url_for("admin.dashboard"))
+
+    connection = get_db_connection()
+
+    if connection is None:
+        flash("Database connection failed.", "error")
+        return redirect(url_for("admin.dashboard"))
+
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+        cursor.execute(
+            """
+            SELECT consumable_id
+            FROM consumable
+            WHERE LOWER(name) = LOWER(%s)
+            """,
+            (name,)
+        )
+
+        existing_item = cursor.fetchone()
+
+        if existing_item:
+            flash("This consumable already exists.", "error")
+            return redirect(url_for("admin.dashboard"))
+
+        cursor.execute(
+            """
+            INSERT INTO consumable
+                (name, unit_price, stock_quantity)
+            VALUES
+                (%s, %s, %s)
+            """,
+            (name, unit_price, stock_quantity)
+        )
+
+        connection.commit()
+        flash("Consumable added successfully.", "success")
+
+    except Exception as error:
+        connection.rollback()
+        flash(f"Consumable could not be added: {error}", "error")
+
+    finally:
+        cursor.close()
+        connection.close()
+
+    return redirect(url_for("admin.dashboard"))
+
+def fetch_genres():
+    connection = get_db_connection()
+
+    if connection is None:
+        return []
+
+    cursor = connection.cursor(dictionary=True)
+
+    cursor.execute(
+        """
+        SELECT genre_id, name
+        FROM genre
+        ORDER BY name
+        """
+    )
+
+    rows = cursor.fetchall()
+
+    cursor.close()
+    connection.close()
+
+    return rows
+
+def fetch_formats():
+    connection = get_db_connection()
+
+    if connection is None:
+        return []
+
+    cursor = connection.cursor(dictionary=True)
+
+    cursor.execute(
+        """
+        SELECT format_id, name
+        FROM format
+        ORDER BY name
+        """
+    )
+
+    rows = cursor.fetchall()
+
+    cursor.close()
+    connection.close()
+
+    return rows
+
+
+def fetch_saloons():
+    connection = get_db_connection()
+
+    if connection is None:
+        return []
+
+    cursor = connection.cursor(dictionary=True)
+
+    cursor.execute(
+        """
+        SELECT
+            s.theater_id,
+            t.name AS theater_name,
+            s.number,
+            s.capacity,
+            s.type,
+            s.is_active
+        FROM saloon s
+        JOIN theater t ON s.theater_id = t.theater_id
+        ORDER BY s.theater_id, s.number
+        """
+    )
+
+    rows = cursor.fetchall()
+
+    cursor.close()
+    connection.close()
+
+    saloons = []
+
+    for row in rows:
+        is_active = bool(row["is_active"])
+
+        saloons.append({
+            "theater_id": row["theater_id"],
+            "number": row["number"],
+            "name": f"{row['theater_name']} - Saloon {row['number']}",
+            "info": f"{row['capacity']} seats • {row['type']}",
+            "status": "Active" if is_active else "Maintenance",
+            "status_color": "emerald" if is_active else "amber"
+        })
+
+    return saloons
+
+
+def fetch_upcoming_screenings():
+    connection = get_db_connection()
+
+    if connection is None:
+        return []
+
+    cursor = connection.cursor(dictionary=True)
+
+    cursor.execute(
+        """
+        SELECT
+            s.screening_id,
+            m.title AS movie_title,
+            t.name AS theater_name,
+            s.saloon_number,
+            s.start_time,
+            s.base_price
+        FROM screening s
+        JOIN movie m ON s.movie_id = m.movie_id
+        JOIN theater t ON s.theater_id = t.theater_id
+        WHERE s.start_time >= NOW()
+        ORDER BY s.start_time ASC
+        LIMIT 10
+        """
+    )
+
+    rows = cursor.fetchall()
+
+    cursor.close()
+    connection.close()
+
+    screenings = []
+
+    for row in rows:
+        screenings.append({
+            "movie": row["movie_title"],
+            "status": "Scheduled",
+            "status_color": "sky",
+            "saloon": f"{row['theater_name']} - Saloon {row['saloon_number']}",
+            "time": row["start_time"].strftime("%Y-%m-%d %H:%M") if hasattr(row["start_time"], "strftime") else str(row["start_time"]),
+            "price": f"${float(row['base_price']):.2f}"
+        })
+
+    return screenings
+
+def fetch_consumables():
+    connection = get_db_connection()
+
+    if connection is None:
+        return []
+
+    cursor = connection.cursor(dictionary=True)
+
+    cursor.execute(
+        """
+        SELECT
+            consumable_id,
+            name,
+            unit_price,
+            stock_quantity
+        FROM consumable
+        ORDER BY consumable_id
+        """
+    )
+
+    rows = cursor.fetchall()
+
+    cursor.close()
+    connection.close()
+
+    consumables = []
+
+    for row in rows:
+        stock = int(row["stock_quantity"])
+
+        if stock <= 20:
+            stock_class = "text-amber"
+            wrapper_class = "border border-amber/30"
+            stock_label = f"Stock: {stock} units ⚠️"
+        else:
+            stock_class = "text-slate-400"
+            wrapper_class = ""
+            stock_label = f"Stock: {stock} units"
+
+        consumables.append({
+            "id": row["consumable_id"],
+            "name": row["name"],
+            "unit_price": float(row["unit_price"]),
+            "stock_quantity": stock,
+            "price": f"${float(row['unit_price']):.2f}",
+            "stock": stock_label,
+            "stock_class": stock_class,
+            "wrapper_class": wrapper_class
+        })
+    return consumables
+
+
+def fetch_deals():
+    connection = get_db_connection()
+
+    if connection is None:
+        return []
+
+    cursor = connection.cursor(dictionary=True)
+
+    cursor.execute(
+        """
+        SELECT
+            deal_id,
+            name,
+            discount_percent,
+            valid_until
+        FROM deal
+        ORDER BY valid_until DESC
+        """
+    )
+
+    rows = cursor.fetchall()
+
+    cursor.close()
+    connection.close()
+
+    from datetime import date
+
+    deals = []
+
+    for row in rows:
+        valid_until = row["valid_until"]
+        is_active = valid_until >= date.today()
+
+        valid_text = valid_until.strftime("%Y-%m-%d") if hasattr(valid_until, "strftime") else str(valid_until)
+
+        deals.append({
+            "id": row["deal_id"],
+            "name": row["name"],
+            "discount_percent": float(row["discount_percent"]),
+            "valid_until": valid_text,
+            "status": "Active" if is_active else "Inactive",
+            "status_color": "emerald" if is_active else "slate-600",
+            "desc": f"{float(row['discount_percent']):.0f}% discount",
+            "valid": f"Valid until {valid_text}"
+        })
+
+    return deals
+
+@admin_bp.route("/admin/deals/edit/<int:deal_id>", methods=["POST"], strict_slashes=False)
+def edit_deal(deal_id):
+    if "admin_id" not in session:
+        return redirect(url_for("admin.login"))
+
+    name = request.form.get("name", "").strip()
+    discount_percent = request.form.get("discount_percent", "").strip()
+    valid_until = request.form.get("valid_until", "").strip()
+
+    if not name or not discount_percent or not valid_until:
+        flash("Please fill all required deal fields.", "error")
+        return redirect(url_for("admin.dashboard"))
+
+    try:
+        discount_percent = float(discount_percent)
+    except ValueError:
+        flash("Discount percent must be a valid number.", "error")
+        return redirect(url_for("admin.dashboard"))
+
+    if discount_percent < 0 or discount_percent > 100:
+        flash("Discount percent must be between 0 and 100.", "error")
+        return redirect(url_for("admin.dashboard"))
+
+    connection = get_db_connection()
+
+    if connection is None:
+        flash("Database connection failed.", "error")
+        return redirect(url_for("admin.dashboard"))
+
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+        cursor.execute(
+            """
+            SELECT deal_id
+            FROM deal
+            WHERE deal_id = %s
+            """,
+            (deal_id,)
+        )
+
+        existing_deal = cursor.fetchone()
+
+        if not existing_deal:
+            flash("Deal not found.", "error")
+            return redirect(url_for("admin.dashboard"))
+
+        cursor.execute(
+            """
+            SELECT deal_id
+            FROM deal
+            WHERE LOWER(name) = LOWER(%s)
+              AND deal_id != %s
+            """,
+            (name, deal_id)
+        )
+
+        duplicate_deal = cursor.fetchone()
+
+        if duplicate_deal:
+            flash("Another deal already uses this name.", "error")
+            return redirect(url_for("admin.dashboard"))
+
+        cursor.execute(
+            """
+            UPDATE deal
+            SET
+                name = %s,
+                discount_percent = %s,
+                valid_until = %s
+            WHERE deal_id = %s
+            """,
+            (
+                name,
+                discount_percent,
+                valid_until,
+                deal_id
+            )
+        )
+
+        connection.commit()
+        flash("Deal updated successfully.", "success")
+
+    except Exception as error:
+        connection.rollback()
+        flash(f"Deal could not be updated: {error}", "error")
+
+    finally:
+        cursor.close()
+        connection.close()
+
+    return redirect(url_for("admin.dashboard"))
+
+def fetch_analytics_summary():
+    connection = get_db_connection()
+
+    if connection is None:
+        return {
+            "total_revenue": "$0.00",
+            "tickets_sold": 0,
+            "inventory_alerts": 0,
+            "occupancy_rate": "0.0%"
+        }
+
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+        # Total Revenue: başarılı payment veya booking total üzerinden
+        cursor.execute(
+            """
+            SELECT COALESCE(SUM(b.total_amount), 0) AS total_revenue
+            FROM booking b
+            LEFT JOIN payment p ON b.booking_id = p.booking_id
+            WHERE p.status = 'Completed' OR p.status IS NULL
+            """
+        )
+        revenue_row = cursor.fetchone()
+        total_revenue = float(revenue_row["total_revenue"] or 0)
+
+        # Tickets Sold
+        cursor.execute(
+            """
+            SELECT COUNT(*) AS tickets_sold
+            FROM ticket
+            """
+        )
+        tickets_row = cursor.fetchone()
+        tickets_sold = int(tickets_row["tickets_sold"] or 0)
+
+        # Inventory Alerts: stock <= 20
+        cursor.execute(
+            """
+            SELECT COUNT(*) AS inventory_alerts
+            FROM consumable
+            WHERE stock_quantity <= 20
+            """
+        )
+        inventory_row = cursor.fetchone()
+        inventory_alerts = int(inventory_row["inventory_alerts"] or 0)
+
+        # Occupancy Rate:
+        # satılan ticket / ilgili screening salonlarındaki toplam seat kapasitesi
+        cursor.execute(
+            """
+            SELECT
+                COUNT(t.ticket_id) AS sold_seats,
+                COALESCE(SUM(sal.capacity), 0) AS possible_capacity
+            FROM screening sc
+            JOIN saloon sal
+              ON sc.theater_id = sal.theater_id
+             AND sc.saloon_number = sal.number
+            LEFT JOIN ticket t
+              ON sc.screening_id = t.screening_id
+            WHERE sc.start_time <= NOW()
+            """
+        )
+        occupancy_row = cursor.fetchone()
+
+        sold_seats = int(occupancy_row["sold_seats"] or 0)
+        possible_capacity = int(occupancy_row["possible_capacity"] or 0)
+
+        occupancy_rate = 0
+        if possible_capacity > 0:
+            occupancy_rate = (sold_seats / possible_capacity) * 100
+
+        return {
+            "total_revenue": f"${total_revenue:,.2f}",
+            "tickets_sold": tickets_sold,
+            "inventory_alerts": inventory_alerts,
+            "occupancy_rate": f"{occupancy_rate:.1f}%"
+        }
+
+    finally:
+        cursor.close()
+        connection.close()
+
+def fetch_revenue_by_theater():
+    connection = get_db_connection()
+
+    if connection is None:
+        return {
+            "labels": [],
+            "values": []
+        }
+
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+        cursor.execute(
+            """
+            SELECT
+                th.name AS theater_name,
+                COALESCE(SUM(b.total_amount), 0) AS revenue
+            FROM theater th
+            LEFT JOIN screening sc
+              ON th.theater_id = sc.theater_id
+            LEFT JOIN ticket tk
+              ON sc.screening_id = tk.screening_id
+            LEFT JOIN booking b
+              ON tk.booking_id = b.booking_id
+            LEFT JOIN payment p
+              ON b.booking_id = p.booking_id
+            WHERE p.status = 'Completed' OR p.status IS NULL
+            GROUP BY th.theater_id, th.name
+            ORDER BY revenue DESC
+            """
+        )
+
+        rows = cursor.fetchall()
+
+        labels = []
+        values = []
+
+        for row in rows:
+            labels.append(row["theater_name"])
+            values.append(float(row["revenue"] or 0))
+
+        return {
+            "labels": labels,
+            "values": values
+        }
+
+    finally:
+        cursor.close()
+        connection.close()
+
+
+@admin_bp.route("/admin/consumables/edit/<int:consumable_id>", methods=["POST"], strict_slashes=False)
+def edit_consumable(consumable_id):
+    if "admin_id" not in session:
+        return redirect(url_for("admin.login"))
+
+    name = request.form.get("name", "").strip()
+    unit_price = request.form.get("unit_price", "").strip()
+    stock_quantity = request.form.get("stock_quantity", "").strip()
+
+    if not name or not unit_price or not stock_quantity:
+        flash("Please fill all required consumable fields.", "error")
+        return redirect(url_for("admin.dashboard"))
+
+    try:
+        unit_price = float(unit_price)
+        stock_quantity = int(stock_quantity)
+    except ValueError:
+        flash("Price and stock quantity must be valid numbers.", "error")
+        return redirect(url_for("admin.dashboard"))
+
+    connection = get_db_connection()
+
+    if connection is None:
+        flash("Database connection failed.", "error")
+        return redirect(url_for("admin.dashboard"))
+
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+        cursor.execute(
+            """
+            SELECT consumable_id
+            FROM consumable
+            WHERE consumable_id = %s
+            """,
+            (consumable_id,)
+        )
+
+        existing_item = cursor.fetchone()
+
+        if not existing_item:
+            flash("Consumable not found.", "error")
+            return redirect(url_for("admin.dashboard"))
+
+        cursor.execute(
+            """
+            SELECT consumable_id
+            FROM consumable
+            WHERE LOWER(name) = LOWER(%s)
+              AND consumable_id != %s
+            """,
+            (name, consumable_id)
+        )
+
+        duplicate_item = cursor.fetchone()
+
+        if duplicate_item:
+            flash("Another consumable already uses this name.", "error")
+            return redirect(url_for("admin.dashboard"))
+
+        cursor.execute(
+            """
+            UPDATE consumable
+            SET
+                name = %s,
+                unit_price = %s,
+                stock_quantity = %s
+            WHERE consumable_id = %s
+            """,
+            (
+                name,
+                unit_price,
+                stock_quantity,
+                consumable_id
+            )
+        )
+
+        connection.commit()
+        flash("Consumable updated successfully.", "success")
+
+    except Exception as error:
+        connection.rollback()
+        flash(f"Consumable could not be updated: {error}", "error")
+
+    finally:
+        cursor.close()
+        connection.close()
+
+    return redirect(url_for("admin.dashboard"))
+
+def get_vip_tier_info():
+    return {
+        "name": "VIP Member",
+        "color": "amber",
+        "border": "border-amber",
+        "spend": "$500 Annual Spend",
+        "discount": "15% off tickets & snacks",
+        "discount_color": "emerald",
+        "points": "2x Points on all purchases"
+    }
+
+@admin_bp.route("/admin/deals/add", methods=["POST"], strict_slashes=False)
+def add_deal():
+    if "admin_id" not in session:
+        return redirect(url_for("admin.login"))
+
+    name = request.form.get("name", "").strip()
+    discount_percent = request.form.get("discount_percent", "").strip()
+    valid_until = request.form.get("valid_until", "").strip()
+
+    if not name or not discount_percent or not valid_until:
+        flash("Please fill all required deal fields.", "error")
+        return redirect(url_for("admin.dashboard"))
+
+    try:
+        discount_percent = float(discount_percent)
+    except ValueError:
+        flash("Discount percent must be a valid number.", "error")
+        return redirect(url_for("admin.dashboard"))
+
+    if discount_percent < 0 or discount_percent > 100:
+        flash("Discount percent must be between 0 and 100.", "error")
+        return redirect(url_for("admin.dashboard"))
+
+    connection = get_db_connection()
+
+    if connection is None:
+        flash("Database connection failed.", "error")
+        return redirect(url_for("admin.dashboard"))
+
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+        cursor.execute(
+            """
+            SELECT deal_id
+            FROM deal
+            WHERE LOWER(name) = LOWER(%s)
+            """,
+            (name,)
+        )
+
+        existing_deal = cursor.fetchone()
+
+        if existing_deal:
+            flash("This deal already exists.", "error")
+            return redirect(url_for("admin.dashboard"))
+
+        cursor.execute(
+            """
+            INSERT INTO deal
+                (name, discount_percent, valid_until)
+            VALUES
+                (%s, %s, %s)
+            """,
+            (
+                name,
+                discount_percent,
+                valid_until
+            )
+        )
+
+        connection.commit()
+        flash("Deal added successfully.", "success")
+
+    except Exception as error:
+        connection.rollback()
+        flash(f"Deal could not be added: {error}", "error")
+
+    finally:
+        cursor.close()
+        connection.close()
+
+    return redirect(url_for("admin.dashboard"))
+
+def fetch_vip_spenders():
+    connection = get_db_connection()
+
+    if connection is None:
+        return []
+
+    cursor = connection.cursor(dictionary=True)
+
+    cursor.execute(
+        """
+        SELECT
+            u.first_name,
+            u.last_name,
+            u.email,
+            c.membership_tier,
+            COALESCE(SUM(b.total_amount), 0) AS total_spent,
+            COUNT(b.booking_id) AS visits
+        FROM customer c
+        JOIN user u ON c.user_id = u.user_id
+        LEFT JOIN booking b ON c.user_id = b.user_id
+        GROUP BY u.user_id, u.first_name, u.last_name, u.email, c.membership_tier
+        ORDER BY total_spent DESC
+        LIMIT 10
+        """
+    )
+
+    rows = cursor.fetchall()
+
+    cursor.close()
+    connection.close()
+
+    spenders = []
+    colors = ["amber", "slate-400", "sky", "crimson"]
+
+    for index, row in enumerate(rows):
+        name = f"{row['first_name']} {row['last_name']}"
+        initials = f"{row['first_name'][0]}{row['last_name'][0]}".upper()
+
+        total_spent = float(row["total_spent"])
+        visits = int(row["visits"])
+        avg = total_spent / visits if visits > 0 else 0
+
+        tier = row["membership_tier"] or "Standard"
+
+        spenders.append({
+            "initials": initials,
+            "color": colors[index % len(colors)],
+            "name": name,
+            "email": row["email"],
+            "tier": tier,
+            "tier_color": "amber" if tier.lower() == "vip" else "slate-400",
+            "spent": f"${total_spent:,.2f}",
+            "visits": visits,
+            "avg": f"${avg:,.2f}"
+        })
+
+    return spenders

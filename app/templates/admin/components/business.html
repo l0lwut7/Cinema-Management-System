@@ -16,15 +16,19 @@
         <button id="btn-add-consumable" class="btn-primary w-full px-4 py-2 rounded-lg text-white text-sm font-medium mb-4">+ Add Item</button>
         <div class="space-y-3">
           {% for item in consumables %}
-          <div class="bg-slate-700 rounded-lg p-3 {{ item.wrapper_class }}">
-            <div class="flex items-center justify-between mb-2">
+<div class="bg-slate-700 rounded-lg p-3 {{ item.wrapper_class }} consumable-card"
+     data-id="{{ item.id }}"
+     data-name="{{ item.name }}"
+     data-unit-price="{{ item.unit_price }}"
+     data-stock-quantity="{{ item.stock_quantity }}">            <div class="flex items-center justify-between mb-2">
               <p class="text-white font-medium">{{ item.name }}</p>
               <span class="text-emerald font-semibold">{{ item.price }}</span>
             </div>
             <div class="flex items-center justify-between text-sm">
               <span class="{{ item.stock_class }}">{{ item.stock }}</span>
-              <button class="text-sky text-xs hover:text-sky/80 btn-edit-consumable">Edit</button>
-            </div>
+<button type="button" class="text-sky text-xs hover:text-sky/80 btn-edit-consumable">
+  Edit
+</button>            </div>
           </div>
           {% endfor %}
         </div>
@@ -41,8 +45,11 @@
         <button id="btn-add-deal" class="btn-primary w-full px-4 py-2 rounded-lg text-white text-sm font-medium mb-4">+ Create Deal</button>
         <div class="space-y-3">
           {% for deal in deals %}
-          <div class="bg-slate-700 rounded-lg p-3">
-            <div class="flex items-center justify-between mb-2">
+<div class="bg-slate-700 rounded-lg p-3 deal-card"
+     data-id="{{ deal.id }}"
+     data-name="{{ deal.name }}"
+     data-discount-percent="{{ deal.discount_percent }}"
+     data-valid-until="{{ deal.valid_until }}">            <div class="flex items-center justify-between mb-2">
               <p class="text-white font-medium">{{ deal.name }}</p>
               <span class="px-2 py-1 bg-{{ deal.status_color }}/20 text-{{ deal.status_color }} rounded text-xs">{{ deal.status }}</span>
             </div>
@@ -96,14 +103,14 @@
 <div id="modal-add-consumable" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
   <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl scale-95 opacity-0 transition-all duration-200" id="modal-add-consumable-content">
     <div class="p-6 border-b border-slate-700 flex justify-between items-center bg-slate-800/50">
-      <h3 class="font-display text-xl font-bold text-white tracking-wide">ADD CONSUMABLE</h3>
-      <button class="text-slate-400 hover:text-white transition-colors modal-close">
+<h3 id="consumable-modal-title" class="font-display text-xl font-bold text-white tracking-wide">
+  ADD CONSUMABLE
+</h3>      <button class="text-slate-400 hover:text-white transition-colors modal-close">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
       </button>
     </div>
     <div class="p-6">
-      <form id="form-consumable" class="space-y-5">
-        <div>
+<form id="form-consumable" method="POST" action="{{ url_for('admin.add_consumable') }}" class="space-y-5">        <div>
           <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Item Icon</label>
           <div class="flex gap-3 text-2xl" id="consumable-icons">
             <button type="button" class="w-12 h-12 rounded-lg bg-slate-900 border-2 border-emerald shadow-[0_0_10px_rgba(16,185,129,0.2)] flex items-center justify-center transition-all icon-btn">🍿</button>
@@ -116,23 +123,38 @@
         
         <div>
           <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Item Name</label>
-          <input type="text" required placeholder="e.g. Large Popcorn" class="w-full bg-slate-900 border border-slate-700 rounded-lg py-3 px-4 text-white placeholder-slate-500 focus:border-crimson focus:ring-1 focus:ring-crimson transition-all outline-none">
-        </div>
+<input id="consumable-name" type="text"
+       name="name"
+       required
+       placeholder="e.g. Large Popcorn"
+       class="w-full bg-slate-900 border border-slate-700 rounded-lg py-3 px-4 text-white placeholder-slate-500 focus:border-crimson focus:ring-1 focus:ring-crimson transition-all outline-none">        </div>
         
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Price ($)</label>
-            <input type="number" step="0.01" required placeholder="0.00" class="w-full bg-slate-900 border border-slate-700 rounded-lg py-3 px-4 text-white placeholder-slate-500 focus:border-crimson focus:ring-1 focus:ring-crimson transition-all outline-none">
-          </div>
+<input id="consumable-unit-price" type="number"
+       name="unit_price"
+       step="0.01"
+       min="0"
+       required
+       placeholder="0.00"
+       class="w-full bg-slate-900 border border-slate-700 rounded-lg py-3 px-4 text-white placeholder-slate-500 focus:border-crimson focus:ring-1 focus:ring-crimson transition-all outline-none">          </div>
           <div>
             <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Initial Stock</label>
-            <input type="number" required placeholder="0" class="w-full bg-slate-900 border border-slate-700 rounded-lg py-3 px-4 text-white placeholder-slate-500 focus:border-crimson focus:ring-1 focus:ring-crimson transition-all outline-none">
-          </div>
+<input id="consumable-stock-quantity" type="number"
+       name="stock_quantity"
+       min="0"
+       required
+       placeholder="0"
+       class="w-full bg-slate-900 border border-slate-700 rounded-lg py-3 px-4 text-white placeholder-slate-500 focus:border-crimson focus:ring-1 focus:ring-crimson transition-all outline-none">          </div>
         </div>
         
         <div class="pt-2 flex gap-3">
-          <button type="submit" class="flex-1 bg-emerald hover:bg-emerald-600 text-white font-semibold py-3 px-4 rounded-lg shadow-lg transition-all active:scale-[0.98]">Save Item</button>
-          <button type="button" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-semibold py-3 px-4 rounded-lg transition-all active:scale-[0.98] modal-close">Cancel</button>
+<button id="consumable-submit-button"
+        type="submit"
+        class="flex-1 bg-emerald hover:bg-emerald-600 text-white font-semibold py-3 px-4 rounded-lg shadow-lg transition-all active:scale-[0.98]">
+  Save Item
+</button>          <button type="button" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-semibold py-3 px-4 rounded-lg transition-all active:scale-[0.98] modal-close">Cancel</button>
         </div>
       </form>
     </div>
@@ -149,30 +171,52 @@
       </button>
     </div>
     <div class="p-6">
-      <form id="form-deal" class="space-y-5">
-        <div>
-          <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Deal Name</label>
-          <input type="text" required placeholder="e.g. Student Discount" class="w-full bg-slate-900 border border-slate-700 rounded-lg py-3 px-4 text-white placeholder-slate-500 focus:border-crimson focus:ring-1 focus:ring-crimson transition-all outline-none">
-        </div>
-        
-        <div>
-          <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Description</label>
-          <input type="text" required placeholder="e.g. 20% off with Student ID" class="w-full bg-slate-900 border border-slate-700 rounded-lg py-3 px-4 text-white placeholder-slate-500 focus:border-crimson focus:ring-1 focus:ring-crimson transition-all outline-none">
-        </div>
+<form id="form-deal" method="POST" action="{{ url_for('admin.add_deal') }}" class="space-y-5">
+  <div>
+    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Deal Name</label>
+    <input id="deal-name"
+           type="text"
+           name="name"
+           required
+           placeholder="e.g. Student Discount"
+           class="w-full bg-slate-900 border border-slate-700 rounded-lg py-3 px-4 text-white placeholder-slate-500 focus:border-crimson focus:ring-1 focus:ring-crimson transition-all outline-none">
+  </div>
 
-        <div>
-          <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Status</label>
-          <select class="w-full bg-slate-900 border border-slate-700 rounded-lg py-3 px-4 text-white placeholder-slate-500 focus:border-crimson focus:ring-1 focus:ring-crimson transition-all outline-none">
-            <option>Active</option>
-            <option>Inactive</option>
-          </select>
-        </div>
-        
-        <div class="pt-2 flex gap-3">
-          <button type="submit" class="flex-1 bg-emerald hover:bg-emerald-600 text-white font-semibold py-3 px-4 rounded-lg shadow-lg transition-all active:scale-[0.98]">Save Deal</button>
-          <button type="button" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-semibold py-3 px-4 rounded-lg transition-all active:scale-[0.98] modal-close">Cancel</button>
-        </div>
-      </form>
+  <div>
+    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Discount Percent</label>
+    <input id="deal-discount-percent"
+           type="number"
+           name="discount_percent"
+           step="0.01"
+           min="0"
+           max="100"
+           required
+           placeholder="e.g. 20"
+           class="w-full bg-slate-900 border border-slate-700 rounded-lg py-3 px-4 text-white placeholder-slate-500 focus:border-crimson focus:ring-1 focus:ring-crimson transition-all outline-none">
+  </div>
+
+  <div>
+    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Valid Until</label>
+    <input id="deal-valid-until"
+           type="date"
+           name="valid_until"
+           required
+           class="w-full bg-slate-900 border border-slate-700 rounded-lg py-3 px-4 text-white placeholder-slate-500 focus:border-crimson focus:ring-1 focus:ring-crimson transition-all outline-none">
+  </div>
+
+  <div class="pt-2 flex gap-3">
+    <button id="deal-submit-button"
+            type="submit"
+            class="flex-1 bg-emerald hover:bg-emerald-600 text-white font-semibold py-3 px-4 rounded-lg shadow-lg transition-all active:scale-[0.98]">
+      Save Deal
+    </button>
+
+    <button type="button"
+            class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-semibold py-3 px-4 rounded-lg transition-all active:scale-[0.98] modal-close">
+      Cancel
+    </button>
+  </div>
+</form>
     </div>
   </div>
 </div>

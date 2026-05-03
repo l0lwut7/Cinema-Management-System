@@ -37,7 +37,7 @@ def register():
         cursor.execute(
             """
             SELECT user_id
-            FROM `user`
+            FROM user
             WHERE email = %s
             """,
             (email,)
@@ -51,7 +51,7 @@ def register():
 
         cursor.execute(
             """
-            INSERT INTO `user`
+            INSERT INTO user
             (first_name, last_name, phone_number, email, password_hash, created_at)
             VALUES (%s, %s, %s, %s, %s, NOW())
             """,
@@ -113,7 +113,7 @@ def login():
                 last_name,
                 email,
                 password_hash
-            FROM `user`
+            FROM user
             WHERE email = %s
             """,
             (email,)

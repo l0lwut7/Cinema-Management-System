@@ -16,8 +16,7 @@
           <option>This Year</option>
         </select>
       </div>
-      <p class="text-3xl font-bold text-white">$284,520</p>
-      <div class="flex items-center gap-2 mt-2">
+<p class="text-3xl font-bold text-white">{{ analytics_summary.total_revenue }}</p>      <div class="flex items-center gap-2 mt-2">
         <span class="text-emerald text-xs font-medium bg-emerald/10 px-2 py-1 rounded">+12.5%</span>
         <p class="text-slate-400 text-xs">vs last period</p>
       </div>
@@ -32,8 +31,7 @@
           <option>This Month</option>
         </select>
       </div>
-      <p class="text-3xl font-bold text-white">78.4%</p>
-      <div class="flex items-center gap-2 mt-2">
+<p class="text-3xl font-bold text-white">{{ analytics_summary.occupancy_rate }}</p>      <div class="flex items-center gap-2 mt-2">
         <span class="text-emerald text-xs font-medium bg-emerald/10 px-2 py-1 rounded">+3.2%</span>
         <p class="text-slate-400 text-xs">vs last period</p>
       </div>
@@ -48,8 +46,7 @@
           <option selected>This Month</option>
         </select>
       </div>
-      <p class="text-3xl font-bold text-white">12,847</p>
-      <div class="flex items-center gap-2 mt-2">
+<p class="text-3xl font-bold text-white">{{ analytics_summary.tickets_sold }}</p>      <div class="flex items-center gap-2 mt-2">
         <span class="text-crimson text-xs font-medium bg-crimson/10 px-2 py-1 rounded">-2.1%</span>
         <p class="text-slate-400 text-xs">vs last period</p>
       </div>
@@ -58,9 +55,15 @@
     <div class="kpi-card bg-slate-800 rounded-xl p-6 border border-slate-700">
       <div class="flex items-center justify-between mb-4">
         <span class="text-slate-400 text-sm">Inventory Alerts</span>
-        <span class="text-amber text-xs font-medium bg-amber/10 px-2 py-1 rounded">3 items</span>
+          <span class="text-amber text-xs font-medium bg-amber/10 px-2 py-1 rounded">
+  {{ analytics_summary.inventory_alerts }} items
+</span>
+
+<p class="text-3xl font-bold text-amber">
+  {{ analytics_summary.inventory_alerts }}
+</p>
       </div>
-      <p class="text-3xl font-bold text-amber">3</p>
+
       <p class="text-slate-400 text-sm mt-2">Low stock warnings</p>
     </div>
   </div>
@@ -76,6 +79,9 @@
     </div>
     <div class="h-72 w-full relative">
       <canvas id="revenueChart"></canvas>
+        <script id="revenue-by-theater-data" type="application/json">
+  {{ revenue_by_theater | tojson }}
+</script>
     </div>
   </div>
   

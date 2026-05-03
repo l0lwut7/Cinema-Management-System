@@ -111,6 +111,7 @@ def booking():
 
     movie = fetch_movie_for_booking(movie_id)
     screenings = fetch_screenings_for_movie(movie_id)
+    consumables = fetch_consumables()
     theaters_with_screenings = group_screenings_by_theater(screenings)
 
     for screening in screenings:
@@ -126,7 +127,8 @@ def booking():
         movie_id=movie_id,
         movie=movie,
         screenings=screenings,
-        theaters_with_screenings=theaters_with_screenings
+        theaters_with_screenings=theaters_with_screenings,
+        consumables = consumables
     )
 
 def fetch_screening_detail(screening_id):
@@ -367,7 +369,8 @@ def create_booking():
                 "quantity": quantity
             })
 
-        total_amount = ticket_total + consumable_total
+        service_fee = 2.50
+        total_amount = ticket_total + consumable_total + service_fee
 
         # 2. Seçilen koltuklardan biri daha önce alınmış mı kontrol et
         for seat in selected_seats:
@@ -535,3 +538,69 @@ def get_occupied_seats(screening_id):
             finally:
                 cursor.close()
                 connection.close()
+
+def fetch_active_deals():
+    connection = get_db_connection()
+
+    if connection is None:
+        return []
+
+    cursor = connection.cursor(dictionary=True)
+
+    cursor.execute(
+        """
+        SELECT
+            deal_id,
+            name,
+            discount_percent,
+            valid_until
+        FROM deal
+        WHERE valid_until >= CURDATE()
+        ORDER BY discount_percent DESC
+        """
+    )
+
+    deals = cursor.fetchall()
+
+    cursor.close()
+    connection.close()
+
+    for deal in deals:
+        deal["discount_percent"] = float(deal["discount_percent"])
+
+        if hasattr(deal["valid_until"], "strftime"):
+            deal["valid_until"] = deal["valid_until"].strftime("%Y-%m-%d")
+        else:
+            deal["valid_until"] = str(deal["valid_until"])
+
+    return deals
+
+def fetch_consumables():
+    connection = get_db_connection()
+
+    if connection is None:
+        return []
+
+    cursor = connection.cursor(dictionary=True)
+
+    cursor.execute(
+        """
+        SELECT
+            consumable_id,
+            name,
+            unit_price,
+            stock_quantity
+        FROM consumable
+        ORDER BY consumable_id
+        """
+    )
+
+    consumables = cursor.fetchall()
+
+    cursor.close()
+    connection.close()
+
+    for item in consumables:
+        item["unit_price"] = float(item["unit_price"])
+
+    return consumables
