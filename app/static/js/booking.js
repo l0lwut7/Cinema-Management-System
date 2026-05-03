@@ -14,15 +14,25 @@ const state = {
 const realScreenings = window.BOOKING_SCREENINGS || [];
 
 const prices = {
-  adult: 15.00,
-  child: 10.00,
-  senior: 12.00,
-  popcorn: 8.50,
-  soda: 6.00,
-  candy: 5.00,
-  hotdog: 7.00,
   serviceFee: 2.50
 };
+
+const realConsumables = window.BOOKING_CONSUMABLES || [];
+
+const consumableKeyMap = {
+  "Large Popcorn": "popcorn",
+  "Large Soda": "soda",
+  "Candy Box": "candy",
+  "Hot Dog": "hotdog"
+};
+
+realConsumables.forEach(item => {
+  const key = consumableKeyMap[item.name];
+
+  if (key) {
+    prices[key] = Number(item.unit_price);
+  }
+});
 
 // Seat map configuration
 const seatRows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
@@ -285,7 +295,7 @@ function updateSeatDisplay() {
     step2Next.disabled = true;
   } else {
     selectedSeatsDisplay.textContent = state.selectedSeats.join(', ');
-    const subtotal = state.selectedSeats.length * prices.adult;
+    const subtotal = state.selectedSeats.length * state.basePrice;
     seatsSubtotal.textContent = `$${subtotal.toFixed(2)}`;
     step2Next.disabled = false;
   }
@@ -330,10 +340,7 @@ function updateConsumableDisplay() {
 }
 
 function updateTotals() {
-  const ticketTotal =
-    state.tickets.adult * prices.adult +
-    state.tickets.child * prices.child +
-    state.tickets.senior * prices.senior;
+  const ticketTotal = state.selectedSeats.length * state.basePrice;
 
   const consumableTotal =
     state.consumables.popcorn * prices.popcorn +
@@ -437,10 +444,7 @@ document.getElementById('reviewTheater').textContent = selectedTheaterText;
   document.getElementById('reviewSeats').textContent = state.selectedSeats.join(', ');
 
   // Calculate total
-  const ticketTotal =
-    state.tickets.adult * prices.adult +
-    state.tickets.child * prices.child +
-    state.tickets.senior * prices.senior;
+  const ticketTotal = state.selectedSeats.length * state.basePrice;
   const consumableTotal =
     state.consumables.popcorn * prices.popcorn +
     state.consumables.soda * prices.soda +
@@ -636,10 +640,8 @@ document.getElementById('confirmTheater').textContent = selectedTheaterText;
   document.getElementById('confirmSeats').textContent = state.selectedSeats.join(', ');
 
   // Calculate and show total
-  const ticketTotal =
-    state.tickets.adult * prices.adult +
-    state.tickets.child * prices.child +
-    state.tickets.senior * prices.senior;
+  const ticketTotal = state.selectedSeats.length * state.basePrice;
+
   const consumableTotal =
     state.consumables.popcorn * prices.popcorn +
     state.consumables.soda * prices.soda +

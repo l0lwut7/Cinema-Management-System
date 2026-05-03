@@ -22,17 +22,29 @@
         <div class="overflow-x-auto">
           <table class="w-full">
             <thead class="bg-slate-700/50">
-              <tr>
-                <th class="px-6 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Employee</th>
-                <th class="px-6 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Role</th>
-                <th class="px-6 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Auth Level</th>
-                <th class="px-6 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Salary</th>
-                <th class="px-6 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
+  <tr>
+    <th class="px-6 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Employee</th>
+    <th class="px-6 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Role</th>
+    <th class="px-6 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Auth Level</th>
+    <th class="px-6 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Status</th>
+    <th class="px-6 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Salary</th>
+    <th class="px-6 py-4 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Actions</th>
+  </tr>
+</thead>
             <tbody class="divide-y divide-slate-700">
               {% for emp in employees %}
-              <tr class="table-row transition-colors">
+              <tr class="table-row transition-colors {% if emp.account_status != 'Active' %}opacity-50{% endif %}"
+    data-id="{{ emp.id }}"
+    data-first-name="{{ emp.first_name }}"
+    data-last-name="{{ emp.last_name }}"
+    data-email="{{ emp.email }}"
+    data-phone-number="{{ emp.phone_number }}"
+    data-role="{{ emp.role }}"
+    data-auth-level="{{ emp.auth_level_value }}"
+    data-salary="{{ emp.salary_value }}"
+    data-account-status="{{ emp.account_status }}"
+    data-work-shift="{{ emp.work_shift }}"
+    data-theater-id="{{ emp.theater_id }}">
                 <td class="px-6 py-4">
                   <div class="flex items-center gap-3">
                     <div class="w-8 h-8 rounded-full bg-{{ emp.color }}/20 flex items-center justify-center">
@@ -43,10 +55,33 @@
                 </td>
                 <td class="px-6 py-4 text-slate-300">{{ emp.role }}</td>
                 <td class="px-6 py-4"><span class="px-2 py-1 bg-{{ emp.auth_color }}/20 text-{{ emp.auth_color }} rounded text-xs font-medium">{{ emp.auth_level }}</span></td>
+              <td class="px-6 py-4">
+  {% if emp.account_status == "Active" %}
+    <span class="px-2 py-1 bg-emerald/20 text-emerald rounded text-xs font-medium">Active</span>
+  {% else %}
+    <span class="px-2 py-1 bg-slate-600/20 text-slate-400 rounded text-xs font-medium">Inactive</span>
+  {% endif %}
+</td>
                 <td class="px-6 py-4 text-slate-300">{{ emp.salary }}</td>
                 <td class="px-6 py-4">
-                  <button class="text-sky hover:text-sky/80 text-sm font-medium btn-edit-employee">Edit</button>
-                </td>
+  <div class="flex items-center gap-3">
+    <button type="button" class="text-sky hover:text-sky/80 text-sm font-medium btn-edit-employee">
+      Edit
+    </button>
+
+    {% if emp.account_status == "Active" %}
+    <form method="POST"
+          action="{{ url_for('admin.deactivate_employee', user_id=emp.id) }}"
+          onsubmit="return confirm('Are you sure you want to deactivate this employee?');">
+      <button type="submit" class="text-crimson hover:text-crimson-dark text-sm font-medium">
+        Deactivate
+      </button>
+    </form>
+    {% else %}
+    <span class="text-slate-500 text-sm">Inactive</span>
+    {% endif %}
+  </div>
+</td>
               </tr>
               {% endfor %}
             </tbody>
@@ -67,37 +102,95 @@
       </button>
     </div>
     <div class="p-6">
-      <form id="form-employee" class="space-y-5">
-        <div>
-          <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Full Name</label>
-          <input type="text" required placeholder="e.g. John Doe" class="w-full bg-slate-900 border border-slate-700 rounded-lg py-3 px-4 text-white placeholder-slate-500 focus:border-crimson focus:ring-1 focus:ring-crimson transition-all outline-none">
-        </div>
-        
-        <div>
-          <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Role</label>
-          <input type="text" required placeholder="e.g. Cashier" class="w-full bg-slate-900 border border-slate-700 rounded-lg py-3 px-4 text-white placeholder-slate-500 focus:border-crimson focus:ring-1 focus:ring-crimson transition-all outline-none">
-        </div>
+      <form id="form-employee" method="POST" action="{{ url_for('admin.add_employee') }}" class="space-y-5">
+  <div class="grid grid-cols-2 gap-4">
+    <div>
+      <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">First Name</label>
+      <input id="employee-first-name" type="text" name="first_name" required placeholder="e.g. John"
+             class="w-full bg-slate-900 border border-slate-700 rounded-lg py-3 px-4 text-white placeholder-slate-500 focus:border-crimson focus:ring-1 focus:ring-crimson transition-all outline-none">
+    </div>
 
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Auth Level</label>
-            <select class="w-full bg-slate-900 border border-slate-700 rounded-lg py-3 px-4 text-white placeholder-slate-500 focus:border-crimson focus:ring-1 focus:ring-crimson transition-all outline-none">
-                <option>Staff</option>
-                <option>Moderator</option>
-                <option>Admin</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Salary ($)</label>
-            <input type="text" required placeholder="e.g. 40,000" class="w-full bg-slate-900 border border-slate-700 rounded-lg py-3 px-4 text-white placeholder-slate-500 focus:border-crimson focus:ring-1 focus:ring-crimson transition-all outline-none">
-          </div>
-        </div>
-        
-        <div class="pt-2 flex gap-3">
-          <button type="submit" class="flex-1 bg-emerald hover:bg-emerald-600 text-white font-semibold py-3 px-4 rounded-lg shadow-lg transition-all active:scale-[0.98]">Save Employee</button>
-          <button type="button" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-semibold py-3 px-4 rounded-lg transition-all active:scale-[0.98] modal-close">Cancel</button>
-        </div>
-      </form>
+    <div>
+      <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Last Name</label>
+      <input id="employee-last-name" type="text" name="last_name" required placeholder="e.g. Doe"
+             class="w-full bg-slate-900 border border-slate-700 rounded-lg py-3 px-4 text-white placeholder-slate-500 focus:border-crimson focus:ring-1 focus:ring-crimson transition-all outline-none">
+    </div>
+  </div>
+
+  <div>
+    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Email</label>
+    <input id="employee-email" type="email" name="email" required placeholder="employee@example.com"
+           class="w-full bg-slate-900 border border-slate-700 rounded-lg py-3 px-4 text-white placeholder-slate-500 focus:border-crimson focus:ring-1 focus:ring-crimson transition-all outline-none">
+  </div>
+
+  <div>
+    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Phone Number</label>
+    <input id="employee-phone-number" type="text" name="phone_number" placeholder="e.g. 05551234567"
+           class="w-full bg-slate-900 border border-slate-700 rounded-lg py-3 px-4 text-white placeholder-slate-500 focus:border-crimson focus:ring-1 focus:ring-crimson transition-all outline-none">
+  </div>
+
+  <div id="employee-password-wrapper">
+    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Temporary Password</label>
+    <input id="employee-password" type="password" name="password" placeholder="Create temporary password"
+           class="w-full bg-slate-900 border border-slate-700 rounded-lg py-3 px-4 text-white placeholder-slate-500 focus:border-crimson focus:ring-1 focus:ring-crimson transition-all outline-none">
+  </div>
+
+  <div>
+    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Role</label>
+    <input id="employee-role" type="text" name="role" required placeholder="e.g. Cashier"
+           class="w-full bg-slate-900 border border-slate-700 rounded-lg py-3 px-4 text-white placeholder-slate-500 focus:border-crimson focus:ring-1 focus:ring-crimson transition-all outline-none">
+  </div>
+
+  <div class="grid grid-cols-2 gap-4">
+    <div>
+      <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Auth Level</label>
+      <select id="employee-auth-level" name="auth_level"
+              class="w-full bg-slate-900 border border-slate-700 rounded-lg py-3 px-4 text-white placeholder-slate-500 focus:border-crimson focus:ring-1 focus:ring-crimson transition-all outline-none">
+        <option value="1">Staff</option>
+        <option value="2">Moderator</option>
+        <option value="3">Admin</option>
+      </select>
+    </div>
+
+    <div>
+      <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Salary ($)</label>
+      <input id="employee-salary" type="number" name="salary" step="0.01" min="0" placeholder="e.g. 40000"
+             class="w-full bg-slate-900 border border-slate-700 rounded-lg py-3 px-4 text-white placeholder-slate-500 focus:border-crimson focus:ring-1 focus:ring-crimson transition-all outline-none">
+    </div>
+  </div>
+
+  <div class="grid grid-cols-2 gap-4">
+    <div>
+      <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Account Status</label>
+      <select id="employee-account-status" name="account_status"
+              class="w-full bg-slate-900 border border-slate-700 rounded-lg py-3 px-4 text-white placeholder-slate-500 focus:border-crimson focus:ring-1 focus:ring-crimson transition-all outline-none">
+        <option value="Active">Active</option>
+        <option value="Inactive">Inactive</option>
+      </select>
+    </div>
+
+    <div>
+      <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Work Shift</label>
+      <input id="employee-work-shift" type="text" name="work_shift" placeholder="e.g. Morning"
+             class="w-full bg-slate-900 border border-slate-700 rounded-lg py-3 px-4 text-white placeholder-slate-500 focus:border-crimson focus:ring-1 focus:ring-crimson transition-all outline-none">
+    </div>
+  </div>
+
+  <div>
+    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Theater ID</label>
+    <input id="employee-theater-id" type="number" name="theater_id" placeholder="e.g. 1"
+           class="w-full bg-slate-900 border border-slate-700 rounded-lg py-3 px-4 text-white placeholder-slate-500 focus:border-crimson focus:ring-1 focus:ring-crimson transition-all outline-none">
+  </div>
+
+  <div class="pt-2 flex gap-3">
+    <button id="employee-submit-button" type="submit" class="flex-1 bg-emerald hover:bg-emerald-600 text-white font-semibold py-3 px-4 rounded-lg shadow-lg transition-all active:scale-[0.98]">
+      Save Employee
+    </button>
+    <button type="button" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-semibold py-3 px-4 rounded-lg transition-all active:scale-[0.98] modal-close">
+      Cancel
+    </button>
+  </div>
+</form>
     </div>
   </div>
 </div>

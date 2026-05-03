@@ -60,6 +60,7 @@
 {% block scripts %}
 <script>
   window.BOOKING_SCREENINGS = {{ screenings | tojson }};
+    window.BOOKING_CONSUMABLES = {{ consumables | tojson }};
 </script>
 <script src="{{ url_for('static', filename='js/booking.js') }}?v=30"></script>
 {% endblock %}

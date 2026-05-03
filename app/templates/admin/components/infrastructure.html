@@ -19,13 +19,13 @@
       <div class="bg-slate-800 rounded-xl border border-slate-700 p-6">
         <h3 class="font-display text-lg font-semibold text-white mb-6">ADD NEW SCREENING</h3>
         
-        <form id="screening-form" class="space-y-6">
+        <form id="screening-form" method="POST" action="{{ url_for('admin.add_screening') }}" class="space-y-6">
           <div>
             <label class="block text-sm font-medium text-slate-300 mb-2">Movie <span class="text-crimson">*</span></label>
-            <select id="screening-movie" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white">
+            <select id="screening-movie" name="movie_id" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white">
               <option value="">Select a movie</option>
               {% for movie in movies %}
-              <option>{{ movie.name }}</option>
+              <option value="{{ movie.id }}">{{ movie.name }}</option>
               {% endfor %}
             </select>
             <p id="movie-error" class="text-crimson text-xs mt-1 hidden">Please select a movie</p>
@@ -33,24 +33,26 @@
           
           <div>
             <label class="block text-sm font-medium text-slate-300 mb-2">Saloon <span class="text-crimson">*</span></label>
-            <select id="screening-saloon" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white">
-              <option value="">Select a saloon</option>
-              {% for saloon in saloons %}
-              <option>{{ saloon.name }} - {{ saloon.info.split('•')[0] }}</option>
-              {% endfor %}
-            </select>
+            <select id="screening-saloon" name="saloon_value" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white">
+  <option value="">Select a saloon</option>
+  {% for saloon in saloons %}
+  <option value="{{ saloon.theater_id }}|{{ saloon.number }}">
+    {{ saloon.name }} - {{ saloon.info.split('•')[0] }}
+  </option>
+  {% endfor %}
+</select>
             <p id="saloon-error" class="text-crimson text-xs mt-1 hidden">Please select a saloon</p>
           </div>
           
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-slate-300 mb-2">Date <span class="text-crimson">*</span></label>
-              <input type="date" id="screening-date" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white">
+              <input type="date" id="screening-date" name="screening_date" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white">
               <p id="date-error" class="text-crimson text-xs mt-1 hidden">Please select a date</p>
             </div>
             <div>
               <label class="block text-sm font-medium text-slate-300 mb-2">Start Time <span class="text-crimson">*</span></label>
-              <input type="time" id="screening-time" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white">
+              <input type="time" id="screening-time" name="screening_time" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white">
               <p id="time-error" class="text-crimson text-xs mt-1 hidden">Please select a time</p>
             </div>
           </div>
@@ -58,7 +60,7 @@
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-slate-300 mb-2">Base Ticket Price ($) <span class="text-crimson">*</span></label>
-              <input type="number" id="screening-price" placeholder="e.g. 15.00" step="0.01" min="0" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400">
+              <input type="number" id="screening-price" name="base_price" placeholder="e.g. 15.00" step="0.01" min="0" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400">
               <p id="price-error" class="text-crimson text-xs mt-1 hidden">Please enter a valid price</p>
             </div>
             <div>
@@ -69,7 +71,7 @@
           </div>
           
           <div class="flex items-center gap-3">
-            <input type="checkbox" id="screening-subtitles" class="w-5 h-5 rounded bg-slate-700 border-slate-600 text-crimson focus:ring-crimson focus:ring-offset-slate-800">
+            <input type="checkbox" id="screening-subtitles" name="is_subtitled" class="w-5 h-5 rounded bg-slate-700 border-slate-600 text-crimson focus:ring-crimson focus:ring-offset-slate-800">
             <label for="screening-subtitles" class="text-sm text-slate-300">Enable subtitles for this screening</label>
           </div>
           

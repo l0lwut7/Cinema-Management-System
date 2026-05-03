@@ -33,7 +33,7 @@ TRUNCATE TABLE EMPLOYEE;
 TRUNCATE TABLE CUSTOMER;
 TRUNCATE TABLE DEAL;
 TRUNCATE TABLE CONSUMABLE;
-TRUNCATE TABLE `USER`;
+TRUNCATE TABLE USER;
 
 -- Instantly turn Foreign Key checks back on to protect our new data!
 SET FOREIGN_KEY_CHECKS = 1;
@@ -95,7 +95,7 @@ INSERT INTO CONSUMABLE (consumable_id, name, unit_price, stock_quantity) VALUES
 -- 3. IDENTITY & AUTHENTICATION (Auth Flow & Staff CMS)
 -- ------------------------------------------------------------------------------
 -- Create Base Users
-INSERT INTO `USER` (user_id, first_name, last_name, phone_number, email, password_hash) VALUES
+INSERT INTO USER (user_id, first_name, last_name, phone_number, email, password_hash) VALUES
 (1, 'Alice', 'Smith', '555-0001', 'alice@email.com', 'hashed1'),
 (2, 'Bob', 'Jones', '555-0002', 'bob@email.com', 'hashed2'),
 (3, 'Charlie', 'Brown', '555-0003', 'charlie@email.com', 'hashed3'),

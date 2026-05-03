@@ -1,5 +1,100 @@
 document.addEventListener('DOMContentLoaded', () => {
 
+    // Movie Edit Logic
+const movieForm = document.getElementById("movie-form");
+const movieFormTitle = document.getElementById("movie-form-title");
+const movieSubmitButton = document.getElementById("movie-submit-button");
+const movieCancelButton = document.getElementById("movie-cancel-button");
+
+const movieTitleInput = document.getElementById("movie-title");
+const movieDirectorInput = document.getElementById("movie-director");
+const movieDurationInput = document.getElementById("movie-duration");
+const movieRatingAgeInput = document.getElementById("movie-rating-age");
+const movieReleaseDateInput = document.getElementById("movie-release-date");
+const movieSummaryInput = document.getElementById("movie-summary");
+
+const movieItems = document.querySelectorAll(".movie-list-item");
+const genreCheckboxes = document.querySelectorAll(".movie-genre-checkbox");
+const formatCheckboxes = document.querySelectorAll(".movie-format-checkbox");
+
+function clearMovieChipSelection() {
+    document.querySelectorAll("#genre-chips .chip, #format-chips .chip").forEach((chip) => {
+        chip.classList.remove("selected", "text-white");
+        chip.classList.add("text-slate-300");
+
+        const checkbox = chip.querySelector(".chip-checkbox");
+        if (checkbox) {
+            checkbox.checked = false;
+        }
+    });
+}
+
+function setMovieFormToAddMode() {
+    if (!movieForm) return;
+
+    movieForm.action = "/admin/movies/add";
+    movieForm.reset();
+    clearMovieChipSelection();
+
+    if (movieFormTitle) movieFormTitle.textContent = "MOVIE EDITOR";
+    if (movieSubmitButton) movieSubmitButton.textContent = "Save Movie";
+}
+
+function markSelectedMovieChips(selectedGenreIds, selectedFormatIds) {
+    clearMovieChipSelection();
+
+    genreCheckboxes.forEach((checkbox) => {
+        if (selectedGenreIds.includes(checkbox.value)) {
+            checkbox.checked = true;
+            const chip = checkbox.closest(".chip");
+            chip.classList.add("selected", "text-white");
+            chip.classList.remove("text-slate-300");
+        }
+    });
+
+    formatCheckboxes.forEach((checkbox) => {
+        if (selectedFormatIds.includes(checkbox.value)) {
+            checkbox.checked = true;
+            const chip = checkbox.closest(".chip");
+            chip.classList.add("selected", "text-white");
+            chip.classList.remove("text-slate-300");
+        }
+    });
+}
+
+movieItems.forEach((item) => {
+    item.addEventListener("click", () => {
+        const movieId = item.dataset.id;
+
+        movieForm.action = `/admin/movies/edit/${movieId}`;
+
+        movieTitleInput.value = item.dataset.title || "";
+        movieDirectorInput.value = item.dataset.director || "";
+        movieDurationInput.value = item.dataset.duration || "";
+        movieRatingAgeInput.value = item.dataset.ratingAge || "";
+        movieReleaseDateInput.value = item.dataset.releaseDate || "";
+        movieSummaryInput.value = item.dataset.summary || "";
+
+        const selectedGenreIds = item.dataset.genreIds
+            ? item.dataset.genreIds.split(",")
+            : [];
+
+        const selectedFormatIds = item.dataset.formatIds
+            ? item.dataset.formatIds.split(",")
+            : [];
+
+        markSelectedMovieChips(selectedGenreIds, selectedFormatIds);
+
+        if (movieFormTitle) movieFormTitle.textContent = "EDIT MOVIE";
+        if (movieSubmitButton) movieSubmitButton.textContent = "Update Movie";
+    });
+});
+
+if (movieCancelButton) {
+    movieCancelButton.addEventListener("click", () => {
+        setMovieFormToAddMode();
+    });
+}
     // Sidebar Navigation
     const sidebarTabs = document.querySelectorAll('.sidebar-tab');
     const contentPanels = document.querySelectorAll('.content-panel');
@@ -58,25 +153,24 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
     
-    // Genre Chips Toggle
-    const genreChips = document.querySelectorAll('#genre-chips .chip');
-    genreChips.forEach(chip => {
-        chip.addEventListener('click', () => {
-            chip.classList.toggle('selected');
-            chip.classList.toggle('text-white');
-            chip.classList.toggle('text-slate-300');
-        });
-    });
+    // Genre and Format Chips Toggle
+document.querySelectorAll(".chip").forEach((chip) => {
+    chip.addEventListener("click", () => {
+        const checkbox = chip.querySelector(".chip-checkbox");
 
-    // Format Chips Toggle
-    const formatChips = document.querySelectorAll('#format-chips .chip');
-    formatChips.forEach(chip => {
-        chip.addEventListener('click', () => {
-            chip.classList.toggle('selected');
-            chip.classList.toggle('text-white');
-            chip.classList.toggle('text-slate-300');
-        });
+        if (!checkbox) return;
+
+        setTimeout(() => {
+            if (checkbox.checked) {
+                chip.classList.add("selected", "text-white");
+                chip.classList.remove("text-slate-300");
+            } else {
+                chip.classList.remove("selected", "text-white");
+                chip.classList.add("text-slate-300");
+            }
+        }, 0);
     });
+});
 
     // Consumable Icon Selector
     const iconBtns = document.querySelectorAll('#consumable-icons .icon-btn');
@@ -90,89 +184,6 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.classList.add('border-2', 'border-emerald', 'shadow-[0_0_10px_rgba(16,185,129,0.2)]');
         });
     });
-    
-    // Screening Form Validation
-    const screeningForm = document.getElementById('screening-form');
-    if (screeningForm) {
-        screeningForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            let isValid = true;
-            
-            // Validate movie
-            const movie = document.getElementById('screening-movie');
-            const movieError = document.getElementById('movie-error');
-            if (!movie.value) {
-                movieError.classList.remove('hidden');
-                movie.classList.add('border-crimson');
-                isValid = false;
-            } else {
-                movieError.classList.add('hidden');
-                movie.classList.remove('border-crimson');
-            }
-            
-            // Validate saloon
-            const saloon = document.getElementById('screening-saloon');
-            const saloonError = document.getElementById('saloon-error');
-            if (!saloon.value) {
-                saloonError.classList.remove('hidden');
-                saloon.classList.add('border-crimson');
-                isValid = false;
-            } else {
-                saloonError.classList.add('hidden');
-                saloon.classList.remove('border-crimson');
-            }
-            
-            // Validate date
-            const date = document.getElementById('screening-date');
-            const dateError = document.getElementById('date-error');
-            if (!date.value) {
-                dateError.classList.remove('hidden');
-                date.classList.add('border-crimson');
-                isValid = false;
-            } else {
-                dateError.classList.add('hidden');
-                date.classList.remove('border-crimson');
-            }
-            
-            // Validate time
-            const time = document.getElementById('screening-time');
-            const timeError = document.getElementById('time-error');
-            if (!time.value) {
-                timeError.classList.remove('hidden');
-                time.classList.add('border-crimson');
-                isValid = false;
-            } else {
-                timeError.classList.add('hidden');
-                time.classList.remove('border-crimson');
-            }
-            
-            // Validate price
-            const price = document.getElementById('screening-price');
-            const priceError = document.getElementById('price-error');
-            if (!price.value || parseFloat(price.value) <= 0) {
-                priceError.classList.remove('hidden');
-                price.classList.add('border-crimson');
-                isValid = false;
-            } else {
-                priceError.classList.add('hidden');
-                price.classList.remove('border-crimson');
-            }
-            
-            if (isValid) {
-                alert('Screening added successfully!');
-                screeningForm.reset();
-            }
-        });
-    }
-    
-    // Movie Form Submit
-    const movieForm = document.getElementById('movie-form');
-    if (movieForm) {
-        movieForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            alert('Movie saved successfully!');
-        });
-    }
 
     // Modal Logic
     function openModal(modalId) {
@@ -200,56 +211,133 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Bind Modals
-    const btnAddConsumable = document.getElementById('btn-add-consumable');
-    if (btnAddConsumable) {
-        btnAddConsumable.addEventListener('click', () => openModal('modal-add-consumable'));
-    }
-
     const btnAddSaloon = document.getElementById('btn-add-saloon');
     if (btnAddSaloon) {
         btnAddSaloon.addEventListener('click', () => openModal('modal-add-saloon'));
     }
+    // Consumable Add/Edit Logic
+const btnAddConsumable = document.getElementById("btn-add-consumable");
+const consumableForm = document.getElementById("form-consumable");
+const consumableModalTitle = document.getElementById("consumable-modal-title");
+const consumableSubmitButton = document.getElementById("consumable-submit-button");
 
-    // Employee Modals
-    const btnAddEmployee = document.getElementById('btn-add-employee');
-    if (btnAddEmployee) {
-        btnAddEmployee.addEventListener('click', () => {
-            const title = document.getElementById('modal-employee-title');
-            if (title) title.textContent = "ADD EMPLOYEE";
-            openModal('modal-employee');
-        });
+const consumableNameInput = document.getElementById("consumable-name");
+const consumableUnitPriceInput = document.getElementById("consumable-unit-price");
+const consumableStockQuantityInput = document.getElementById("consumable-stock-quantity");
+
+function resetConsumableFormForAdd() {
+    if (!consumableForm) return;
+
+    consumableForm.action = "/admin/consumables/add";
+    consumableForm.reset();
+
+    if (consumableModalTitle) {
+        consumableModalTitle.textContent = "ADD CONSUMABLE";
     }
 
-    document.querySelectorAll('.btn-edit-employee').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const title = document.getElementById('modal-employee-title');
-            if (title) title.textContent = "EDIT EMPLOYEE";
-            openModal('modal-employee');
-        });
-    });
+    if (consumableSubmitButton) {
+        consumableSubmitButton.textContent = "Save Item";
+    }
+}
 
-    // Business Modals
-    document.querySelectorAll('.btn-edit-consumable').forEach(btn => {
-        btn.addEventListener('click', () => openModal('modal-add-consumable'));
+if (btnAddConsumable) {
+    btnAddConsumable.addEventListener("click", () => {
+        resetConsumableFormForAdd();
+        openModal("modal-add-consumable");
     });
+}
 
-    const btnAddDeal = document.getElementById('btn-add-deal');
-    if (btnAddDeal) {
-        btnAddDeal.addEventListener('click', () => {
-            const title = document.getElementById('modal-deal-title');
-            if (title) title.textContent = "CREATE DEAL";
-            openModal('modal-deal');
-        });
+document.querySelectorAll(".btn-edit-consumable").forEach((button) => {
+    button.addEventListener("click", () => {
+        const card = button.closest(".consumable-card");
+
+        if (!card || !consumableForm) return;
+
+        const consumableId = card.dataset.id;
+
+        consumableForm.action = `/admin/consumables/edit/${consumableId}`;
+
+        if (consumableModalTitle) {
+            consumableModalTitle.textContent = "EDIT CONSUMABLE";
+        }
+
+        if (consumableSubmitButton) {
+            consumableSubmitButton.textContent = "Update Item";
+        }
+
+        consumableNameInput.value = card.dataset.name || "";
+        consumableUnitPriceInput.value = card.dataset.unitPrice || "";
+        consumableStockQuantityInput.value = card.dataset.stockQuantity || "";
+
+        openModal("modal-add-consumable");
+    });
+});
+
+    // Deal Add/Edit Logic
+const btnAddDeal = document.getElementById("btn-add-deal");
+const dealForm = document.getElementById("form-deal");
+const dealModalTitle = document.getElementById("modal-deal-title");
+const dealSubmitButton = document.getElementById("deal-submit-button");
+
+const dealNameInput = document.getElementById("deal-name");
+const dealDiscountInput = document.getElementById("deal-discount-percent");
+const dealValidUntilInput = document.getElementById("deal-valid-until");
+
+function resetDealFormForAdd() {
+    if (!dealForm) return;
+
+    dealForm.action = "/admin/deals/add";
+    dealForm.reset();
+
+    if (dealModalTitle) {
+        dealModalTitle.textContent = "CREATE DEAL";
     }
 
-    document.querySelectorAll('.btn-edit-deal').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const title = document.getElementById('modal-deal-title');
-            if (title) title.textContent = "EDIT DEAL";
-            openModal('modal-deal');
-        });
+    if (dealSubmitButton) {
+        dealSubmitButton.textContent = "Save Deal";
+    }
+}
+
+if (btnAddDeal) {
+    btnAddDeal.addEventListener("click", () => {
+        resetDealFormForAdd();
+        openModal("modal-deal");
     });
+}
+
+document.querySelectorAll(".btn-edit-deal").forEach((button) => {
+    button.addEventListener("click", () => {
+        const card = button.closest(".deal-card");
+
+        if (!card || !dealForm) return;
+
+        const dealId = card.dataset.id;
+
+        dealForm.action = `/admin/deals/edit/${dealId}`;
+
+        if (dealModalTitle) {
+            dealModalTitle.textContent = "EDIT DEAL";
+        }
+
+        if (dealSubmitButton) {
+            dealSubmitButton.textContent = "Update Deal";
+        }
+
+        if (dealNameInput) {
+            dealNameInput.value = card.dataset.name || "";
+        }
+
+        if (dealDiscountInput) {
+            dealDiscountInput.value = card.dataset.discountPercent || "";
+        }
+
+        if (dealValidUntilInput) {
+            dealValidUntilInput.value = card.dataset.validUntil || "";
+        }
+
+        openModal("modal-deal");
+    });
+});
 
     const btnEditTier = document.getElementById('btn-edit-tier');
     if (btnEditTier) {
@@ -288,63 +376,68 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Initialize Chart.js for Revenue
-    const ctx = document.getElementById('revenueChart');
-    if (ctx) {
-        // Sample mock data for prototype
-        const data = {
-            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-            datasets: [{
-                label: 'Saloon A (IMAX)',
-                data: [1200, 1900, 3000, 2500, 4200, 5800, 4900],
-                borderColor: '#10B981', // emerald
-                backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                tension: 0.4,
-                fill: true
-            }, {
-                label: 'Saloon B (Standard)',
-                data: [800, 1200, 1500, 1800, 2900, 3500, 3000],
-                borderColor: '#0EA5E9', // sky
-                backgroundColor: 'rgba(14, 165, 233, 0.1)',
-                tension: 0.4,
-                fill: true
-            }]
-        };
+const ctx = document.getElementById("revenueChart");
 
-        new Chart(ctx, {
-            type: 'line',
-            data: data,
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        labels: {
-                            color: '#94A3B8' // slate-400
-                        }
+if (ctx) {
+    let labels = [];
+    let values = [];
+
+    const revenueDataScript = document.getElementById("revenue-by-theater-data");
+
+    if (revenueDataScript) {
+        try {
+            const revenueData = JSON.parse(revenueDataScript.textContent);
+            labels = revenueData.labels || [];
+            values = revenueData.values || [];
+        } catch (error) {
+            console.error("Could not parse revenue chart data:", error);
+        }
+    }
+
+    new Chart(ctx, {
+        type: "bar",
+        data: {
+            labels: labels,
+            datasets: [{
+                label: "Revenue by Theater",
+                data: values,
+                backgroundColor: "rgba(16, 185, 129, 0.2)",
+                borderColor: "#10B981",
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: "#94A3B8"
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: "#334155"
+                    },
+                    ticks: {
+                        color: "#94A3B8"
                     }
                 },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            color: '#334155' // slate-700
-                        },
-                        ticks: {
-                            color: '#94A3B8'
-                        }
+                x: {
+                    grid: {
+                        color: "#334155"
                     },
-                    x: {
-                        grid: {
-                            color: '#334155'
-                        },
-                        ticks: {
-                            color: '#94A3B8'
-                        }
+                    ticks: {
+                        color: "#94A3B8"
                     }
                 }
             }
-        });
-    }
+        }
+    });
+}
 
     // Top Spenders Sort and Filter Logic
     const spendersFilter = document.getElementById('spenders-filter');
@@ -394,4 +487,81 @@ document.addEventListener('DOMContentLoaded', () => {
     if (spendersFilter) spendersFilter.addEventListener('change', updateSpendersTable);
     if (spendersSort) spendersSort.addEventListener('change', updateSpendersTable);
 
+  const employeeModal = document.getElementById("modal-employee");
+  const employeeModalContent = document.getElementById("modal-employee-content");
+  const employeeTitle = document.getElementById("modal-employee-title");
+  const employeeForm = document.getElementById("form-employee");
+
+  const addEmployeeButton = document.getElementById("btn-add-employee");
+  const editEmployeeButtons = document.querySelectorAll(".btn-edit-employee");
+
+  const firstNameInput = document.getElementById("employee-first-name");
+  const lastNameInput = document.getElementById("employee-last-name");
+  const emailInput = document.getElementById("employee-email");
+  const phoneInput = document.getElementById("employee-phone-number");
+  const passwordWrapper = document.getElementById("employee-password-wrapper");
+  const passwordInput = document.getElementById("employee-password");
+  const roleInput = document.getElementById("employee-role");
+  const authLevelInput = document.getElementById("employee-auth-level");
+  const salaryInput = document.getElementById("employee-salary");
+  const statusInput = document.getElementById("employee-account-status");
+  const shiftInput = document.getElementById("employee-work-shift");
+  const theaterInput = document.getElementById("employee-theater-id");
+  const submitButton = document.getElementById("employee-submit-button");
+
+  function openEmployeeModal() {
+    employeeModal.classList.remove("hidden");
+
+    setTimeout(() => {
+      employeeModalContent.classList.remove("scale-95", "opacity-0");
+      employeeModalContent.classList.add("scale-100", "opacity-100");
+    }, 10);
+  }
+
+  function resetEmployeeFormForAdd() {
+    employeeTitle.textContent = "ADD EMPLOYEE";
+    employeeForm.action = "/admin/employees/add";
+    employeeForm.reset();
+
+    passwordWrapper.classList.remove("hidden");
+    passwordInput.required = true;
+    submitButton.textContent = "Save Employee";
+  }
+
+  if (addEmployeeButton) {
+    addEmployeeButton.addEventListener("click", function () {
+      resetEmployeeFormForAdd();
+      openEmployeeModal();
+    });
+  }
+
+  editEmployeeButtons.forEach((button) => {
+    button.addEventListener("click", function () {
+      const row = button.closest("tr");
+
+      const employeeId = row.dataset.id;
+
+      employeeTitle.textContent = "EDIT EMPLOYEE";
+      employeeForm.action = `/admin/employees/edit/${employeeId}`;
+
+      firstNameInput.value = row.dataset.firstName || "";
+      lastNameInput.value = row.dataset.lastName || "";
+      emailInput.value = row.dataset.email || "";
+      phoneInput.value = row.dataset.phoneNumber || "";
+      roleInput.value = row.dataset.role || "";
+      authLevelInput.value = row.dataset.authLevel || "1";
+      salaryInput.value = row.dataset.salary || "";
+      statusInput.value = row.dataset.accountStatus || "Active";
+      shiftInput.value = row.dataset.workShift || "";
+      theaterInput.value = row.dataset.theaterId || "";
+
+      passwordWrapper.classList.add("hidden");
+      passwordInput.required = false;
+      passwordInput.value = "";
+
+      submitButton.textContent = "Update Employee";
+
+      openEmployeeModal();
+    });
+  });
 });

@@ -8,10 +8,8 @@
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
     <!-- Movie Editor Form -->
     <div class="bg-slate-800 rounded-xl border border-slate-700 p-6">
-      <h3 class="font-display text-lg font-semibold text-white mb-6">MOVIE EDITOR</h3>
-      
-      <form id="movie-form" class="space-y-6">
-        <!-- Poster Image Upload -->
+<h3 id="movie-form-title" class="font-display text-lg font-semibold text-white mb-6">MOVIE EDITOR</h3>
+<form id="movie-form" method="POST" action="{{ url_for('admin.add_movie') }}" class="space-y-6">        <!-- Poster Image Upload -->
         <div class="flex items-center gap-6">
           <label class="w-24 h-36 bg-slate-700 border-2 border-dashed border-slate-600 rounded-lg flex flex-col items-center justify-center text-slate-400 hover:text-white hover:border-slate-500 hover:bg-slate-700/50 transition-colors cursor-pointer group">
             <svg class="w-8 h-8 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
@@ -20,44 +18,84 @@
           </label>
           <div class="flex-1">
             <label class="block text-sm font-medium text-slate-300 mb-2">Movie Title <span class="text-crimson">*</span></label>
-            <input type="text" placeholder="Enter movie title" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400">
-          </div>
+<input id="movie-title" type="text" name="title" required placeholder="Enter movie title"
+       class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400">          </div>
         </div>
         
         <div>
           <label class="block text-sm font-medium text-slate-300 mb-2">Genres <span class="text-crimson">*</span></label>
           <p class="text-slate-400 text-xs mb-3">Select all that apply</p>
           <div class="flex flex-wrap gap-2" id="genre-chips">
-            {% for genre in genres %}
-            <button type="button" class="chip px-4 py-2 border border-slate-600 rounded-full text-sm text-slate-300" data-value="{{ genre }}">{{ genre }}</button>
-            {% endfor %}
-          </div>
+  {% for genre in genres %}
+  <label class="chip px-4 py-2 border border-slate-600 rounded-full text-sm text-slate-300 cursor-pointer">
+    <input type="checkbox"
+           name="genre_ids"
+           value="{{ genre.genre_id }}"
+           class="hidden chip-checkbox movie-genre-checkbox">
+    {{ genre.name }}
+  </label>
+  {% endfor %}
+</div>
         </div>
         
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium text-slate-300 mb-2">Duration (min) <span class="text-crimson">*</span></label>
-            <input type="number" placeholder="e.g. 120" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400">
-          </div>
+<input id="movie-duration" type="number" name="duration_mins" required placeholder="e.g. 120"
+       class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400">          </div>
           <div>
             <label class="block text-sm font-medium text-slate-300 mb-2">Available Formats</label>
             <div class="flex flex-wrap gap-2" id="format-chips">
-              {% for fmt in formats %}
-              <button type="button" class="chip px-3 py-1.5 border border-slate-600 rounded-lg text-sm text-slate-300" data-value="{{ fmt }}">{{ fmt }}</button>
-              {% endfor %}
-            </div>
+  {% for fmt in formats %}
+  <label class="chip px-3 py-1.5 border border-slate-600 rounded-lg text-sm text-slate-300 cursor-pointer">
+    <input type="checkbox"
+           name="format_ids"
+           value="{{ fmt.format_id }}"
+           class="hidden chip-checkbox movie-format-checkbox">
+    {{ fmt.name }}
+  </label>
+  {% endfor %}
+</div>
           </div>
         </div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+  <div>
+    <label class="block text-sm font-medium text-slate-300 mb-2">
+      Director <span class="text-crimson">*</span>
+    </label>
+    <input id="movie-director" type="text" name="director" required placeholder="e.g. Christopher Nolan"
+           class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400">
+  </div>
+
+  <div>
+    <label class="block text-sm font-medium text-slate-300 mb-2">
+      Rating Age <span class="text-crimson">*</span>
+    </label>
+    <input id="movie-rating-age" type="number" name="rating_age" required placeholder="e.g. 13"
+           class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400">
+  </div>
+
+  <div>
+    <label class="block text-sm font-medium text-slate-300 mb-2">
+      Release Date <span class="text-crimson">*</span>
+    </label>
+    <input id="movie-release-date" type="date" name="release_date" required
+           class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400">
+  </div>
+</div>
         
         <div>
           <label class="block text-sm font-medium text-slate-300 mb-2">Synopsis</label>
-          <textarea rows="4" placeholder="Enter movie synopsis..." class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 resize-none"></textarea>
-        </div>
+<textarea id="movie-summary" name="summary" rows="4" placeholder="Enter movie synopsis..."
+          class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 resize-none"></textarea>        </div>
         
         <div class="flex gap-3">
-          <button type="submit" class="btn-primary flex-1 px-6 py-3 rounded-lg text-white font-medium">Save Movie</button>
-          <button type="button" class="btn-secondary px-6 py-3 rounded-lg text-slate-300 font-medium">Cancel</button>
-        </div>
+<button id="movie-submit-button" type="submit" class="btn-primary flex-1 px-6 py-3 rounded-lg text-white font-medium">
+  Save Movie
+</button>
+<button id="movie-cancel-button" type="button" class="btn-secondary px-6 py-3 rounded-lg text-slate-300 font-medium">
+  Cancel
+</button>        </div>
       </form>
     </div>
     
@@ -69,8 +107,16 @@
       </div>
       <div class="divide-y divide-slate-700 max-h-[600px] overflow-y-auto">
         {% for movie in movies %}
-        <div class="p-4 flex items-center justify-between hover:bg-slate-700/50 transition-colors cursor-pointer">
-          <div class="flex items-center gap-4">
+<div class="movie-list-item p-4 flex items-center justify-between hover:bg-slate-700/50 transition-colors cursor-pointer"
+     data-id="{{ movie.id }}"
+     data-title="{{ movie.title }}"
+     data-director="{{ movie.director }}"
+     data-duration="{{ movie.duration_mins }}"
+     data-rating-age="{{ movie.rating_age }}"
+     data-release-date="{{ movie.release_date }}"
+     data-summary="{{ movie.summary }}"
+     data-genre-ids="{{ movie.genre_ids }}"
+     data-format-ids="{{ movie.format_ids }}">          <div class="flex items-center gap-4">
             <div class="w-12 h-16 bg-slate-600 rounded-lg flex items-center justify-center">
               <svg class="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4"/>

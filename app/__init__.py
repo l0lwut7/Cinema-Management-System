@@ -5,7 +5,7 @@ from app.blueprints.booking.routes import booking_bp
 from app.blueprints.auth.routes import auth_bp
 from app.blueprints.dashboard.routes import dashboard_bp
 from app.blueprints.staff.routes import staff_bp
-from app.blueprints.admin.routes import admin_bp
+from app.blueprints.admin import admin_bp
 
 def create_app():
     app = Flask(__name__)
