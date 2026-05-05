@@ -26,38 +26,60 @@
     <form method="POST" action="{{ url_for('auth.register') }}" class="space-y-4">
         <div>
             <label class="block text-sm text-slate-400 mb-1">First Name</label>
-            <input type="text" name="first_name" required
+            <input id="first_name" type="text" name="first_name" required
+                   title="Please enter only letters."
+                   oninvalid="this.setCustomValidity('Please enter a valid name.')"
+                   oninput="this.setCustomValidity('')"
                    class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3">
+            <p id="first-name-warning" class="hidden text-red-400 text-sm mt-1">Please enter a valid name.</p>
         </div>
 
         <div>
             <label class="block text-sm text-slate-400 mb-1">Last Name</label>
-            <input type="text" name="last_name" required
+            <input id="last_name" type="text" name="last_name" required
+                   title="Please enter only letters."
+                   oninvalid="this.setCustomValidity('Please enter a valid name.')"
+                   oninput="this.setCustomValidity('')"
                    class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3">
+            <p id="last-name-warning" class="hidden text-red-400 text-sm mt-1">Please enter a valid name.</p>
         </div>
 
         <div>
             <label class="block text-sm text-slate-400 mb-1">Phone Number</label>
-            <input type="text" name="phone_number"
+            <input id="phone_number" type="text" name="phone_number" required maxlength="11"
+                   title="Please enter a valid phone number (10-11 digits)."
+                   oninvalid="this.setCustomValidity('Please enter a valid phone number.')"
+                   oninput="this.setCustomValidity('')"
                    class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3">
+            <p id="phone-warning" class="hidden text-red-400 text-sm mt-1">Please enter a valid phone number.</p>
         </div>
 
         <div>
             <label class="block text-sm text-slate-400 mb-1">Birth Date</label>
-            <input type="date" name="birth_date"
+            <input id="birth_date" type="date" name="birth_date" required
                    class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3">
         </div>
 
         <div>
             <label class="block text-sm text-slate-400 mb-1">Email</label>
-            <input type="email" name="email" required
+            <input id="email" type="email" name="email" required
+                   oninvalid="this.setCustomValidity('Please enter a valid email address.')"
+                   oninput="this.setCustomValidity('')"
                    class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3">
+            <p id="email-warning" class="hidden text-red-400 text-sm mt-1">Please enter a valid email address.</p>
         </div>
 
         <div>
             <label class="block text-sm text-slate-400 mb-1">Password</label>
-            <input type="password" name="password" required
+            <input id="password" type="password" name="password" required
                    class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3">
+        </div>
+
+        <div>
+            <label class="block text-sm text-slate-400 mb-1">Confirm Password</label>
+            <input id="confirm_password" type="password" name="confirm_password" required
+                   class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3">
+            <p id="password-warning" class="hidden text-red-400 text-sm mt-1">Passwords do not match.</p>
         </div>
 
         <button type="submit"
@@ -71,6 +93,152 @@
         <a href="{{ url_for('auth.login') }}" class="text-red-400">Login</a>
     </p>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var birthInput = document.getElementById('birth_date');
+        var firstNameInput = document.getElementById('first_name');
+        var lastNameInput = document.getElementById('last_name');
+        var phoneInput = document.getElementById('phone_number');
+        var emailInput = document.getElementById('email');
+        var passwordInput = document.getElementById('password');
+        var confirmPasswordInput = document.getElementById('confirm_password');
+        var submitButton = document.querySelector('button[type="submit"]');
+
+        var firstNameWarning = document.getElementById('first-name-warning');
+        var lastNameWarning = document.getElementById('last-name-warning');
+        var phoneWarning = document.getElementById('phone-warning');
+        var emailWarning = document.getElementById('email-warning');
+        var passwordWarning = document.getElementById('password-warning');
+
+        var today = new Date().toISOString().split('T')[0];
+        if (birthInput) {
+            birthInput.max = today;
+            birthInput.addEventListener('input', function () {
+                var value = birthInput.value;
+                if (!value) return;
+                var parts = value.split('-');
+                if (parts.length === 3) {
+                    var year = parseInt(parts[0], 10);
+                    if (year > 2026) {
+                        parts[0] = '2026';
+                        birthInput.value = parts.join('-');
+                    }
+                }
+            });
+        }
+
+        function showWarning(input, warning, message) {
+            if (!input || !warning) return;
+            if (input.value && !input.checkValidity()) {
+                warning.textContent = message;
+                warning.classList.remove('hidden');
+            } else {
+                warning.classList.add('hidden');
+            }
+        }
+
+        function allowLettersOnly(event) {
+            var key = event.key;
+            var allowedUnicode = /^\p{L}$/u;
+            var controlKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab', 'Home', 'End'];
+            if (controlKeys.indexOf(key) !== -1) return;
+            if (key.length === 1 && !allowedUnicode.test(key)) {
+                event.preventDefault();
+            }
+        }
+
+        function allowDigitsOnly(event) {
+            var key = event.key;
+            var controlKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab', 'Home', 'End'];
+            if (controlKeys.indexOf(key) !== -1) return;
+            if (key.length === 1 && !/^[0-9]$/.test(key)) {
+                event.preventDefault();
+            }
+        }
+
+        function sanitizeName(input) {
+            if (!input) return;
+            var sanitized = input.value.replace(/[^\p{L}]/gu, '');
+            if (input.value !== sanitized) {
+                input.value = sanitized;
+            }
+        }
+
+        function sanitizePhone(input) {
+            if (!input) return;
+            var sanitized = input.value.replace(/[^0-9]/g, '');
+            if (input.value !== sanitized) {
+                input.value = sanitized;
+            }
+        }
+
+        function validateEmailValue(value) {
+            if (!value) return false;
+            var emailRegex = /^[\p{L}\p{N}._%+-]+@[\p{L}\p{N}.\-]+\.[\p{L}]{2,}$/u;
+            return emailRegex.test(value);
+        }
+
+        function checkPasswordMatch() {
+            if (!passwordInput || !confirmPasswordInput || !passwordWarning || !submitButton) return;
+            var match = passwordInput.value === confirmPasswordInput.value;
+            if (confirmPasswordInput.value.length === 0) {
+                passwordWarning.classList.add('hidden');
+                submitButton.disabled = false;
+                return;
+            }
+            if (!match) {
+                passwordWarning.textContent = 'Passwords do not match.';
+                passwordWarning.classList.remove('hidden');
+                submitButton.disabled = true;
+            } else {
+                passwordWarning.classList.add('hidden');
+                submitButton.disabled = false;
+            }
+        }
+
+        if (firstNameInput) {
+            firstNameInput.addEventListener('keydown', allowLettersOnly);
+            firstNameInput.addEventListener('input', function () {
+                sanitizeName(firstNameInput);
+                showWarning(firstNameInput, firstNameWarning, 'Please enter a valid name.');
+            });
+        }
+
+        if (lastNameInput) {
+            lastNameInput.addEventListener('keydown', allowLettersOnly);
+            lastNameInput.addEventListener('input', function () {
+                sanitizeName(lastNameInput);
+                showWarning(lastNameInput, lastNameWarning, 'Please enter a valid name.');
+            });
+        }
+
+        if (phoneInput) {
+            phoneInput.addEventListener('keydown', allowDigitsOnly);
+            phoneInput.addEventListener('input', function () {
+                sanitizePhone(phoneInput);
+                showWarning(phoneInput, phoneWarning, 'Please enter a valid phone number.');
+            });
+        }
+
+        if (emailInput) {
+            emailInput.addEventListener('input', function () {
+                var valid = validateEmailValue(emailInput.value);
+                if (!valid && emailInput.value.length > 0) {
+                    emailWarning.textContent = 'Please enter a valid email address.';
+                    emailWarning.classList.remove('hidden');
+                } else {
+                    emailWarning.classList.add('hidden');
+                }
+            });
+        }
+
+        if (passwordInput && confirmPasswordInput) {
+            passwordInput.addEventListener('input', checkPasswordMatch);
+            confirmPasswordInput.addEventListener('input', checkPasswordMatch);
+        }
+    });
+</script>
 
 </body>
 </html>
