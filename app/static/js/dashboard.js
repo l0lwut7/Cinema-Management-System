@@ -1,18 +1,43 @@
 // Dashboard Tab Switching
-function switchDashboardTab(tab) {
+function switchDashboardTab(tab, updateHash = true) {
+  const validTabs = ['history', 'favorites', 'profile'];
+  if (!validTabs.includes(tab)) {
+    tab = 'history';
+  }
+
   // Update sidebar navigation
   document.querySelectorAll('.sidebar-link').forEach(link => {
     link.classList.remove('active');
     link.classList.add('text-gray-400');
   });
   const activeNav = document.getElementById('nav-' + tab);
-  activeNav.classList.add('active');
-  activeNav.classList.remove('text-gray-400');
+  if (activeNav) {
+    activeNav.classList.add('active');
+    activeNav.classList.remove('text-gray-400');
+  }
 
   // Update content
   document.querySelectorAll('.dashboard-tab').forEach(content => content.classList.add('hidden'));
-  document.getElementById('tab-' + tab).classList.remove('hidden');
+  const activeTab = document.getElementById('tab-' + tab);
+  if (activeTab) {
+    activeTab.classList.remove('hidden');
+  }
+
+  if (updateHash) {
+    const targetHash = '#' + tab;
+    if (window.location.hash !== targetHash) {
+      window.location.hash = targetHash;
+    }
+  }
 }
+
+function initializeDashboardTabFromHash() {
+  const tabFromHash = (window.location.hash || '#history').replace('#', '');
+  switchDashboardTab(tabFromHash, false);
+}
+
+window.addEventListener('hashchange', initializeDashboardTabFromHash);
+document.addEventListener('DOMContentLoaded', initializeDashboardTabFromHash);
 
 // Password Toggle for Profile
 function togglePassword(inputId, button) {
