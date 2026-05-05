@@ -8,6 +8,7 @@ const state = {
   saloonType: '',
   basePrice: 0,
   selectedSeats: [],
+  seatLayout: {},
   tickets: { adult: 0, child: 0, senior: 0 },
   consumables: { popcorn: 0, soda: 0, candy: 0, hotdog: 0 },
 };
@@ -58,9 +59,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-// Seat map configuration
-const seatRows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
-const seatsPerRow = 12;
 let occupiedSeats = [];
 
 // ==================== DOM ELEMENTS ====================
@@ -219,6 +217,8 @@ prices.senior = prices.adult * 0.7;
 
 updateTicketPriceLabels();
 
+      const selectedScreening = filteredScreenings.find(s => s.screening_id === Number(btn.dataset.screeningId));
+      state.seatLayout = (selectedScreening && selectedScreening.seat_layout) ? selectedScreening.seat_layout : {};
       state.selectedSeats = [];
       loadOccupiedSeats(state.screeningId);
 
@@ -277,12 +277,19 @@ function loadOccupiedSeats(screeningId) {
 }
 
 function renderSeatMap() {
-  seatMap.innerHTML = seatRows.map(row => `
+  const layout = state.seatLayout;
+
+  if (!layout || Object.keys(layout).length === 0) {
+    seatMap.innerHTML = '<p class="text-slate-400 text-center py-4">No seat data available for this screening.</p>';
+    return;
+  }
+
+  seatMap.innerHTML = Object.entries(layout).map(([row, cols]) => `
         <div class="flex items-center gap-2">
           <span class="w-6 text-center text-slate-400 font-medium">${row}</span>
           <div class="flex gap-1">
-            ${Array.from({ length: seatsPerRow }, (_, i) => {
-    const seatId = `${row}${i + 1}`;
+            ${cols.map(num => {
+    const seatId = `${row}${num}`;
     const isOccupied = occupiedSeats.includes(seatId);
     const isSelected = state.selectedSeats.includes(seatId);
 
@@ -296,7 +303,7 @@ function renderSeatMap() {
       classes += ' bg-surfaceLight hover:bg-slate-500';
     }
 
-    return `<button class="${classes}" data-seat="${seatId}" ${isOccupied ? 'disabled' : ''}>${i + 1}</button>`;
+    return `<button class="${classes}" data-seat="${seatId}" ${isOccupied ? 'disabled' : ''}>${num}</button>`;
   }).join('')}
           </div>
           <span class="w-6 text-center text-slate-400 font-medium">${row}</span>
@@ -773,7 +780,9 @@ document.getElementById('newBookingBtn').addEventListener('click', function () {
   state.theater = '';
   state.movie = '';
   state.showtime = '';
+  state.screeningId = null;
   state.selectedSeats = [];
+  state.seatLayout = {};
   state.tickets = { adult: 0, child: 0, senior: 0 };
   state.consumables = { popcorn: 0, soda: 0, candy: 0, hotdog: 0 };
 

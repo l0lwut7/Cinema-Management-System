@@ -101,6 +101,42 @@ def group_screenings_by_theater(screenings):
 
     return list(grouped.values())
 
+def fetch_seat_layout(theater_id, saloon_number):
+    connection = get_db_connection()
+
+    if connection is None:
+        return {}
+
+    cursor = connection.cursor(dictionary=True)
+
+    cursor.execute(
+        """
+        SELECT row_letter, number
+        FROM seat
+        WHERE theater_id = %s AND saloon_number = %s
+        ORDER BY row_letter ASC, number ASC
+        """,
+        (theater_id, saloon_number)
+    )
+
+    seats = cursor.fetchall()
+
+    cursor.close()
+    connection.close()
+
+    layout = {}
+
+    for seat in seats:
+        row = seat["row_letter"]
+
+        if row not in layout:
+            layout[row] = []
+
+        layout[row].append(int(seat["number"]))
+
+    return layout
+
+
 @booking_bp.route("/booking")
 def booking():
     if "user_id" not in session:
@@ -116,6 +152,8 @@ def booking():
     consumables = fetch_consumables()
     theaters_with_screenings = group_screenings_by_theater(screenings)
 
+    layout_cache = {}
+
     for screening in screenings:
         if hasattr(screening["start_time"], "strftime"):
             screening["start_time_display"] = screening["start_time"].strftime("%Y-%m-%d %H:%M")
@@ -124,13 +162,20 @@ def booking():
 
         screening["base_price"] = float(screening["base_price"])
 
+        key = (screening["theater_id"], screening["saloon_number"])
+
+        if key not in layout_cache:
+            layout_cache[key] = fetch_seat_layout(screening["theater_id"], screening["saloon_number"])
+
+        screening["seat_layout"] = layout_cache[key]
+
     return render_template(
         "booking/booking.html",
         movie_id=movie_id,
         movie=movie,
         screenings=screenings,
         theaters_with_screenings=theaters_with_screenings,
-        consumables = consumables
+        consumables=consumables
     )
 
 def fetch_screening_detail(screening_id):
