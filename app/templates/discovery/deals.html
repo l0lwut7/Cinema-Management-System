@@ -10,14 +10,32 @@
     <p class="mt-3 max-w-3xl text-sm leading-6 text-slate-300">Keep this page focused on offers while the header still exposes the shortcut for fast access from anywhere in the app.</p>
   </section>
 
-  <div class="mt-8 grid gap-6 md:grid-cols-3">
+ <div class="mt-8 grid gap-6 md:grid-cols-3">
+  {% if deals %}
     {% for deal in deals %}
       <article class="rounded-[1.75rem] border border-white/10 bg-white/5 p-6 shadow-xl shadow-black/10">
-        <span class="rounded-full bg-brand-amber/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-brand-amber">{{ deal.tag }}</span>
-        <h2 class="mt-4 font-display text-3xl text-white">{{ deal.title }}</h2>
-        <p class="mt-3 text-sm leading-6 text-slate-400">{{ deal.description }}</p>
+        <span class="rounded-full bg-brand-amber/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-brand-amber">
+          {{ deal.tag }}
+        </span>
+
+        <h2 class="mt-4 font-display text-3xl text-white">
+          {{ deal.title }}
+        </h2>
+
+        <p class="mt-3 text-sm leading-6 text-slate-400">
+          {{ deal.description }}
+        </p>
+
+        <p class="mt-4 text-xs text-slate-500">
+          Valid until: {{ deal.valid_until_display }}
+        </p>
       </article>
     {% endfor %}
-  </div>
+  {% else %}
+    <div class="md:col-span-3 rounded-[1.75rem] border border-white/10 bg-white/5 p-10 text-center text-slate-400">
+      No active deals right now.
+    </div>
+  {% endif %}
+</div>
 </div>
 {% endblock %}

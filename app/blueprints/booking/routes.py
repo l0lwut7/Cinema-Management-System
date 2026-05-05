@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, abort, jsonify, session
+from flask import Blueprint, render_template, request, abort, jsonify, session, redirect, url_for
 from app.db import get_db_connection
 
 
@@ -101,9 +101,11 @@ def group_screenings_by_theater(screenings):
 
     return list(grouped.values())
 
-
 @booking_bp.route("/booking")
 def booking():
+    if "user_id" not in session:
+        return redirect(url_for("auth.login", next=request.full_path))
+
     movie_id = request.args.get("movie_id", type=int)
 
     if movie_id is None:
@@ -260,6 +262,7 @@ def create_booking():
     screening_id = data.get("screening_id")
     selected_seats = data.get("selected_seats")
     selected_consumables = data.get("consumables", {})
+    selected_tickets = data.get("tickets", {})
     user_id = session.get("user_id")
 
     if user_id is None:
@@ -310,7 +313,26 @@ def create_booking():
         saloon_number = screening["saloon_number"]
         base_price = float(screening["base_price"])
 
-        ticket_total = base_price * len(selected_seats)
+        adult_count = int(selected_tickets.get("adult", 0))
+        child_count = int(selected_tickets.get("child", 0))
+        senior_count = int(selected_tickets.get("senior", 0))
+
+        if adult_count + child_count + senior_count != len(selected_seats):
+            connection.rollback()
+            return jsonify({
+                "success": False,
+                "message": "Ticket count must match selected seats."
+            }), 400
+
+        adult_price = base_price
+        child_price = base_price * 0.5
+        senior_price = base_price * 0.7
+
+        ticket_total = (
+                adult_count * adult_price +
+                child_count * child_price +
+                senior_count * senior_price
+        )
         consumable_total = 0
 
         consumable_name_map = {

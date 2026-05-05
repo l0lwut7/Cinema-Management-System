@@ -27,8 +27,9 @@
                         <p id="theater-address" class="text-cinema-muted">{{ selected_theater.address }}</p>
                     </div>
                     <div class="flex gap-3 mt-4 md:mt-0">
-                        <a href="tel:{{ selected_theater.phone }}" class="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg transition-all">Call</a>
-                        <a href="#" class="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg transition-all">Directions</a>
+{% if selected_theater.phone %}
+    <a href="tel:{{ selected_theater.phone }}" class="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg transition-all">Call</a>
+{% endif %}                        <a href="#" class="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg transition-all">Directions</a>
                     </div>
                 </div>
 
@@ -45,16 +46,32 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-700">
-                            {% for screen in selected_screens %}
-                                <tr class="hover:bg-slate-700/50">
-                                    <td class="py-4 font-medium">{{ screen.name }}</td>
-                                    <td class="py-4"><span class="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs rounded-full">{{ screen.type }}</span></td>
-                                    <td class="py-4">{{ screen.capacity }} seats</td>
-                                    <td class="py-4 text-cinema-muted text-sm">{{ screen.features }}</td>
-                                    <td class="py-4"><span class="px-2 py-1 {% if screen.status == 'Available' %}bg-green-500/20 text-green-400{% else %}bg-cinema-secondary/20 text-cinema-secondary{% endif %} text-xs rounded-full">{{ screen.status }}</span></td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
+    {% if selected_screens %}
+        {% for screen in selected_screens %}
+            <tr class="hover:bg-slate-700/50">
+                <td class="py-4 font-medium">{{ screen.name }}</td>
+                <td class="py-4">
+                    <span class="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs rounded-full">
+                        {{ screen.type }}
+                    </span>
+                </td>
+                <td class="py-4">{{ screen.capacity }} seats</td>
+                <td class="py-4 text-cinema-muted text-sm">{{ screen.features }}</td>
+                <td class="py-4">
+                    <span class="px-2 py-1 {% if screen.status == 'Available' %}bg-green-500/20 text-green-400{% else %}bg-cinema-secondary/20 text-cinema-secondary{% endif %} text-xs rounded-full">
+                        {{ screen.status }}
+                    </span>
+                </td>
+            </tr>
+        {% endfor %}
+    {% else %}
+        <tr>
+            <td colspan="5" class="py-8 text-center text-cinema-muted">
+                No saloons found for this theater.
+            </td>
+        </tr>
+    {% endif %}
+</tbody>
                     </table>
                 </div>
             </div>

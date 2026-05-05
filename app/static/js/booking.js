@@ -14,8 +14,12 @@ const state = {
 const realScreenings = window.BOOKING_SCREENINGS || [];
 
 const prices = {
-  serviceFee: 2.50
+  serviceFee: 2.50,
+  adult: 0,
+  child: 0,
+  senior: 0
 };
+
 
 const realConsumables = window.BOOKING_CONSUMABLES || [];
 
@@ -190,6 +194,11 @@ function updateShowtimes() {
       state.showtime = btn.dataset.time;
       state.saloonType = btn.dataset.saloonType;
       state.basePrice = Number(btn.dataset.basePrice);
+      prices.adult = Number(state.basePrice || 0);
+prices.child = prices.adult * 0.5;
+prices.senior = prices.adult * 0.7;
+
+updateTicketPriceLabels();
 
       state.selectedSeats = [];
       loadOccupiedSeats(state.screeningId);
@@ -211,6 +220,24 @@ const seatMap = document.getElementById('seatMap');
 const selectedSeatsDisplay = document.getElementById('selectedSeatsDisplay');
 const seatsSubtotal = document.getElementById('seatsSubtotal');
 const step2Next = document.getElementById('step2Next');
+
+function updateTicketPriceLabels() {
+  const adultPriceLabel = document.getElementById('adultPriceLabel');
+  const childPriceLabel = document.getElementById('childPriceLabel');
+  const seniorPriceLabel = document.getElementById('seniorPriceLabel');
+
+  if (adultPriceLabel) {
+    adultPriceLabel.textContent = `$${prices.adult.toFixed(2)} each`;
+  }
+
+  if (childPriceLabel) {
+    childPriceLabel.textContent = `$${prices.child.toFixed(2)} each`;
+  }
+
+  if (seniorPriceLabel) {
+    seniorPriceLabel.textContent = `$${prices.senior.toFixed(2)} each`;
+  }
+}
 
 function loadOccupiedSeats(screeningId) {
   fetch(`/booking/occupied-seats/${screeningId}`)
@@ -340,7 +367,10 @@ function updateConsumableDisplay() {
 }
 
 function updateTotals() {
-  const ticketTotal = state.selectedSeats.length * state.basePrice;
+  const ticketTotal =
+  state.tickets.adult * prices.adult +
+  state.tickets.child * prices.child +
+  state.tickets.senior * prices.senior;
 
   const consumableTotal =
     state.consumables.popcorn * prices.popcorn +
@@ -357,9 +387,17 @@ function updateTotals() {
   // Update ticket summary
   const ticketSummary = document.getElementById('ticketSummary');
   let ticketHtml = '';
-  if (state.tickets.adult > 0) ticketHtml += `<div class="flex justify-between text-sm"><span class="text-slate-400">${state.tickets.adult}x Adult</span><span>$${(state.tickets.adult * prices.adult).toFixed(2)}</span></div>`;
-  if (state.tickets.child > 0) ticketHtml += `<div class="flex justify-between text-sm"><span class="text-slate-400">${state.tickets.child}x Child</span><span>$${(state.tickets.child * prices.child).toFixed(2)}</span></div>`;
-  if (state.tickets.senior > 0) ticketHtml += `<div class="flex justify-between text-sm"><span class="text-slate-400">${state.tickets.senior}x Senior</span><span>$${(state.tickets.senior * prices.senior).toFixed(2)}</span></div>`;
+ if (state.tickets.adult > 0) {
+  ticketHtml += `<div class="flex justify-between text-sm"><span class="text-slate-400">${state.tickets.adult}x Adult</span><span>$${(state.tickets.adult * prices.adult).toFixed(2)}</span></div>`;
+}
+
+if (state.tickets.child > 0) {
+  ticketHtml += `<div class="flex justify-between text-sm"><span class="text-slate-400">${state.tickets.child}x Child</span><span>$${(state.tickets.child * prices.child).toFixed(2)}</span></div>`;
+}
+
+if (state.tickets.senior > 0) {
+  ticketHtml += `<div class="flex justify-between text-sm"><span class="text-slate-400">${state.tickets.senior}x Senior</span><span>$${(state.tickets.senior * prices.senior).toFixed(2)}</span></div>`;
+}
   ticketSummary.innerHTML = ticketHtml || '<div class="text-sm text-slate-500">No tickets selected</div>';
 
   // Update consumable summary
@@ -444,8 +482,12 @@ document.getElementById('reviewTheater').textContent = selectedTheaterText;
   document.getElementById('reviewSeats').textContent = state.selectedSeats.join(', ');
 
   // Calculate total
-  const ticketTotal = state.selectedSeats.length * state.basePrice;
-  const consumableTotal =
+const ticketTotal =
+  state.tickets.adult * prices.adult +
+  state.tickets.child * prices.child +
+  state.tickets.senior * prices.senior;
+
+const consumableTotal =
     state.consumables.popcorn * prices.popcorn +
     state.consumables.soda * prices.soda +
     state.consumables.candy * prices.candy +
@@ -580,10 +622,11 @@ if (!screeningId) {
   });
 
   const requestBody = {
-    screening_id: screeningId,
-    selected_seats: formattedSeats,
-      consumables: state.consumables
-  };
+  screening_id: screeningId,
+  selected_seats: formattedSeats,
+  tickets: state.tickets,
+  consumables: state.consumables
+};
 
   console.log("Sending to backend:", requestBody);
 
@@ -640,7 +683,10 @@ document.getElementById('confirmTheater').textContent = selectedTheaterText;
   document.getElementById('confirmSeats').textContent = state.selectedSeats.join(', ');
 
   // Calculate and show total
-  const ticketTotal = state.selectedSeats.length * state.basePrice;
+  const ticketTotal =
+  state.tickets.adult * prices.adult +
+  state.tickets.child * prices.child +
+  state.tickets.senior * prices.senior;
 
   const consumableTotal =
     state.consumables.popcorn * prices.popcorn +

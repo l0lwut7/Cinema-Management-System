@@ -63,7 +63,11 @@
                     {% for actor in cast %}
                         <div class="text-center">
                             <div class="w-20 h-20 mx-auto mb-2 rounded-full bg-slate-700 overflow-hidden">
-                                <img src="{{ actor.image_url }}" alt="Actor" class="w-full h-full object-cover">
+<img
+  src="{{ actor.image_url or url_for('static', filename='img/default_profile.jpg') }}"
+  alt="{{ actor.name }}"
+  class="w-full h-full object-cover"
+>
                             </div>
                             <p class="font-medium text-sm">{{ actor.name }}</p>
                             <p class="text-cinema-muted text-xs">{{ actor.role }}</p>
@@ -102,9 +106,24 @@
                         </div>
                     </div>
                     {% if is_authenticated %}
-                        <textarea placeholder="Share your thoughts about this movie..." class="w-full h-24 bg-slate-700 border border-slate-600 rounded-lg p-3 text-cinema-text placeholder-cinema-muted resize-none focus:outline-none focus:ring-2 focus:ring-cinema-primary"></textarea>
-                        <button class="mt-3 bg-cinema-primary hover:bg-red-700 text-white px-6 py-2 rounded-lg font-semibold transition-all">Submit Review</button>
-                    {% else %}
+    <form method="POST" action="{{ url_for('discovery.submit_review', movie_id=movie.id) }}">
+        <input type="hidden" name="rating" id="selected-rating" value="">
+
+        <textarea
+            name="comment"
+            required
+            placeholder="Share your thoughts about this movie..."
+            class="w-full h-24 bg-slate-700 border border-slate-600 rounded-lg p-3 text-cinema-text placeholder-cinema-muted resize-none focus:outline-none focus:ring-2 focus:ring-cinema-primary"
+        ></textarea>
+
+        <button
+            type="submit"
+            class="mt-3 bg-cinema-primary hover:bg-red-700 text-white px-6 py-2 rounded-lg font-semibold transition-all"
+        >
+            Submit Review
+        </button>
+    </form>
+{% else %}
                         <div class="bg-slate-700 rounded-lg p-4 text-cinema-muted">
                             Please <a href="{{ login_url }}" class="text-cinema-primary font-semibold">log in</a> to submit a review.
                         </div>
@@ -116,8 +135,11 @@
                         <div class="border-t border-slate-700 pt-4">
                             <div class="flex items-start gap-3">
                                 <div class="w-10 h-10 rounded-full bg-slate-700 overflow-hidden flex-shrink-0">
-                                    <img src="{{ review.avatar_url }}" alt="User" class="w-full h-full object-cover">
-                                </div>
+<img
+  src="{{ url_for('static', filename='img/default_profile.jpg') }}"
+  alt="{{ review.author }}"
+  class="w-full h-full object-cover"
+>                                </div>
                                 <div class="flex-1">
                                     <div class="flex items-center gap-2 mb-1">
                                         <span class="font-medium">{{ review.author }}</span>
@@ -146,4 +168,28 @@
         </div>
     </div>
 </div>
+    {% block scripts %}
+<script>
+let selectedRating = 0;
+
+function setRating(rating) {
+    selectedRating = rating;
+
+    const ratingInput = document.getElementById("selected-rating");
+    if (ratingInput) {
+        ratingInput.value = rating;
+    }
+
+    document.querySelectorAll(".star-btn").forEach((button, index) => {
+        if (index < rating) {
+            button.classList.remove("text-slate-600");
+            button.classList.add("text-cinema-secondary");
+        } else {
+            button.classList.remove("text-cinema-secondary");
+            button.classList.add("text-slate-600");
+        }
+    });
+}
+</script>
+{% endblock %}
 {% endblock %}
