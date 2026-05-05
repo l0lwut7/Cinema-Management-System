@@ -12,8 +12,11 @@
             <form id="paymentForm" class="space-y-4">
               <div>
                 <label class="block text-sm text-slate-400 mb-2">Cardholder Name</label>
-                <input type="text" id="cardName" required placeholder="John Doe" class="w-full bg-background border border-surfaceLight rounded-lg px-4 py-3 text-white placeholder-slate-500">
-                <p id="cardNameError" class="text-crimson text-sm mt-1 hidden">Please enter cardholder name</p>
+                <input type="text" id="cardName" required placeholder="John Doe"
+                       pattern="[A-Za-zÇçĞğİıÖöŞşÜüÂâÎîÛû ]+"
+                       title="Letters and spaces only (international/Turkish characters allowed)"
+                       class="w-full bg-background border border-surfaceLight rounded-lg px-4 py-3 text-white placeholder-slate-500">
+                <p id="cardNameError" class="text-crimson text-sm mt-1 hidden">Letters and spaces only (numbers and symbols are not allowed)</p>
               </div>
               
               <div>

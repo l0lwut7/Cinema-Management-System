@@ -1,3 +1,11 @@
+    {% set price_ns = namespace(popcorn=8.50, soda=6.00, candy=5.00, hotdog=7.00) %}
+    {% for item in consumables or [] %}
+        {% set lname = (item.name or '') | lower %}
+        {% if 'popcorn' in lname %}{% set price_ns.popcorn = item.unit_price %}{% endif %}
+        {% if 'soda' in lname %}{% set price_ns.soda = item.unit_price %}{% endif %}
+        {% if 'candy' in lname %}{% set price_ns.candy = item.unit_price %}{% endif %}
+        {% if 'hot' in lname %}{% set price_ns.hotdog = item.unit_price %}{% endif %}
+    {% endfor %}
     <!-- Step 3: Cart/Consumables -->
     <div id="step3" class="step-hidden">
       <div class="bg-surface rounded-xl p-6">
@@ -55,13 +63,13 @@
                     <div class="w-12 h-12 bg-amber/20 rounded-lg flex items-center justify-center text-2xl">🍿</div>
                     <div>
                       <p class="font-medium">Large Popcorn</p>
-                      <p class="text-slate-400 text-sm">$8.50</p>
+                      <p class="text-slate-400 text-sm">${{ "%.2f"|format(price_ns.popcorn|float) }}</p>
                     </div>
                   </div>
                   <div class="flex items-center gap-3">
-                    <button class="consumable-minus w-8 h-8 rounded-lg bg-surfaceLight hover:bg-crimson flex items-center justify-center transition-colors" data-item="popcorn">−</button>
+                    <button class="consumable-minus w-8 h-8 rounded-lg bg-surfaceLight hover:bg-crimson flex items-center justify-center transition-colors" data-item="popcorn" data-price="{{ price_ns.popcorn }}">−</button>
                     <span id="popcornCount" class="w-8 text-center font-semibold">0</span>
-                    <button class="consumable-plus w-8 h-8 rounded-lg bg-surfaceLight hover:bg-crimson flex items-center justify-center transition-colors" data-item="popcorn">+</button>
+                    <button class="consumable-plus w-8 h-8 rounded-lg bg-surfaceLight hover:bg-crimson flex items-center justify-center transition-colors" data-item="popcorn" data-price="{{ price_ns.popcorn }}">+</button>
                   </div>
                 </div>
                 <div class="flex items-center justify-between p-3 bg-surface rounded-lg">
@@ -69,13 +77,13 @@
                     <div class="w-12 h-12 bg-amber/20 rounded-lg flex items-center justify-center text-2xl">🥤</div>
                     <div>
                       <p class="font-medium">Large Soda</p>
-                      <p class="text-slate-400 text-sm">$6.00</p>
+                      <p class="text-slate-400 text-sm">${{ "%.2f"|format(price_ns.soda|float) }}</p>
                     </div>
                   </div>
                   <div class="flex items-center gap-3">
-                    <button class="consumable-minus w-8 h-8 rounded-lg bg-surfaceLight hover:bg-crimson flex items-center justify-center transition-colors" data-item="soda">−</button>
+                    <button class="consumable-minus w-8 h-8 rounded-lg bg-surfaceLight hover:bg-crimson flex items-center justify-center transition-colors" data-item="soda" data-price="{{ price_ns.soda }}">−</button>
                     <span id="sodaCount" class="w-8 text-center font-semibold">0</span>
-                    <button class="consumable-plus w-8 h-8 rounded-lg bg-surfaceLight hover:bg-crimson flex items-center justify-center transition-colors" data-item="soda">+</button>
+                    <button class="consumable-plus w-8 h-8 rounded-lg bg-surfaceLight hover:bg-crimson flex items-center justify-center transition-colors" data-item="soda" data-price="{{ price_ns.soda }}">+</button>
                   </div>
                 </div>
                 <div class="flex items-center justify-between p-3 bg-surface rounded-lg">
@@ -83,13 +91,13 @@
                     <div class="w-12 h-12 bg-amber/20 rounded-lg flex items-center justify-center text-2xl">🍫</div>
                     <div>
                       <p class="font-medium">Candy Box</p>
-                      <p class="text-slate-400 text-sm">$5.00</p>
+                      <p class="text-slate-400 text-sm">${{ "%.2f"|format(price_ns.candy|float) }}</p>
                     </div>
                   </div>
                   <div class="flex items-center gap-3">
-                    <button class="consumable-minus w-8 h-8 rounded-lg bg-surfaceLight hover:bg-crimson flex items-center justify-center transition-colors" data-item="candy">−</button>
+                    <button class="consumable-minus w-8 h-8 rounded-lg bg-surfaceLight hover:bg-crimson flex items-center justify-center transition-colors" data-item="candy" data-price="{{ price_ns.candy }}">−</button>
                     <span id="candyCount" class="w-8 text-center font-semibold">0</span>
-                    <button class="consumable-plus w-8 h-8 rounded-lg bg-surfaceLight hover:bg-crimson flex items-center justify-center transition-colors" data-item="candy">+</button>
+                    <button class="consumable-plus w-8 h-8 rounded-lg bg-surfaceLight hover:bg-crimson flex items-center justify-center transition-colors" data-item="candy" data-price="{{ price_ns.candy }}">+</button>
                   </div>
                 </div>
                 <div class="flex items-center justify-between p-3 bg-surface rounded-lg">
@@ -97,13 +105,13 @@
                     <div class="w-12 h-12 bg-amber/20 rounded-lg flex items-center justify-center text-2xl">🌭</div>
                     <div>
                       <p class="font-medium">Hot Dog</p>
-                      <p class="text-slate-400 text-sm">$7.00</p>
+                      <p class="text-slate-400 text-sm">${{ "%.2f"|format(price_ns.hotdog|float) }}</p>
                     </div>
                   </div>
                   <div class="flex items-center gap-3">
-                    <button class="consumable-minus w-8 h-8 rounded-lg bg-surfaceLight hover:bg-crimson flex items-center justify-center transition-colors" data-item="hotdog">−</button>
+                    <button class="consumable-minus w-8 h-8 rounded-lg bg-surfaceLight hover:bg-crimson flex items-center justify-center transition-colors" data-item="hotdog" data-price="{{ price_ns.hotdog }}">−</button>
                     <span id="hotdogCount" class="w-8 text-center font-semibold">0</span>
-                    <button class="consumable-plus w-8 h-8 rounded-lg bg-surfaceLight hover:bg-crimson flex items-center justify-center transition-colors" data-item="hotdog">+</button>
+                    <button class="consumable-plus w-8 h-8 rounded-lg bg-surfaceLight hover:bg-crimson flex items-center justify-center transition-colors" data-item="hotdog" data-price="{{ price_ns.hotdog }}">+</button>
                   </div>
                 </div>
               </div>
