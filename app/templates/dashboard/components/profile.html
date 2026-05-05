@@ -26,47 +26,51 @@
         Please fill in all required fields.
       </div>
       
-      <div class="space-y-4">
-        <div class="flex justify-center mb-6">
-          <div class="relative">
-            <div class="w-24 h-24 rounded-full bg-gradient-to-br from-cinema-primary to-amber flex items-center justify-center text-3xl font-bold">
-              JD
-            </div>
-            <button class="absolute bottom-0 right-0 w-8 h-8 bg-cinema-primary rounded-full flex items-center justify-center hover:bg-rose-600 transition-colors">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
-              </svg>
-            </button>
-          </div>
-        </div>
-        
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-300 mb-2">First Name</label>
-            <input type="text" value="John" class="input-field w-full px-4 py-3 rounded-xl text-white">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-300 mb-2">Last Name</label>
-            <input type="text" value="Doe" class="input-field w-full px-4 py-3 rounded-xl text-white">
-          </div>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2">Email Address</label>
-          <input type="email" value="john.doe@example.com" class="input-field w-full px-4 py-3 rounded-xl text-white">
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2">Phone Number</label>
-          <input type="tel" value="+1 (555) 123-4567" class="input-field w-full px-4 py-3 rounded-xl text-white">
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2">Date of Birth</label>
-          <input type="date" value="1990-05-15" class="input-field w-full px-4 py-3 rounded-xl text-white">
-        </div>
-        <button onclick="saveProfile()" class="w-full py-3 bg-gradient-to-r from-cinema-primary to-rose-600 hover:from-rose-600 hover:to-cinema-primary rounded-xl font-semibold transition-all">
-          Save Changes
-        </button>
+      <form method="POST" action="{{ url_for('dashboard.update_profile') }}" class="space-y-4">
+  <div class="flex justify-center mb-6">
+    <div class="relative">
+      <div class="w-24 h-24 rounded-full bg-gradient-to-br from-cinema-primary to-amber flex items-center justify-center text-3xl font-bold">
+        {{ user.initials or 'U' }}
       </div>
+      <button type="button" class="absolute bottom-0 right-0 w-8 h-8 bg-cinema-primary rounded-full flex items-center justify-center hover:bg-rose-600 transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-2 gap-4">
+    <div>
+      <label class="block text-sm font-medium text-gray-300 mb-2">First Name</label>
+      <input name="first_name" type="text" value="{{ user.first_name or '' }}" required class="input-field w-full px-4 py-3 rounded-xl text-white">
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-300 mb-2">Last Name</label>
+      <input name="last_name" type="text" value="{{ user.last_name or '' }}" required class="input-field w-full px-4 py-3 rounded-xl text-white">
+    </div>
+  </div>
+
+  <div>
+    <label class="block text-sm font-medium text-gray-300 mb-2">Email Address</label>
+    <input name="email" type="email" value="{{ user.email or '' }}" required class="input-field w-full px-4 py-3 rounded-xl text-white">
+  </div>
+
+  <div>
+    <label class="block text-sm font-medium text-gray-300 mb-2">Phone Number</label>
+    <input name="phone_number" type="tel" value="{{ user.phone_number or '' }}" class="input-field w-full px-4 py-3 rounded-xl text-white">
+  </div>
+
+  <div>
+    <label class="block text-sm font-medium text-gray-300 mb-2">Date of Birth</label>
+    <input name="birth_date" type="date" value="{{ user.birth_date or '' }}" class="input-field w-full px-4 py-3 rounded-xl text-white">
+  </div>
+
+  <button type="submit" class="w-full py-3 bg-gradient-to-r from-cinema-primary to-rose-600 hover:from-rose-600 hover:to-cinema-primary rounded-xl font-semibold transition-all">
+    Save Changes
+  </button>
+</form>
     </div>
 
     <!-- Password Update -->
@@ -89,54 +93,58 @@
         Passwords do not match or current password is incorrect.
       </div>
       
-      <div class="space-y-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2">Current Password</label>
-          <div class="relative">
-            <input type="password" id="current-password" placeholder="Enter current password" class="input-field w-full px-4 py-3 rounded-xl text-white placeholder-gray-500 pr-12">
-            <button type="button" onclick="togglePassword('current-password', this)" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-              </svg>
-            </button>
-          </div>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2">New Password</label>
-          <div class="relative">
-            <input type="password" id="new-password" placeholder="Enter new password" class="input-field w-full px-4 py-3 rounded-xl text-white placeholder-gray-500 pr-12">
-            <button type="button" onclick="togglePassword('new-password', this)" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-              </svg>
-            </button>
-          </div>
-          <div class="mt-2 flex gap-1" id="password-strength">
-            <div class="h-1 flex-1 rounded bg-gray-700"></div>
-            <div class="h-1 flex-1 rounded bg-gray-700"></div>
-            <div class="h-1 flex-1 rounded bg-gray-700"></div>
-            <div class="h-1 flex-1 rounded bg-gray-700"></div>
-          </div>
-          <p class="text-xs text-gray-500 mt-1">Use 8+ characters with mix of letters & numbers</p>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-300 mb-2">Confirm New Password</label>
-          <div class="relative">
-            <input type="password" id="confirm-password" placeholder="Confirm new password" class="input-field w-full px-4 py-3 rounded-xl text-white placeholder-gray-500 pr-12">
-            <button type="button" onclick="togglePassword('confirm-password', this)" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-              </svg>
-            </button>
-          </div>
-        </div>
-        <button onclick="changePassword()" class="w-full py-3 bg-gradient-to-r from-cinema-primary to-rose-600 hover:from-rose-600 hover:to-cinema-primary rounded-xl font-semibold transition-all">
-          Update Password
-        </button>
-      </div>
+      <form method="POST" action="{{ url_for('dashboard.update_password') }}" class="space-y-4">
+  <div>
+    <label class="block text-sm font-medium text-gray-300 mb-2">Current Password</label>
+    <div class="relative">
+      <input name="current_password" type="password" id="current-password" placeholder="Enter current password" class="input-field w-full px-4 py-3 rounded-xl text-white placeholder-gray-500 pr-12">
+      <button type="button" onclick="togglePassword('current-password', this)" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div>
+    <label class="block text-sm font-medium text-gray-300 mb-2">New Password</label>
+    <div class="relative">
+      <input name="new_password" type="password" id="new-password" placeholder="Enter new password" class="input-field w-full px-4 py-3 rounded-xl text-white placeholder-gray-500 pr-12">
+      <button type="button" onclick="togglePassword('new-password', this)" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="mt-2 flex gap-1" id="password-strength">
+      <div class="h-1 flex-1 rounded bg-gray-700"></div>
+      <div class="h-1 flex-1 rounded bg-gray-700"></div>
+      <div class="h-1 flex-1 rounded bg-gray-700"></div>
+      <div class="h-1 flex-1 rounded bg-gray-700"></div>
+    </div>
+    <p class="text-xs text-gray-500 mt-1">Use 8+ characters with mix of letters & numbers</p>
+  </div>
+
+  <div>
+    <label class="block text-sm font-medium text-gray-300 mb-2">Confirm New Password</label>
+    <div class="relative">
+      <input name="confirm_password" type="password" id="confirm-password" placeholder="Confirm new password" class="input-field w-full px-4 py-3 rounded-xl text-white placeholder-gray-500 pr-12">
+      <button type="button" onclick="togglePassword('confirm-password', this)" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <button type="submit" class="w-full py-3 bg-gradient-to-r from-cinema-primary to-rose-600 hover:from-rose-600 hover:to-cinema-primary rounded-xl font-semibold transition-all">
+    Update Password
+  </button>
+</form>
       
       <!-- Security Tips -->
       <div class="mt-6 p-4 bg-amber/10 border border-amber/30 rounded-xl">

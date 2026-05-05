@@ -6,7 +6,7 @@
   </div>
   
   <!-- Stats Cards -->
-  <div class="grid grid-cols-3 gap-6 mb-8">
+  <div class="grid grid-cols-2 gap-6 mb-8">
     <div class="bg-cinema-surface rounded-xl p-6 border border-white/5">
       <div class="flex items-center justify-between mb-2">
         <span class="text-gray-400">Total Bookings</span>
@@ -16,18 +16,7 @@
           </svg>
         </div>
       </div>
-      <p class="text-3xl font-bold">12</p>
-    </div>
-    <div class="bg-cinema-surface rounded-xl p-6 border border-white/5">
-      <div class="flex items-center justify-between mb-2">
-        <span class="text-gray-400">Movies Watched</span>
-        <div class="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
-          <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"/>
-          </svg>
-        </div>
-      </div>
-      <p class="text-3xl font-bold">9</p>
+      <p class="text-3xl font-bold">{{ booking_stats.total_bookings }}</p>
     </div>
     <div class="bg-cinema-surface rounded-xl p-6 border border-white/5">
       <div class="flex items-center justify-between mb-2">
@@ -38,7 +27,7 @@
           </svg>
         </div>
       </div>
-      <p class="text-3xl font-bold">$247.50</p>
+      <p class="text-3xl font-bold">${{ "%.2f"|format(booking_stats.total_spent) }}</p>
     </div>
   </div>
 
@@ -46,20 +35,6 @@
   <div class="bg-cinema-surface rounded-xl border border-white/5 overflow-hidden">
     <div class="px-6 py-4 border-b border-white/5 flex items-center justify-between">
       <h3 class="font-semibold">Recent Bookings</h3>
-      <div class="flex items-center gap-4">
-        <select id="sort-bookings" class="bg-cinema-bg border border-white/10 rounded-lg px-3 py-2 text-sm" onchange="filterAndSortBookings()">
-          <option value="date-desc">Newest First</option>
-          <option value="date-asc">Oldest First</option>
-          <option value="price-desc">Highest Price</option>
-          <option value="price-asc">Lowest Price</option>
-        </select>
-        <select id="filter-status" class="bg-cinema-bg border border-white/10 rounded-lg px-3 py-2 text-sm" onchange="filterAndSortBookings()">
-          <option value="all">All Status</option>
-          <option value="completed">Completed</option>
-          <option value="upcoming">Upcoming</option>
-          <option value="refunded">Refunded</option>
-        </select>
-      </div>
     </div>
     <div class="overflow-x-auto">
       <table class="w-full">
@@ -73,100 +48,58 @@
             <th class="px-6 py-4 font-medium">Action</th>
           </tr>
         </thead>
-        <tbody id="bookings-tbody" class="divide-y divide-white/5">
-          <tr class="booking-row hover:bg-cinema-surfaceLight/30 transition-colors" data-date="2024-03-15" data-price="45.00" data-status="completed">
-            <td class="px-6 py-4">
-              <a href="{{ url_for('discovery.movie_detail', movie_id=1) }}" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
-                <div class="w-12 h-16 rounded-lg bg-gradient-to-br from-violet-600 to-purple-800 flex items-center justify-center text-xs font-bold">D2</div>
-                <div>
-                  <p class="font-medium">Dune: Part Two</p>
-                  <p class="text-sm text-gray-400">IMAX 3D</p>
-                </div>
-              </a>
-            </td>
-            <td class="px-6 py-4">
-              <p>Mar 15, 2024</p>
-              <p class="text-sm text-gray-400">7:30 PM</p>
-            </td>
-            <td class="px-6 py-4">E7, E8</td>
-            <td class="px-6 py-4 font-semibold">$45.00</td>
-            <td class="px-6 py-4">
-              <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-full text-sm">Completed</span>
-            </td>
-            <td class="px-6 py-4">
-              <button class="text-gray-400 hover:text-white text-sm">View Ticket</button>
-            </td>
-          </tr>
-          <tr class="booking-row hover:bg-cinema-surfaceLight/30 transition-colors" data-date="2024-03-20" data-price="67.50" data-status="upcoming">
-            <td class="px-6 py-4">
-              <a href="{{ url_for('discovery.movie_detail', movie_id=2) }}" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
-                <div class="w-12 h-16 rounded-lg bg-gradient-to-br from-red-600 to-orange-600 flex items-center justify-center text-xs font-bold">OP</div>
-                <div>
-                  <p class="font-medium">Oppenheimer</p>
-                  <p class="text-sm text-gray-400">70mm IMAX</p>
-                </div>
-              </a>
-            </td>
-            <td class="px-6 py-4">
-              <p>Mar 20, 2024</p>
-              <p class="text-sm text-gray-400">8:00 PM</p>
-            </td>
-            <td class="px-6 py-4">G12, G13, G14</td>
-            <td class="px-6 py-4 font-semibold">$67.50</td>
-            <td class="px-6 py-4">
-              <span class="px-3 py-1 bg-amber/20 text-amber rounded-full text-sm">Upcoming</span>
-            </td>
-            <td class="px-6 py-4">
-              <button onclick="showRefundModal()" class="px-4 py-2 bg-cinema-primary/20 text-cinema-primary hover:bg-cinema-primary hover:text-white rounded-lg text-sm transition-colors">Request Refund</button>
-            </td>
-          </tr>
-          <tr class="booking-row hover:bg-cinema-surfaceLight/30 transition-colors" data-date="2024-02-28" data-price="38.00" data-status="completed">
-            <td class="px-6 py-4">
-              <a href="{{ url_for('discovery.movie_detail', movie_id=3) }}" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
-                <div class="w-12 h-16 rounded-lg bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center text-xs font-bold">AV</div>
-                <div>
-                  <p class="font-medium">Avatar: The Way of Water</p>
-                  <p class="text-sm text-gray-400">3D Dolby</p>
-                </div>
-              </a>
-            </td>
-            <td class="px-6 py-4">
-              <p>Feb 28, 2024</p>
-              <p class="text-sm text-gray-400">6:00 PM</p>
-            </td>
-            <td class="px-6 py-4">D5, D6</td>
-            <td class="px-6 py-4 font-semibold">$38.00</td>
-            <td class="px-6 py-4">
-              <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-full text-sm">Completed</span>
-            </td>
-            <td class="px-6 py-4">
-              <button class="text-gray-400 hover:text-white text-sm">View Ticket</button>
-            </td>
-          </tr>
-          <tr class="booking-row hover:bg-cinema-surfaceLight/30 transition-colors" data-date="2024-02-10" data-price="15.00" data-status="refunded">
-            <td class="px-6 py-4">
-              <a href="{{ url_for('discovery.movie_detail', movie_id=4) }}" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
-                <div class="w-12 h-16 rounded-lg bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center text-xs font-bold">KB</div>
-                <div>
-                  <p class="font-medium">Kill Bill Vol. 3</p>
-                  <p class="text-sm text-gray-400">Standard</p>
-                </div>
-              </a>
-            </td>
-            <td class="px-6 py-4">
-              <p>Feb 10, 2024</p>
-              <p class="text-sm text-gray-400">9:00 PM</p>
-            </td>
-            <td class="px-6 py-4">B3</td>
-            <td class="px-6 py-4 font-semibold">$15.00</td>
-            <td class="px-6 py-4">
-              <span class="px-3 py-1 bg-gray-500/20 text-gray-400 rounded-full text-sm">Refunded</span>
-            </td>
-            <td class="px-6 py-4">
-              <button class="text-gray-500 text-sm cursor-not-allowed">—</button>
-            </td>
-          </tr>
-        </tbody>
+        {% if recent_bookings %}
+  {% for booking in recent_bookings %}
+    <tr class="booking-row hover:bg-cinema-surfaceLight/30 transition-colors">
+      <td class="px-6 py-4">
+        <a href="{{ url_for('discovery.movie_detail', movie_id=booking.movie_id) }}" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
+          <div class="w-12 h-16 rounded-lg bg-gradient-to-br from-cinema-primary to-amber flex items-center justify-center text-xs font-bold">
+            {{ booking.movie_code }}
+          </div>
+          <div>
+            <p class="font-medium">{{ booking.movie_title }}</p>
+            <p class="text-sm text-gray-400">{{ booking.saloon_type or 'Standard' }}</p>
+          </div>
+        </a>
+      </td>
+
+      <td class="px-6 py-4">
+        <p>{{ booking.date_display }}</p>
+        <p class="text-sm text-gray-400">{{ booking.time_display }}</p>
+      </td>
+
+      <td class="px-6 py-4">{{ booking.seats }}</td>
+
+      <td class="px-6 py-4 font-semibold">
+        ${{ "%.2f"|format(booking.total_amount) }}
+      </td>
+
+      <td class="px-6 py-4">
+        <span class="px-3 py-1 {{ booking.status_class }} rounded-full text-sm">
+          {{ booking.status }}
+        </span>
+      </td>
+
+      <td class="px-6 py-4">
+        {% if booking.action == "ticket" %}
+  <button class="text-gray-400 hover:text-white text-sm">
+    View Ticket
+  </button>
+{% else %}
+  <button class="text-gray-500 text-sm cursor-not-allowed">
+    —
+  </button>
+{% endif %}
+      </td>
+    </tr>
+  {% endfor %}
+{% else %}
+  <tr>
+    <td colspan="6" class="px-6 py-10 text-center text-gray-400">
+      No bookings yet.
+    </td>
+  </tr>
+{% endif %}
       </table>
     </div>
   </div>

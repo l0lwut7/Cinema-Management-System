@@ -132,7 +132,13 @@ def login():
         session["user_id"] = user["user_id"]
         session["user_name"] = user["first_name"]
 
+        next_url = request.args.get("next")
+
         flash("Login successful.", "success")
+
+        if next_url:
+            return redirect(next_url)
+
         return redirect(url_for("discovery.home"))
 
     finally:

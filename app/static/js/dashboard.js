@@ -14,33 +14,6 @@ function switchDashboardTab(tab) {
   document.getElementById('tab-' + tab).classList.remove('hidden');
 }
 
-// Profile Handlers
-function saveProfile() {
-  document.getElementById('profile-error').classList.add('hidden');
-  document.getElementById('profile-success').classList.remove('hidden');
-  setTimeout(() => {
-    document.getElementById('profile-success').classList.add('hidden');
-  }, 3000);
-}
-
-function changePassword() {
-  const current = document.getElementById('current-password').value;
-  const newPass = document.getElementById('new-password').value;
-  const confirm = document.getElementById('confirm-password').value;
-  
-  if (!current || !newPass || !confirm || newPass !== confirm) {
-    document.getElementById('password-error').classList.remove('hidden');
-    document.getElementById('password-success').classList.add('hidden');
-    return;
-  }
-  
-  document.getElementById('password-error').classList.add('hidden');
-  document.getElementById('password-success').classList.remove('hidden');
-  setTimeout(() => {
-    document.getElementById('password-success').classList.add('hidden');
-  }, 3000);
-}
-
 // Password Toggle for Profile
 function togglePassword(inputId, button) {
   const input = document.getElementById(inputId);
