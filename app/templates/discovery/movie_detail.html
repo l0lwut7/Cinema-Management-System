@@ -22,19 +22,16 @@
                     </div>
                     <div class="flex items-start justify-between gap-4">
                         <h1 class="font-heading text-4xl md:text-5xl font-bold mb-3">{{ movie.title|upper }}</h1>
-                        {% if is_authenticated %}
-                            <button type="button" class="favorite-btn w-12 h-12 bg-cinema-surface/80 backdrop-blur rounded-full flex items-center justify-center hover:bg-cinema-primary transition-all">
-                                <svg class="w-6 h-6 heart-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                                </svg>
-                            </button>
-                        {% else %}
-                            <a href="{{ login_url }}" class="favorite-btn w-12 h-12 bg-cinema-surface/80 backdrop-blur rounded-full flex items-center justify-center hover:bg-cinema-primary transition-all">
-                                <svg class="w-6 h-6 heart-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                                </svg>
-                            </a>
-                        {% endif %}
+                        <button type="button"
+                                class="favorite-btn w-12 h-12 bg-cinema-surface/80 backdrop-blur rounded-full flex items-center justify-center hover:bg-cinema-primary transition-all"
+                                data-movie-id="{{ movie.id }}"
+                                data-is-authenticated="{{ 'true' if is_authenticated else 'false' }}"
+                                data-is-favorited="{{ 'true' if movie.is_favorited else 'false' }}">
+                            <svg class="w-6 h-6 heart-icon {% if movie.is_favorited %}fill-cinema-primary{% else %}fill-none{% endif %}"
+                                 stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                            </svg>
+                        </button>
                     </div>
                     <p class="text-cinema-muted mb-4">{{ movie.genres }} | {{ movie.release_date }} | {{ movie.runtime_label }}</p>
                     <div class="flex flex-wrap gap-2 mb-6">

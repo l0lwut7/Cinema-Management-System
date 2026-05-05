@@ -7,6 +7,7 @@
 document.addEventListener('DOMContentLoaded', function () {
     const favoriteBtns = document.querySelectorAll('.favorite-btn');
     const loginUrl = '/auth/login'; // Update this to your actual login route if different
+    const favoritesGrid = document.querySelector('#favorites-grid');
 
     favoriteBtns.forEach(btn => {
         btn.addEventListener('click', function (e) {
@@ -28,12 +29,22 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    /**
-     * Toggle favorite status for a movie via AJAX
-     * @param {string} movieId - The ID of the movie
-     * @param {HTMLElement} heartIcon - The heart SVG icon element
-     * @param {HTMLElement} button - The favorite button element
-     */
+    function renderFavoritesEmptyState() {
+        if (!favoritesGrid) {
+            return;
+        }
+
+        favoritesGrid.innerHTML = `
+            <div class="favorites-empty-state col-span-full rounded-3xl border border-white/10 bg-cinema-surface p-10 text-center">
+                <p class="text-xl font-semibold mb-3">You haven't added any favorite movies yet.</p>
+                <p class="text-cinema-muted mb-6">Explore our catalog and find your next watch!</p>
+                <a href="/" class="inline-flex items-center justify-center rounded-full bg-cinema-primary px-6 py-3 text-sm font-semibold text-white hover:bg-red-700 transition-colors">
+                    Browse movies
+                </a>
+            </div>
+        `;
+    }
+
     function toggleFavorite(movieId, heartIcon, button) {
         const url = `/api/favorites/toggle/${movieId}`; // Update endpoint as needed
 
@@ -51,9 +62,10 @@ document.addEventListener('DOMContentLoaded', function () {
             return response.json();
         })
         .then(data => {
-            // Update UI based on response
             const isFavorited = data.is_favorited || data.favorited;
-            
+            const favoriteCard = button.closest('.favorite-card');
+            const isFavoritesView = Boolean(favoritesGrid);
+
             if (isFavorited) {
                 heartIcon.classList.remove('fill-none');
                 heartIcon.classList.add('fill-cinema-primary');
@@ -62,6 +74,19 @@ document.addEventListener('DOMContentLoaded', function () {
                 heartIcon.classList.remove('fill-cinema-primary');
                 heartIcon.classList.add('fill-none');
                 button.setAttribute('data-is-favorited', 'false');
+
+                if (favoriteCard && isFavoritesView) {
+                    favoriteCard.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+                    favoriteCard.style.opacity = '0';
+                    favoriteCard.style.transform = 'scale(0.98)';
+
+                    window.setTimeout(() => {
+                        favoriteCard.remove();
+                        if (!favoritesGrid.querySelector('.favorite-card')) {
+                            renderFavoritesEmptyState();
+                        }
+                    }, 250);
+                }
             }
         })
         .catch(error => {
