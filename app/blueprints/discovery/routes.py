@@ -1,4 +1,4 @@
-from flask import Blueprint, abort, redirect, render_template, request, url_for
+from flask import Blueprint, abort, redirect, render_template, request, url_for, session
 
 from .data import COMING_SOON, DEALS, MOVIES, NAV_ITEMS, REVIEWS, THEATER_SCREENS, THEATERS
 
@@ -186,7 +186,7 @@ def get_base_context(active_page, title):
     context["active_page"] = active_page
     context["page_title"] = title
     context["nav_items"] = NAV_ITEMS
-    context["is_authenticated"] = False
+    context["is_authenticated"] = 'user_id' in session
     context["user_name"] = "Guest"
     context["login_url"] = url_for("auth.login")
     context["profile_url"] = url_for("discovery.profile")
@@ -238,7 +238,6 @@ def movie_detail(movie_id):
     context["cast"] = cast
     context["reviews"] = reviews
     context["total_reviews"] = len(reviews)
-    context["is_authenticated"] = False
 
     return render_template("discovery/movie_detail.html", **context)
 

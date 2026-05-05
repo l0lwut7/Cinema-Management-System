@@ -18,15 +18,17 @@
                 <a href="{{ url_for('discovery.deals') }}" class="tab-btn px-6 py-2 rounded-lg font-medium transition-all {% if active_page == 'deals' %}bg-cinema-primary text-white{% else %}bg-slate-700 text-cinema-muted hover:bg-slate-600{% endif %}">Deals</a>
                 <div class="flex items-center gap-3 ml-2 border-l border-slate-700 pl-4">
                     {% if is_authenticated %}
-                        <a href="{{ url_for('dashboard.dashboard') }}" class="flex items-center justify-center w-10 h-10 rounded-full bg-cinema-surfaceLight border border-cinema-primary/50 text-cinema-primary hover:bg-cinema-primary hover:text-white transition-colors" title="Profile">
+                        <a href="{{ url_for('dashboard.dashboard') }}" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-cinema-surfaceLight border border-cinema-primary/50 text-cinema-primary hover:bg-cinema-primary hover:text-white transition-colors">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                             </svg>
+                            <span>Profile</span>
                         </a>
-                        <a href="{{ url_for('auth.logout') }}" class="flex items-center justify-center w-10 h-10 rounded-full bg-slate-700 text-rose-400 hover:bg-rose-600 hover:text-white transition-colors" title="Sign Out">
+                        <a href="{{ url_for('auth.logout') }}" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-700 text-rose-400 hover:bg-rose-600 hover:text-white transition-colors">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
                             </svg>
+                            <span>Logout</span>
                         </a>
                     {% else %}
                         <a href="{{ url_for('auth.login') }}" class="flex items-center gap-2 px-5 py-2 rounded-lg font-medium transition-all bg-cinema-primary text-white hover:bg-rose-600 shadow-lg shadow-cinema-primary/20">

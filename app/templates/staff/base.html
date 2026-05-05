@@ -45,7 +45,8 @@
     {% block content %}{% endblock %}
 
     <!-- Staff-specific JS -->
-    <script src="{{ url_for('static', filename='js/staff.js') }}"></script>
+    <script src=\"{{ url_for('static', filename='js/favorites.js') }}?v=1\"></script>
+    <script src=\"{{ url_for('static', filename='js/staff.js') }}\"></script>
     {% block scripts %}{% endblock %}
 </body>
 </html>
