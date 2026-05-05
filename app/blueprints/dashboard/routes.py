@@ -115,12 +115,12 @@ def update_profile():
     birth_date = request.form.get("birth_date", "").strip()
 
     if not first_name or not last_name or not email:
-        flash("Please fill in all required profile fields.", "error")
+        flash("Please fill in all required profile fields.", "profile_error")
         return redirect(url_for("dashboard.dashboard") + "#profile")
 
     connection = get_db_connection()
     if connection is None:
-        flash("Database connection failed.", "error")
+        flash("Database connection failed.", "profile_error")
         return redirect(url_for("dashboard.dashboard") + "#profile")
 
     cursor = connection.cursor(dictionary=True)
@@ -137,7 +137,7 @@ def update_profile():
         existing_user = cursor.fetchone()
 
         if existing_user:
-            flash("This email is already used by another account.", "error")
+            flash("This email is already used by another account.", "profile_error")
             return redirect(url_for("dashboard.dashboard") + "#profile")
 
         cursor.execute(
@@ -164,12 +164,12 @@ def update_profile():
         connection.commit()
         session["user_name"] = first_name
 
-        flash("Profile updated successfully.", "success")
+        flash("Profile updated successfully.", "profile_success")
         return redirect(url_for("dashboard.dashboard") + "#profile")
 
     except Exception as e:
         connection.rollback()
-        flash(str(e), "error")
+        flash(str(e), "profile_error")
         return redirect(url_for("dashboard.dashboard") + "#profile")
 
     finally:
@@ -318,20 +318,20 @@ def update_password():
     confirm_password = request.form.get("confirm_password", "")
 
     if not current_password or not new_password or not confirm_password:
-        flash("Please fill in all password fields.", "error")
+        flash("Please fill in all password fields.", "password_error")
         return redirect(url_for("dashboard.dashboard") + "#profile")
 
     if new_password != confirm_password:
-        flash("New passwords do not match.", "error")
+        flash("New passwords do not match.", "password_error")
         return redirect(url_for("dashboard.dashboard") + "#profile")
 
     if len(new_password) < 8:
-        flash("New password must be at least 8 characters.", "error")
+        flash("New password must be at least 8 characters.", "password_error")
         return redirect(url_for("dashboard.dashboard") + "#profile")
 
     connection = get_db_connection()
     if connection is None:
-        flash("Database connection failed.", "error")
+        flash("Database connection failed.", "password_error")
         return redirect(url_for("dashboard.dashboard") + "#profile")
 
     cursor = connection.cursor(dictionary=True)
@@ -348,7 +348,7 @@ def update_password():
         user = cursor.fetchone()
 
         if user is None or not check_password_hash(user["password_hash"], current_password):
-            flash("Current password is incorrect.", "error")
+            flash("Current password is incorrect.", "password_error")
             return redirect(url_for("dashboard.dashboard") + "#profile")
 
         cursor.execute(
@@ -360,13 +360,19 @@ def update_password():
             (generate_password_hash(new_password), session["user_id"])
         )
 
+        if cursor.rowcount != 1:
+            connection.rollback()
+            flash("Password update could not be completed. Please try again.", "password_error")
+            return redirect(url_for("dashboard.dashboard") + "#profile")
+
         connection.commit()
-        flash("Password updated successfully.", "success")
+        flash("Password updated successfully.", "password_success")
         return redirect(url_for("dashboard.dashboard") + "#profile")
 
     except Exception as e:
         connection.rollback()
-        flash(str(e), "error")
+        print("Dashboard password update error:", e)
+        flash("An unexpected error occurred while updating password.", "password_error")
         return redirect(url_for("dashboard.dashboard") + "#profile")
 
     finally:

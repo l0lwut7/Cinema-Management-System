@@ -15,16 +15,17 @@
         Personal Information
       </h3>
       
-      <div id="profile-success" class="hidden bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-4 py-3 rounded-lg mb-4 text-sm flex items-center gap-2">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-        </svg>
-        Profile updated successfully!
-      </div>
-      
-      <div id="profile-error" class="hidden bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg mb-4 text-sm">
-        Please fill in all required fields.
-      </div>
+      {% with profile_messages = get_flashed_messages(with_categories=true, category_filter=['profile_success', 'profile_error']) %}
+        {% if profile_messages %}
+          <div class="mb-4 space-y-3">
+            {% for category, message in profile_messages %}
+              <div class="px-4 py-3 rounded-lg text-sm border {% if category == 'profile_success' %}bg-emerald-500/10 border-emerald-500/30 text-emerald-400{% else %}bg-red-500/10 border-red-500/30 text-red-400{% endif %}">
+                {{ message }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
       
       <form method="POST" action="{{ url_for('dashboard.update_profile') }}" class="space-y-4">
   <div class="flex justify-center mb-6">
@@ -82,16 +83,17 @@
         Change Password
       </h3>
       
-      <div id="password-success" class="hidden bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-4 py-3 rounded-lg mb-4 text-sm flex items-center gap-2">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-        </svg>
-        Password changed successfully!
-      </div>
-      
-      <div id="password-error" class="hidden bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg mb-4 text-sm">
-        Passwords do not match or current password is incorrect.
-      </div>
+      {% with password_messages = get_flashed_messages(with_categories=true, category_filter=['password_success', 'password_error']) %}
+        {% if password_messages %}
+          <div class="mb-4 space-y-3">
+            {% for category, message in password_messages %}
+              <div class="px-4 py-3 rounded-lg text-sm border {% if category == 'password_success' %}bg-emerald-500/10 border-emerald-500/30 text-emerald-400{% else %}bg-red-500/10 border-red-500/30 text-red-400{% endif %}">
+                {{ message }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
       
       <form method="POST" action="{{ url_for('dashboard.update_password') }}" class="space-y-4">
   <div>
