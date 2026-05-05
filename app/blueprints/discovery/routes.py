@@ -1,4 +1,4 @@
-from flask import Blueprint, abort, redirect, render_template, request, url_for, session
+from flask import Blueprint, abort, jsonify, redirect, render_template, request, url_for, session
 
 from .data import COMING_SOON, DEALS, MOVIES, NAV_ITEMS, REVIEWS, THEATER_SCREENS, THEATERS
 
@@ -159,6 +159,22 @@ def get_movie(movie_id):
   return fetch_movie_by_id(movie_id)
 
 
+def is_movie_favorited(user_id, movie_id):
+    connection = get_db_connection()
+    if connection is None:
+        return False
+
+    cursor = connection.cursor(dictionary=True)
+    cursor.execute(
+        "SELECT 1 FROM CUSTOMER_FAVORITE_MOVIE WHERE user_id = %s AND movie_id = %s LIMIT 1",
+        (user_id, movie_id)
+    )
+    exists = cursor.fetchone() is not None
+    cursor.close()
+    connection.close()
+    return exists
+
+
 def get_theater(theater_id):
     for theater in THEATERS:
         if theater["id"] == theater_id:
@@ -233,6 +249,11 @@ def movie_detail(movie_id):
     cast = fetch_movie_cast(movie_id)
     reviews = fetch_movie_reviews(movie_id)
 
+    if session.get("user_id"):
+        movie["is_favorited"] = is_movie_favorited(session["user_id"], movie_id)
+    else:
+        movie["is_favorited"] = False
+
     context = get_base_context("movies", movie["title"] + " - CineMax")
     context["movie"] = movie
     context["cast"] = cast
@@ -240,6 +261,48 @@ def movie_detail(movie_id):
     context["total_reviews"] = len(reviews)
 
     return render_template("discovery/movie_detail.html", **context)
+
+
+@discovery_bp.route("/api/favorites/toggle/<int:movie_id>", methods=["POST"])
+def toggle_favorite(movie_id):
+    if "user_id" not in session:
+        return jsonify(error="Authentication required"), 401
+
+    user_id = session["user_id"]
+    connection = get_db_connection()
+    if connection is None:
+        return jsonify(error="Database connection failed"), 500
+
+    cursor = connection.cursor(dictionary=True)
+    try:
+        cursor.execute(
+            "SELECT 1 FROM CUSTOMER_FAVORITE_MOVIE WHERE user_id = %s AND movie_id = %s LIMIT 1",
+            (user_id, movie_id)
+        )
+        favorite_exists = cursor.fetchone() is not None
+
+        if favorite_exists:
+            cursor.execute(
+                "DELETE FROM CUSTOMER_FAVORITE_MOVIE WHERE user_id = %s AND movie_id = %s",
+                (user_id, movie_id)
+            )
+            is_favorited = False
+        else:
+            cursor.execute(
+                "INSERT INTO CUSTOMER_FAVORITE_MOVIE (user_id, movie_id) VALUES (%s, %s)",
+                (user_id, movie_id)
+            )
+            is_favorited = True
+
+        connection.commit()
+        return jsonify(is_favorited=is_favorited)
+    except Exception:
+        connection.rollback()
+        return jsonify(error="Failed to update favorite"), 500
+    finally:
+        cursor.close()
+        connection.close()
+
 
 @discovery_bp.route("/theaters")
 def theaters():

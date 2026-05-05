@@ -4,156 +4,47 @@
     <h1 class="font-heading text-3xl font-bold mb-2">My Favorites</h1>
     <p class="text-gray-400">Movies you've saved for later</p>
   </div>
-  
-  <div class="grid grid-cols-4 gap-6">
-    <!-- Movie Card 1 -->
-    <div class="group relative bg-cinema-surface rounded-xl overflow-hidden border border-white/5 hover:border-cinema-primary/50 transition-all">
-      <a href="{{ url_for('discovery.movie_detail', movie_id=1) }}" class="block aspect-[2/3] bg-gradient-to-br from-violet-600 to-purple-800 relative">
-        <div class="absolute inset-0 bg-gradient-to-t from-cinema-bg/90 via-transparent to-transparent"></div>
-        <button class="absolute top-3 right-3 w-8 h-8 bg-cinema-bg/80 backdrop-blur rounded-full flex items-center justify-center text-cinema-primary hover:bg-cinema-primary hover:text-white transition-colors">
-          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-          </svg>
-        </button>
-        <div class="absolute bottom-0 left-0 right-0 p-4">
-          <div class="flex items-center gap-1 mb-2">
-            <svg class="w-4 h-4 text-amber" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-            </svg>
-            <span class="text-sm font-medium">8.8</span>
-          </div>
-        </div>
-      </a>
-      <div class="p-4">
-        <h3 class="font-semibold mb-1 truncate"><a href="{{ url_for('discovery.movie_detail', movie_id=1) }}" class="hover:text-cinema-primary transition-colors">Dune: Part Two</a></h3>
-        <p class="text-sm text-gray-400 mb-3">Action, Sci-Fi</p>
-        <a href="{{ url_for('booking.booking', movie_id=1) }}" class="block w-full text-center py-2 bg-cinema-primary hover:bg-rose-600 rounded-lg text-sm font-medium transition-colors">Book Now</a>
-      </div>
-    </div>
 
-    <!-- Movie Card 2 -->
-    <div class="group relative bg-cinema-surface rounded-xl overflow-hidden border border-white/5 hover:border-cinema-primary/50 transition-all">
-      <a href="{{ url_for('discovery.movie_detail', movie_id=2) }}" class="block aspect-[2/3] bg-gradient-to-br from-red-600 to-orange-600 relative">
-        <div class="absolute inset-0 bg-gradient-to-t from-cinema-bg/90 via-transparent to-transparent"></div>
-        <button class="absolute top-3 right-3 w-8 h-8 bg-cinema-bg/80 backdrop-blur rounded-full flex items-center justify-center text-cinema-primary hover:bg-cinema-primary hover:text-white transition-colors">
-          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-          </svg>
-        </button>
-        <div class="absolute bottom-0 left-0 right-0 p-4">
-          <div class="flex items-center gap-1 mb-2">
-            <svg class="w-4 h-4 text-amber" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-            </svg>
-            <span class="text-sm font-medium">9.0</span>
+  {% if favorite_movies and favorite_movies|length > 0 %}
+    <div id="favorites-grid" class="grid grid-cols-4 gap-6">
+      {% for movie in favorite_movies %}
+        <div class="favorite-card group relative bg-cinema-surface rounded-xl overflow-hidden border border-white/5 hover:border-cinema-primary/50 transition-all">
+          <a href="{{ url_for('discovery.movie_detail', movie_id=movie.id) }}" class="block aspect-[2/3] bg-slate-700 relative">
+            <div class="absolute inset-0 bg-gradient-to-t from-cinema-bg/90 via-transparent to-transparent"></div>
+            <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1200&q=80')] bg-cover bg-center opacity-80"></div>
+            <button type="button"
+                    class="favorite-btn absolute top-3 right-3 w-10 h-10 bg-cinema-bg/80 backdrop-blur rounded-full flex items-center justify-center hover:bg-cinema-primary transition-all z-20"
+                    data-movie-id="{{ movie.id }}"
+                    data-is-authenticated="true"
+                    data-is-favorited="true">
+              <svg class="w-5 h-5 heart-icon fill-cinema-primary" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+              </svg>
+            </button>
+            <div class="absolute bottom-0 left-0 right-0 p-4">
+              <div class="flex items-center gap-1 mb-2">
+                <svg class="w-4 h-4 text-amber" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                </svg>
+                <span class="text-sm font-medium">{{ movie.avg_rating }}</span>
+              </div>
+            </div>
+          </a>
+          <div class="p-4">
+            <h3 class="font-semibold mb-1 truncate"><a href="{{ url_for('discovery.movie_detail', movie_id=movie.id) }}" class="hover:text-cinema-primary transition-colors">{{ movie.title }}</a></h3>
+            <p class="text-sm text-gray-400 mb-3">{{ movie.genres or 'Drama' }}</p>
+            <a href="{{ url_for('booking.booking', movie_id=movie.id) }}" class="block w-full text-center py-2 bg-cinema-primary hover:bg-rose-600 rounded-lg text-sm font-medium transition-colors">Book Now</a>
           </div>
         </div>
-      </a>
-      <div class="p-4">
-        <h3 class="font-semibold mb-1 truncate"><a href="{{ url_for('discovery.movie_detail', movie_id=2) }}" class="hover:text-cinema-primary transition-colors">Oppenheimer</a></h3>
-        <p class="text-sm text-gray-400 mb-3">Drama, History</p>
-        <a href="{{ url_for('booking.booking', movie_id=2) }}" class="block w-full text-center py-2 bg-cinema-primary hover:bg-rose-600 rounded-lg text-sm font-medium transition-colors">Book Now</a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div id="favorites-grid" class="grid grid-cols-1">
+      <div class="favorites-empty-state col-span-full rounded-3xl border border-white/10 bg-cinema-surface p-10 text-center">
+        <p class="text-xl font-semibold mb-3">You haven't added any favorite movies yet.</p>
+        <p class="text-cinema-muted mb-6">Explore our catalog and find your next watch!</p>
+        <a href="{{ url_for('discovery.now_showing') }}" class="inline-flex items-center justify-center rounded-full bg-cinema-primary px-6 py-3 text-sm font-semibold text-white hover:bg-red-700 transition-colors">Browse movies</a>
       </div>
     </div>
-
-    <!-- Movie Card 3 -->
-    <div class="group relative bg-cinema-surface rounded-xl overflow-hidden border border-white/5 hover:border-cinema-primary/50 transition-all">
-      <a href="{{ url_for('discovery.movie_detail', movie_id=3) }}" class="block aspect-[2/3] bg-gradient-to-br from-emerald-600 to-teal-700 relative">
-        <div class="absolute inset-0 bg-gradient-to-t from-cinema-bg/90 via-transparent to-transparent"></div>
-        <button class="absolute top-3 right-3 w-8 h-8 bg-cinema-bg/80 backdrop-blur rounded-full flex items-center justify-center text-cinema-primary hover:bg-cinema-primary hover:text-white transition-colors">
-          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-          </svg>
-        </button>
-        <div class="absolute bottom-0 left-0 right-0 p-4">
-          <div class="flex items-center gap-1 mb-2">
-            <svg class="w-4 h-4 text-amber" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-            </svg>
-            <span class="text-sm font-medium">8.5</span>
-          </div>
-        </div>
-      </a>
-      <div class="p-4">
-        <h3 class="font-semibold mb-1 truncate"><a href="{{ url_for('discovery.movie_detail', movie_id=3) }}" class="hover:text-cinema-primary transition-colors">Poor Things</a></h3>
-        <p class="text-sm text-gray-400 mb-3">Comedy, Drama</p>
-        <a href="{{ url_for('booking.booking', movie_id=3) }}" class="block w-full text-center py-2 bg-cinema-primary hover:bg-rose-600 rounded-lg text-sm font-medium transition-colors">Book Now</a>
-      </div>
-    </div>
-
-    <!-- Movie Card 4 -->
-    <div class="group relative bg-cinema-surface rounded-xl overflow-hidden border border-white/5 hover:border-cinema-primary/50 transition-all">
-      <a href="{{ url_for('discovery.movie_detail', movie_id=4) }}" class="block aspect-[2/3] bg-gradient-to-br from-blue-600 to-indigo-700 relative">
-        <div class="absolute inset-0 bg-gradient-to-t from-cinema-bg/90 via-transparent to-transparent"></div>
-        <button class="absolute top-3 right-3 w-8 h-8 bg-cinema-bg/80 backdrop-blur rounded-full flex items-center justify-center text-cinema-primary hover:bg-cinema-primary hover:text-white transition-colors">
-          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-          </svg>
-        </button>
-        <div class="absolute bottom-0 left-0 right-0 p-4">
-          <div class="flex items-center gap-1 mb-2">
-            <svg class="w-4 h-4 text-amber" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-            </svg>
-            <span class="text-sm font-medium">7.9</span>
-          </div>
-        </div>
-      </a>
-      <div class="p-4">
-        <h3 class="font-semibold mb-1 truncate"><a href="{{ url_for('discovery.movie_detail', movie_id=4) }}" class="hover:text-cinema-primary transition-colors">The Batman</a></h3>
-        <p class="text-sm text-gray-400 mb-3">Action, Crime</p>
-        <a href="{{ url_for('booking.booking', movie_id=4) }}" class="block w-full text-center py-2 bg-cinema-primary hover:bg-rose-600 rounded-lg text-sm font-medium transition-colors">Book Now</a>
-      </div>
-    </div>
-
-    <!-- Movie Card 5 -->
-    <div class="group relative bg-cinema-surface rounded-xl overflow-hidden border border-white/5 hover:border-cinema-primary/50 transition-all">
-      <a href="{{ url_for('discovery.movie_detail', movie_id=5) }}" class="block aspect-[2/3] bg-gradient-to-br from-pink-600 to-rose-700 relative">
-        <div class="absolute inset-0 bg-gradient-to-t from-cinema-bg/90 via-transparent to-transparent"></div>
-        <button class="absolute top-3 right-3 w-8 h-8 bg-cinema-bg/80 backdrop-blur rounded-full flex items-center justify-center text-cinema-primary hover:bg-cinema-primary hover:text-white transition-colors">
-          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-          </svg>
-        </button>
-        <div class="absolute bottom-0 left-0 right-0 p-4">
-          <div class="flex items-center gap-1 mb-2">
-            <svg class="w-4 h-4 text-amber" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-            </svg>
-            <span class="text-sm font-medium">8.3</span>
-          </div>
-        </div>
-      </a>
-      <div class="p-4">
-        <h3 class="font-semibold mb-1 truncate"><a href="{{ url_for('discovery.movie_detail', movie_id=5) }}" class="hover:text-cinema-primary transition-colors">Barbie</a></h3>
-        <p class="text-sm text-gray-400 mb-3">Comedy, Fantasy</p>
-        <a href="{{ url_for('booking.booking', movie_id=5) }}" class="block w-full text-center py-2 bg-cinema-primary hover:bg-rose-600 rounded-lg text-sm font-medium transition-colors">Book Now</a>
-      </div>
-    </div>
-
-    <!-- Movie Card 6 -->
-    <div class="group relative bg-cinema-surface rounded-xl overflow-hidden border border-white/5 hover:border-cinema-primary/50 transition-all">
-      <a href="{{ url_for('discovery.movie_detail', movie_id=6) }}" class="block aspect-[2/3] bg-gradient-to-br from-yellow-600 to-amber-700 relative">
-        <div class="absolute inset-0 bg-gradient-to-t from-cinema-bg/90 via-transparent to-transparent"></div>
-        <button class="absolute top-3 right-3 w-8 h-8 bg-cinema-bg/80 backdrop-blur rounded-full flex items-center justify-center text-cinema-primary hover:bg-cinema-primary hover:text-white transition-colors">
-          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-          </svg>
-        </button>
-        <div class="absolute bottom-0 left-0 right-0 p-4">
-          <div class="flex items-center gap-1 mb-2">
-            <svg class="w-4 h-4 text-amber" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-            </svg>
-            <span class="text-sm font-medium">8.1</span>
-          </div>
-        </div>
-      </a>
-      <div class="p-4">
-        <h3 class="font-semibold mb-1 truncate"><a href="{{ url_for('discovery.movie_detail', movie_id=6) }}" class="hover:text-cinema-primary transition-colors">Killers of the Flower Moon</a></h3>
-        <p class="text-sm text-gray-400 mb-3">Crime, Drama</p>
-        <a href="{{ url_for('booking.booking', movie_id=6) }}" class="block w-full text-center py-2 bg-cinema-primary hover:bg-rose-600 rounded-lg text-sm font-medium transition-colors">Book Now</a>
-      </div>
-    </div>
-  </div>
+  {% endif %}
 </div>
