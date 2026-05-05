@@ -20,37 +20,38 @@
     
     <div class="bg-cinema-bg rounded-xl p-4 mb-6">
       <div class="flex items-center gap-3 mb-3">
-        <div class="w-12 h-16 rounded-lg bg-gradient-to-br from-red-600 to-orange-600 flex items-center justify-center text-xs font-bold">OP</div>
+        <div class="w-12 h-16 rounded-lg bg-gradient-to-br from-red-600 to-orange-600 flex items-center justify-center text-xs font-bold" id="modal-movie-code">—</div>
         <div>
-          <p class="font-medium">Oppenheimer</p>
-          <p class="text-sm text-gray-400">Mar 20, 2024 • 8:00 PM</p>
+          <p class="font-medium" id="modal-movie-title">Movie Title</p>
+          <p class="text-sm text-gray-400" id="modal-datetime">Date & Time</p>
         </div>
       </div>
       <div class="flex justify-between text-sm">
-        <span class="text-gray-400">Seats: G12, G13, G14</span>
-        <span class="font-semibold">$67.50</span>
+        <span class="text-gray-400" id="modal-seats">Seats: —</span>
+        <span class="font-semibold" id="modal-amount">$0.00</span>
       </div>
     </div>
     
-    <div class="space-y-4">
+    <form id="refund-form" onsubmit="submitRefund(event)" class="space-y-4">
+      <input type="hidden" id="refund-booking-id" name="booking_id" value="">
       <div>
         <label class="block text-sm font-medium text-gray-300 mb-2">Reason for refund</label>
-        <select class="input-field w-full px-4 py-3 rounded-xl text-white">
-          <option>Select a reason</option>
-          <option>Change of plans</option>
-          <option>Booked wrong date/time</option>
-          <option>Booked wrong movie</option>
-          <option>Other</option>
+        <select id="refund-reason" name="reason" required class="input-field w-full px-4 py-3 rounded-xl text-white">
+          <option value="">Select a reason</option>
+          <option value="change_of_plans">Change of plans</option>
+          <option value="wrong_date_time">Booked wrong date/time</option>
+          <option value="wrong_movie">Booked wrong movie</option>
+          <option value="other">Other</option>
         </select>
       </div>
       <div class="flex gap-4">
-        <button onclick="hideRefundModal()" class="flex-1 py-3 border border-white/10 rounded-xl font-medium hover:bg-cinema-surfaceLight transition-colors">
+        <button type="button" onclick="hideRefundModal()" class="flex-1 py-3 border border-white/10 rounded-xl font-medium hover:bg-cinema-surfaceLight transition-colors">
           Cancel
         </button>
-        <button onclick="submitRefund()" class="flex-1 py-3 bg-cinema-primary hover:bg-rose-600 rounded-xl font-medium transition-colors">
+        <button type="submit" class="flex-1 py-3 bg-cinema-primary hover:bg-rose-600 rounded-xl font-medium transition-colors">
           Confirm Refund
         </button>
       </div>
-    </div>
+    </form>
   </div>
 </div>
