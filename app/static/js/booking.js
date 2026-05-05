@@ -17,32 +17,51 @@ const prices = {
   serviceFee: 2.50,
   adult: 0,
   child: 0,
-  senior: 0
+  senior: 0,
+  popcorn: 0,
+  soda: 0,
+  candy: 0,
+  hotdog: 0
 };
 
 
 const realConsumables = window.BOOKING_CONSUMABLES || [];
 
-const consumableKeyMap = {
-  "Large Popcorn": "popcorn",
-  "Large Soda": "soda",
-  "Candy Box": "candy",
-  "Hot Dog": "hotdog"
-};
+function resolveConsumableKey(name) {
+  const lname = (name || "").toLowerCase();
+  if (lname.includes("popcorn")) return "popcorn";
+  if (lname.includes("soda")) return "soda";
+  if (lname.includes("candy")) return "candy";
+  if (lname.includes("hot")) return "hotdog";
+  return null;
+}
 
 realConsumables.forEach(item => {
-  const key = consumableKeyMap[item.name];
+  const key = resolveConsumableKey(item.name);
+  if (!key) return;
 
-  if (key) {
-    prices[key] = Number(item.unit_price);
+  const parsed = parseFloat(item.unit_price);
+  if (!isNaN(parsed)) {
+    prices[key] = parsed;
   }
+});
+
+// Final pass: hydrate prices from data-price attributes on consumable buttons
+// (set by Jinja from the same DB values). Guarantees prices are always present.
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll(".consumable-plus[data-item][data-price]").forEach(btn => {
+    const key = btn.dataset.item;
+    const parsed = parseFloat(btn.dataset.price);
+    if (key && !isNaN(parsed)) {
+      prices[key] = parsed;
+    }
+  });
 });
 
 // Seat map configuration
 const seatRows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 const seatsPerRow = 12;
 let occupiedSeats = [];
-const disabledSeats = ['A1', 'A12', 'H2', 'H11'];
 
 // ==================== DOM ELEMENTS ====================
 const steps = {
@@ -175,7 +194,7 @@ function updateShowtimes() {
         Saloon ${screening.saloon_number} - ${screening.saloon_type}
       </span>
       <span class="block text-xs text-slate-400 mt-1">
-        ${screening.base_price} TL
+        $${Number(screening.base_price).toFixed(2)}
       </span>
     </button>
   `).join('');
@@ -265,14 +284,11 @@ function renderSeatMap() {
             ${Array.from({ length: seatsPerRow }, (_, i) => {
     const seatId = `${row}${i + 1}`;
     const isOccupied = occupiedSeats.includes(seatId);
-    const isDisabled = disabledSeats.includes(seatId);
     const isSelected = state.selectedSeats.includes(seatId);
 
     let classes = 'seat w-8 h-8 rounded text-xs font-medium flex items-center justify-center cursor-pointer';
 
-    if (isDisabled) {
-      classes += ' bg-slate-700 opacity-30 cursor-not-allowed disabled';
-    } else if (isOccupied) {
+    if (isOccupied) {
       classes += ' bg-slate-600 opacity-50 cursor-not-allowed occupied';
     } else if (isSelected) {
       classes += ' bg-crimson text-white';
@@ -280,7 +296,7 @@ function renderSeatMap() {
       classes += ' bg-surfaceLight hover:bg-slate-500';
     }
 
-    return `<button class="${classes}" data-seat="${seatId}" ${isOccupied || isDisabled ? 'disabled' : ''}>${i + 1}</button>`;
+    return `<button class="${classes}" data-seat="${seatId}" ${isOccupied ? 'disabled' : ''}>${i + 1}</button>`;
   }).join('')}
           </div>
           <span class="w-6 text-center text-slate-400 font-medium">${row}</span>
@@ -288,7 +304,7 @@ function renderSeatMap() {
       `).join('');
 
   // Add click handlers
-  document.querySelectorAll('.seat:not(.occupied):not(.disabled)').forEach(seat => {
+  document.querySelectorAll('.seat:not(.occupied)').forEach(seat => {
     seat.addEventListener('click', () => toggleSeat(seat.dataset.seat));
   });
 }
@@ -509,6 +525,12 @@ const consumableTotal =
   extrasList.innerHTML = extrasHtml || '<p class="text-sm text-slate-500">No extras</p>';
 }
 
+// Cardholder name - letters + spaces only (Turkish/international supported)
+const CARDHOLDER_NAME_REGEX = /^[A-Za-zÇçĞğİıÖöŞşÜüÂâÎîÛû ]+$/;
+document.getElementById('cardName').addEventListener('input', function (e) {
+  e.target.value = e.target.value.replace(/[^A-Za-zÇçĞğİıÖöŞşÜüÂâÎîÛû ]/g, '');
+});
+
 // Card number formatting
 document.getElementById('cardNumber').addEventListener('input', function (e) {
   let value = e.target.value.replace(/\s/g, '').replace(/\D/g, '');
@@ -516,13 +538,30 @@ document.getElementById('cardNumber').addEventListener('input', function (e) {
   e.target.value = value;
 });
 
-// Expiry formatting
+// Expiry formatting — month must be 01..12
 document.getElementById('cardExpiry').addEventListener('input', function (e) {
-  let value = e.target.value.replace(/\D/g, '');
-  if (value.length >= 2) {
-    value = value.slice(0, 2) + '/' + value.slice(2, 4);
+  let digits = e.target.value.replace(/\D/g, '').slice(0, 4);
+
+  // First digit > 1 means user typed something like "5" → coerce to "05"
+  if (digits.length === 1 && parseInt(digits[0], 10) > 1) {
+    digits = '0' + digits;
   }
-  e.target.value = value;
+
+  // Two-digit month must be in 01..12
+  if (digits.length >= 2) {
+    let month = parseInt(digits.slice(0, 2), 10);
+    if (month === 0) {
+      digits = '01' + digits.slice(2);
+    } else if (month > 12) {
+      digits = '12' + digits.slice(2);
+    }
+  }
+
+  let formatted = digits;
+  if (digits.length >= 2) {
+    formatted = digits.slice(0, 2) + '/' + digits.slice(2, 4);
+  }
+  e.target.value = formatted;
 });
 
 // CVV - numbers only
@@ -533,10 +572,11 @@ document.getElementById('cardCvv').addEventListener('input', function (e) {
 function validateForm() {
   let isValid = true;
 
-  // Name validation
+  // Name validation — letters & spaces only (Turkish/international supported)
   const cardName = document.getElementById('cardName');
   const cardNameError = document.getElementById('cardNameError');
-  if (!cardName.value.trim()) {
+  const trimmedName = cardName.value.trim();
+  if (!trimmedName || !CARDHOLDER_NAME_REGEX.test(trimmedName)) {
     cardNameError.classList.remove('hidden');
     cardName.classList.add('border-crimson');
     isValid = false;
@@ -558,10 +598,28 @@ function validateForm() {
     cardNumber.classList.remove('border-crimson');
   }
 
-  // Expiry validation
+  // Expiry validation — must be MM/YY, month 01..12, and not earlier than current month/year
   const cardExpiry = document.getElementById('cardExpiry');
   const cardExpiryError = document.getElementById('cardExpiryError');
-  if (cardExpiry.value.length < 5) {
+  const expiryMatch = cardExpiry.value.match(/^(\d{2})\/(\d{2})$/);
+  const expiryMonth = expiryMatch ? parseInt(expiryMatch[1], 10) : NaN;
+  const expiryYear = expiryMatch ? parseInt(expiryMatch[2], 10) : NaN;
+
+  const now = new Date();
+  const currentMonth = now.getMonth() + 1;
+  const currentYear = now.getFullYear() % 100;
+
+  const isFormatValid = expiryMatch && expiryMonth >= 1 && expiryMonth <= 12;
+  const isNotExpired = isFormatValid && (
+    expiryYear > currentYear ||
+    (expiryYear === currentYear && expiryMonth >= currentMonth)
+  );
+
+  if (!isFormatValid || !isNotExpired) {
+    cardExpiryError.textContent = !isFormatValid
+      ? 'Invalid expiry'
+      : 'Card expiry must not be earlier than ' +
+        String(currentMonth).padStart(2, '0') + '/' + String(currentYear).padStart(2, '0');
     cardExpiryError.classList.remove('hidden');
     cardExpiry.classList.add('border-crimson');
     isValid = false;
