@@ -172,7 +172,7 @@ def fetch_saloons_for_theater(theater_id):
         saloon_type = saloon.get("type") or "Standard"
 
         screens.append({
-            "name": "Screen " + str(saloon["number"]),
+            "name": "Saloon " + str(saloon["number"]),
             "type": saloon_type,
             "capacity": saloon["capacity"],
             "features": get_saloon_features(saloon_type),
