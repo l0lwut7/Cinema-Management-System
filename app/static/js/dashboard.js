@@ -56,8 +56,27 @@ function togglePassword(inputId, button) {
   }
 }
 
-// Refund Modal
-function showRefundModal() {
+// Refund Modal with dynamic booking info
+function showRefundModal(button) {
+  const bookingId = button.getAttribute('data-booking-id');
+  const movieTitle = button.getAttribute('data-movie-title');
+  const seats = button.getAttribute('data-seats');
+  const amount = button.getAttribute('data-amount');
+  const startTime = button.getAttribute('data-start-time');
+
+  // Populate modal with booking data
+  document.getElementById('refund-booking-id').value = bookingId;
+  document.getElementById('modal-movie-title').textContent = movieTitle;
+  document.getElementById('modal-seats').textContent = `Seats: ${seats}`;
+  document.getElementById('modal-amount').textContent = `$${parseFloat(amount).toFixed(2)}`;
+  
+  if (startTime) {
+    const dt = new Date(startTime);
+    const dateStr = dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const timeStr = dt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    document.getElementById('modal-datetime').textContent = `${dateStr} • ${timeStr}`;
+  }
+
   const modal = document.getElementById('refund-modal');
   modal.classList.remove('hidden');
   modal.classList.add('flex');
@@ -69,9 +88,40 @@ function hideRefundModal() {
   modal.classList.remove('flex');
 }
 
-function submitRefund() {
-  hideRefundModal();
-  alert('Refund request submitted! You will receive confirmation via email.');
+function submitRefund(event) {
+  event.preventDefault();
+  const bookingId = document.getElementById('refund-booking-id').value;
+  const reason = document.getElementById('refund-reason').value;
+
+  if (!reason) {
+    alert('Please select a refund reason.');
+    return;
+  }
+
+  fetch('/dashboard/refund', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      booking_id: bookingId,
+      reason: reason
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      hideRefundModal();
+      alert('Refund requested successfully! You will receive confirmation via email.');
+      location.reload();
+    } else {
+      alert('Error: ' + (data.message || 'Could not process refund.'));
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('An error occurred while processing your refund.');
+  });
 }
 
 // Dashboard Password Strength Indicator
@@ -100,15 +150,45 @@ document.getElementById('new-password')?.addEventListener('input', function(e) {
   });
 });
 
+// Refund Eligibility Check: Can refund anytime until 1 hour before screening
+function isRefundEligible(startTimeIso) {
+  if (!startTimeIso) return false;
+  const startTime = new Date(startTimeIso);
+  const now = new Date();
+  const oneHourBefore = new Date(startTime.getTime() - 60 * 60 * 1000);
+  
+  // Refund allowed if current time is BEFORE 1 hour before screening
+  return now < oneHourBefore;
+}
+
+// Update refund button eligibility on page load and dynamically
+function updateRefundButtonStates() {
+  document.querySelectorAll('.refund-btn').forEach(btn => {
+    const startTime = btn.getAttribute('data-start-time');
+    if (isRefundEligible(startTime)) {
+      btn.classList.remove('opacity-50', 'cursor-not-allowed');
+      btn.disabled = false;
+      const startDate = new Date(startTime);
+      const oneHourBefore = new Date(startDate.getTime() - 60 * 60 * 1000);
+      const timeStr = oneHourBefore.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
+      btn.title = `Refund closes at ${timeStr} (1 hour before screening)`;
+    } else {
+      btn.classList.add('opacity-50', 'cursor-not-allowed');
+      btn.disabled = true;
+      btn.title = 'Refund window has closed (within 1 hour of screening)';
+    }
+  });
+}
+
 // Bookings Filter and Sort
 function filterAndSortBookings() {
-  const tbody = document.getElementById('bookings-tbody');
-  if (!tbody) return;
+  const table = document.querySelector('table tbody');
+  if (!table) return;
   
   const sortValue = document.getElementById('sort-bookings').value;
   const statusValue = document.getElementById('filter-status').value;
   
-  const rows = Array.from(tbody.querySelectorAll('.booking-row'));
+  const rows = Array.from(table.querySelectorAll('.booking-row'));
   
   // Filtering
   rows.forEach(row => {
@@ -120,20 +200,26 @@ function filterAndSortBookings() {
     }
   });
   
-  // Sorting
-  rows.sort((a, b) => {
+  // Sorting (only visible rows)
+  const visibleRows = rows.filter(row => row.style.display !== 'none');
+  visibleRows.sort((a, b) => {
     if (sortValue === 'date-desc' || sortValue === 'date-asc') {
-      const dateA = new Date(a.getAttribute('data-date'));
-      const dateB = new Date(b.getAttribute('data-date'));
+      const dateA = new Date(a.getAttribute('data-date') || 0);
+      const dateB = new Date(b.getAttribute('data-date') || 0);
       return sortValue === 'date-desc' ? dateB - dateA : dateA - dateB;
     } else if (sortValue === 'price-desc' || sortValue === 'price-asc') {
-      const priceA = parseFloat(a.getAttribute('data-price'));
-      const priceB = parseFloat(b.getAttribute('data-price'));
+      const priceA = parseFloat(a.getAttribute('data-price') || 0);
+      const priceB = parseFloat(b.getAttribute('data-price') || 0);
       return sortValue === 'price-desc' ? priceB - priceA : priceA - priceB;
     }
     return 0;
   });
   
   // Re-append rows in new order
-  rows.forEach(row => tbody.appendChild(row));
+  visibleRows.forEach(row => table.appendChild(row));
 }
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', () => {
+  updateRefundButtonStates();
+});

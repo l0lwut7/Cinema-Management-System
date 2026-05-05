@@ -378,3 +378,88 @@ def update_password():
     finally:
         cursor.close()
         connection.close()
+
+
+@dashboard_bp.route("/dashboard/refund", methods=["POST"], strict_slashes=False)
+def process_refund():
+    if "user_id" not in session:
+        return {'success': False, 'message': 'Not authenticated'}, 401
+
+    try:
+        import json
+        from datetime import datetime, timedelta
+        
+        data = json.loads(request.data) if isinstance(request.data, bytes) else request.get_json()
+        booking_id = data.get('booking_id')
+        reason = data.get('reason')
+
+        if not booking_id or not reason:
+            return {'success': False, 'message': 'Missing booking_id or reason'}, 400
+
+        connection = get_db_connection()
+        if connection is None:
+            return {'success': False, 'message': 'Database connection failed'}, 500
+
+        cursor = connection.cursor(dictionary=True)
+
+        try:
+            # Fetch booking and screening info
+            cursor.execute(
+                """
+                SELECT b.booking_id, b.user_id, s.start_time
+                FROM booking b
+                JOIN ticket t ON b.booking_id = t.booking_id
+                JOIN screening s ON t.screening_id = s.screening_id
+                WHERE b.booking_id = %s AND b.user_id = %s
+                LIMIT 1
+                """,
+                (booking_id, session["user_id"])
+            )
+            booking = cursor.fetchone()
+
+            if not booking:
+                return {'success': False, 'message': 'Booking not found'}, 404
+
+            start_time = booking["start_time"]
+            now = datetime.now()
+            one_hour_before = start_time - timedelta(hours=1)
+
+            # Check if refund is eligible: must be BEFORE 1 hour before screening
+            if now >= one_hour_before:
+                return {'success': False, 'message': 'Refund window has closed. Refunds must be requested at least 1 hour before the screening.'}, 403
+
+            # Update payment status to Refunded
+            cursor.execute(
+                """
+                UPDATE payment
+                SET status = 'Refunded'
+                WHERE booking_id = %s
+                """,
+                (booking_id,)
+            )
+
+            # Update ticket type to indicate refunded
+            cursor.execute(
+                """
+                UPDATE ticket
+                SET ticket_type = 'Refunded'
+                WHERE booking_id = %s
+                """,
+                (booking_id,)
+            )
+
+            connection.commit()
+            return {'success': True, 'message': 'Refund processed successfully'}, 200
+
+        except Exception as e:
+            connection.rollback()
+            print(f"Refund processing error: {e}")
+            return {'success': False, 'message': 'Error processing refund'}, 500
+
+        finally:
+            cursor.close()
+            connection.close()
+
+    except Exception as e:
+        print(f"Refund endpoint error: {e}")
+        return {'success': False, 'message': 'Server error'}, 500
