@@ -215,10 +215,13 @@ def fetch_now_showing_movies():
             m.duration_mins AS duration,
             m.rating_age,
             m.release_date,
-            m.summary AS synopsis
+            m.summary AS synopsis,
+            COALESCE(ROUND(AVG(r.rating), 1), 0) AS avg_rating
         FROM movie m
         JOIN movie_run mr ON m.movie_id = mr.movie_id
+        LEFT JOIN review r ON r.movie_id = m.movie_id
         WHERE CURDATE() BETWEEN mr.start_date AND mr.end_date
+        GROUP BY m.movie_id, m.title, m.director, m.duration_mins, m.rating_age, m.release_date, m.summary
         ORDER BY m.release_date DESC
     """
 
@@ -229,8 +232,8 @@ def fetch_now_showing_movies():
     connection.close()
 
     for movie in movies:
-        movie["rating"] = 0
-        movie["avg_rating"] = 0
+        movie["avg_rating"] = float(movie["avg_rating"] or 0)
+        movie["rating"] = movie["avg_rating"]
         movie["status"] = "Now Showing"
         movie["genres"] = ""
         movie["format"] = ""
@@ -253,16 +256,19 @@ def fetch_coming_soon_movies():
 
     query = """
         SELECT
-            movie_id AS id,
-            title,
-            director,
-            duration_mins AS duration,
-            rating_age,
-            release_date,
-            summary AS synopsis
-        FROM movie
-        WHERE release_date > CURDATE()
-        ORDER BY release_date ASC
+            m.movie_id AS id,
+            m.title,
+            m.director,
+            m.duration_mins AS duration,
+            m.rating_age,
+            m.release_date,
+            m.summary AS synopsis,
+            COALESCE(ROUND(AVG(r.rating), 1), 0) AS avg_rating
+        FROM movie m
+        LEFT JOIN review r ON r.movie_id = m.movie_id
+        WHERE m.release_date > CURDATE()
+        GROUP BY m.movie_id, m.title, m.director, m.duration_mins, m.rating_age, m.release_date, m.summary
+        ORDER BY m.release_date ASC
     """
 
     cursor.execute(query)
@@ -272,8 +278,8 @@ def fetch_coming_soon_movies():
     connection.close()
 
     for movie in movies:
-        movie["rating"] = 0
-        movie["avg_rating"] = 0
+        movie["avg_rating"] = float(movie["avg_rating"] or 0)
+        movie["rating"] = movie["avg_rating"]
         movie["status"] = "Coming Soon"
         movie["genres"] = ""
         movie["format"] = ""
@@ -304,7 +310,12 @@ def fetch_movie_by_id(movie_id):
             m.release_date,
             m.summary AS synopsis,
             GROUP_CONCAT(DISTINCT g.name SEPARATOR ', ') AS genres,
-            GROUP_CONCAT(DISTINCT f.name SEPARATOR ', ') AS format
+            GROUP_CONCAT(DISTINCT f.name SEPARATOR ', ') AS format,
+            EXISTS(
+                SELECT 1 FROM movie_run mr
+                WHERE mr.movie_id = m.movie_id
+                  AND CURDATE() BETWEEN mr.start_date AND mr.end_date
+            ) AS is_now_showing
         FROM movie m
         LEFT JOIN movie_genre mg ON m.movie_id = mg.movie_id
         LEFT JOIN genre g ON mg.genre_id = g.genre_id
@@ -323,11 +334,16 @@ def fetch_movie_by_id(movie_id):
     if movie is None:
         abort(404)
 
+    if movie.get("is_now_showing"):
+        movie["status"] = "Now Showing"
+    else:
+        movie["status"] = "Coming Soon"
+
     movie["rating"] = 0
     movie["avg_rating"] = 0
     movie["runtime_label"] = str(movie["duration"]) + " min"
     movie["meta"] = movie["director"]
-    movie["badge"] = "Movie"
+    movie["badge"] = movie["status"]
     movie["image_url"] = "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1200&q=80"
     movie["detail_url"] = url_for("discovery.movie_detail", movie_id=movie["id"])
 
@@ -450,6 +466,7 @@ def movie_detail(movie_id):
     context["cast"] = cast
     context["reviews"] = reviews
     context["total_reviews"] = rating_summary["total_reviews"]
+    context["rating_distribution"] = rating_summary["distribution"]
 
     return render_template("discovery/movie_detail.html", **context)
 
@@ -675,14 +692,16 @@ def submit_review(movie_id):
     return redirect(url_for("discovery.movie_detail", movie_id=movie_id))
 
 def fetch_movie_rating_summary(movie_id):
-    connection = get_db_connection()
+    empty_distribution = {5: 0, 4: 0, 3: 0, 2: 0, 1: 0}
 
-    if connection is None:
+    if get_db_connection() is None:
         return {
             "avg_rating": 0,
-            "total_reviews": 0
+            "total_reviews": 0,
+            "distribution": empty_distribution,
         }
 
+    connection = get_db_connection()
     cursor = connection.cursor(dictionary=True)
 
     cursor.execute(
@@ -695,13 +714,32 @@ def fetch_movie_rating_summary(movie_id):
         """,
         (movie_id,)
     )
-
     summary = cursor.fetchone()
+
+    cursor.execute(
+        """
+        SELECT rating, COUNT(*) AS count
+        FROM review
+        WHERE movie_id = %s
+        GROUP BY rating
+        """,
+        (movie_id,)
+    )
+    rows = cursor.fetchall()
 
     cursor.close()
     connection.close()
 
+    total_reviews = int(summary["total_reviews"] or 0)
+
+    distribution = {5: 0, 4: 0, 3: 0, 2: 0, 1: 0}
+    for row in rows:
+        star = int(row["rating"])
+        if star in distribution and total_reviews > 0:
+            distribution[star] = round((row["count"] / total_reviews) * 100)
+
     return {
         "avg_rating": round(float(summary["avg_rating"] or 0), 1),
-        "total_reviews": summary["total_reviews"] or 0
+        "total_reviews": total_reviews,
+        "distribution": distribution,
     }
