@@ -142,14 +142,8 @@ if (movieCancelButton) {
         });
     });
 
-    // Restore the correct tab from the URL ?tab= parameter (set by backend redirects)
-    const initialTab = (typeof ADMIN_INITIAL_TAB !== 'undefined' && ADMIN_INITIAL_TAB)
-        ? ADMIN_INITIAL_TAB
-        : 'analytics';
-    if (initialTab !== 'analytics') {
-        const targetTab = document.querySelector(`.sidebar-tab[data-tab="${initialTab}"]`);
-        if (targetTab) targetTab.click();
-    }
+    // Initial active tab is set server-side by Jinja (see dashboard.html).
+    // No JS click needed on load — doing so would cause a visible FOUC.
     
     // Infrastructure Sub-tabs
     const infraTabs = document.querySelectorAll('.infra-tab');
@@ -162,14 +156,14 @@ if (movieCancelButton) {
                 t.classList.remove('bg-crimson', 'text-white');
                 t.classList.add('bg-slate-700', 'text-slate-300');
             });
-            
+
             // Activate clicked tab
             tab.classList.remove('bg-slate-700', 'text-slate-300');
             tab.classList.add('bg-crimson', 'text-white');
-            
+
             // Hide all contents
             infraContents.forEach(content => content.classList.add('hidden'));
-            
+
             // Show corresponding content
             const subtab = tab.dataset.subtab;
             const content = document.getElementById(`infra-${subtab}`);
@@ -178,7 +172,27 @@ if (movieCancelButton) {
             }
         });
     });
-    
+
+    // ── Screening form: date min + price validation ───────────────────────────
+    const screeningDateInput = document.getElementById('screening-date');
+    if (screeningDateInput) {
+        screeningDateInput.min = new Date().toISOString().split('T')[0];
+    }
+
+    const screeningPriceInput = document.getElementById('screening-price');
+    if (screeningPriceInput) {
+        screeningPriceInput.addEventListener('input', function () {
+            // Strip anything that is not a digit or dot
+            let val = this.value.replace(/[^0-9.]/g, '');
+            // Allow at most one decimal point
+            const dotIndex = val.indexOf('.');
+            if (dotIndex !== -1) {
+                val = val.slice(0, dotIndex + 1) + val.slice(dotIndex + 1).replace(/\./g, '');
+            }
+            this.value = val;
+        });
+    }
+
     // Genre and Format Chips Toggle
 document.querySelectorAll(".chip").forEach((chip) => {
     chip.addEventListener("click", () => {
