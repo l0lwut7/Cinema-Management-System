@@ -377,6 +377,7 @@ document.querySelectorAll(".btn-edit-deal").forEach((button) => {
 
     // Initialize Chart.js for Revenue
 const ctx = document.getElementById("revenueChart");
+let revenueChartInstance = null;
 
 if (ctx) {
     let labels = [];
@@ -394,7 +395,7 @@ if (ctx) {
         }
     }
 
-    new Chart(ctx, {
+    revenueChartInstance = new Chart(ctx, {
         type: "bar",
         data: {
             labels: labels,
@@ -423,7 +424,8 @@ if (ctx) {
                         color: "#334155"
                     },
                     ticks: {
-                        color: "#94A3B8"
+                        color: "#94A3B8",
+                        callback: (v) => "$" + v.toLocaleString()
                     }
                 },
                 x: {
@@ -438,6 +440,39 @@ if (ctx) {
         }
     });
 }
+
+    // Live analytics polling — refreshes KPI cards and chart every 30 seconds
+    function refreshAnalytics() {
+        fetch("/admin/api/analytics")
+            .then((res) => {
+                if (!res.ok) return;
+                return res.json();
+            })
+            .then((data) => {
+                if (!data || data.error) return;
+
+                const { summary, chart } = data;
+
+                const elRevenue   = document.getElementById("kpi-total-revenue");
+                const elOccupancy = document.getElementById("kpi-occupancy-rate");
+                const elTickets   = document.getElementById("kpi-tickets-sold");
+                const elAlerts    = document.getElementById("kpi-inventory-alerts");
+
+                if (elRevenue)   elRevenue.textContent   = summary.total_revenue;
+                if (elOccupancy) elOccupancy.textContent = summary.occupancy_rate;
+                if (elTickets)   elTickets.textContent   = summary.tickets_sold;
+                if (elAlerts)    elAlerts.textContent    = summary.inventory_alerts;
+
+                if (revenueChartInstance && chart) {
+                    revenueChartInstance.data.labels              = chart.labels || [];
+                    revenueChartInstance.data.datasets[0].data    = chart.values || [];
+                    revenueChartInstance.update();
+                }
+            })
+            .catch(() => {});
+    }
+
+    setInterval(refreshAnalytics, 30000);
 
     // Top Spenders Sort and Filter Logic
     const spendersFilter = document.getElementById('spenders-filter');

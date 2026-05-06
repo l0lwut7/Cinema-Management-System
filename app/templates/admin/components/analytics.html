@@ -16,12 +16,12 @@
           <option>This Year</option>
         </select>
       </div>
-<p class="text-3xl font-bold text-white">{{ analytics_summary.total_revenue }}</p>      <div class="flex items-center gap-2 mt-2">
-        <span class="text-emerald text-xs font-medium bg-emerald/10 px-2 py-1 rounded">+12.5%</span>
-        <p class="text-slate-400 text-xs">vs last period</p>
+      <p id="kpi-total-revenue" class="text-3xl font-bold text-white">{{ analytics_summary.total_revenue }}</p>
+      <div class="flex items-center gap-2 mt-2">
+        <span class="text-slate-400 text-xs">All-time paid bookings</span>
       </div>
     </div>
-    
+
     <div class="kpi-card bg-slate-800 rounded-xl p-6 border border-slate-700">
       <div class="flex items-center justify-between mb-4">
         <span class="text-slate-400 text-sm">Occupancy Rate</span>
@@ -31,12 +31,12 @@
           <option>This Month</option>
         </select>
       </div>
-<p class="text-3xl font-bold text-white">{{ analytics_summary.occupancy_rate }}</p>      <div class="flex items-center gap-2 mt-2">
-        <span class="text-emerald text-xs font-medium bg-emerald/10 px-2 py-1 rounded">+3.2%</span>
-        <p class="text-slate-400 text-xs">vs last period</p>
+      <p id="kpi-occupancy-rate" class="text-3xl font-bold text-white">{{ analytics_summary.occupancy_rate }}</p>
+      <div class="flex items-center gap-2 mt-2">
+        <span class="text-slate-400 text-xs">Tickets sold vs seat capacity</span>
       </div>
     </div>
-    
+
     <div class="kpi-card bg-slate-800 rounded-xl p-6 border border-slate-700">
       <div class="flex items-center justify-between mb-4">
         <span class="text-slate-400 text-sm">Tickets Sold</span>
@@ -46,25 +46,19 @@
           <option selected>This Month</option>
         </select>
       </div>
-<p class="text-3xl font-bold text-white">{{ analytics_summary.tickets_sold }}</p>      <div class="flex items-center gap-2 mt-2">
-        <span class="text-crimson text-xs font-medium bg-crimson/10 px-2 py-1 rounded">-2.1%</span>
-        <p class="text-slate-400 text-xs">vs last period</p>
+      <p id="kpi-tickets-sold" class="text-3xl font-bold text-white">{{ analytics_summary.tickets_sold }}</p>
+      <div class="flex items-center gap-2 mt-2">
+        <span class="text-slate-400 text-xs">Total tickets issued</span>
       </div>
     </div>
-    
+
     <div class="kpi-card bg-slate-800 rounded-xl p-6 border border-slate-700">
       <div class="flex items-center justify-between mb-4">
         <span class="text-slate-400 text-sm">Inventory Alerts</span>
-          <span class="text-amber text-xs font-medium bg-amber/10 px-2 py-1 rounded">
-  {{ analytics_summary.inventory_alerts }} items
-</span>
-
-<p class="text-3xl font-bold text-amber">
-  {{ analytics_summary.inventory_alerts }}
-</p>
+        <span class="text-amber text-xs font-medium bg-amber/10 px-2 py-1 rounded">Low Stock</span>
       </div>
-
-      <p class="text-slate-400 text-sm mt-2">Low stock warnings</p>
+      <p id="kpi-inventory-alerts" class="text-3xl font-bold text-amber">{{ analytics_summary.inventory_alerts }}</p>
+      <p class="text-slate-400 text-sm mt-2">Items with stock &le; 20 units</p>
     </div>
   </div>
   
