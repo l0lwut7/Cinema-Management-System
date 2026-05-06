@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, session, redirect, url_for, request, flash
+from flask import Blueprint, render_template, session, redirect, url_for, request, flash, jsonify
 from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import datetime
 from app.db import get_db_connection
@@ -105,6 +105,16 @@ def dashboard():
         genres=fetch_genres(),
         formats=fetch_formats()
     )
+
+@admin_bp.route("/admin/api/analytics", strict_slashes=False)
+def api_analytics():
+    if "admin_id" not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    return jsonify({
+        "summary": fetch_analytics_summary(),
+        "chart": fetch_revenue_by_theater()
+    })
 
 @admin_bp.route("/admin/screenings/add", methods=["POST"], strict_slashes=False)
 def add_screening():
@@ -1239,13 +1249,12 @@ def fetch_analytics_summary():
     cursor = connection.cursor(dictionary=True)
 
     try:
-        # Total Revenue: başarılı payment veya booking total üzerinden
         cursor.execute(
             """
             SELECT COALESCE(SUM(b.total_amount), 0) AS total_revenue
             FROM booking b
-            LEFT JOIN payment p ON b.booking_id = p.booking_id
-            WHERE p.status = 'Completed' OR p.status IS NULL
+            INNER JOIN payment p ON b.booking_id = p.booking_id
+            WHERE p.status IN ('Paid', 'Completed')
             """
         )
         revenue_row = cursor.fetchone()
@@ -1272,20 +1281,25 @@ def fetch_analytics_summary():
         inventory_row = cursor.fetchone()
         inventory_alerts = int(inventory_row["inventory_alerts"] or 0)
 
-        # Occupancy Rate:
-        # satılan ticket / ilgili screening salonlarındaki toplam seat kapasitesi
+        # Occupancy Rate: booked tickets vs total capacity across ALL scheduled
+        # screenings. Two independent subqueries prevent the fan-trap where joining
+        # tickets to screenings would multiply sal.capacity by the ticket count.
+        # No time filter — future screenings matter too (shows booking performance).
         cursor.execute(
             """
             SELECT
-                COUNT(t.ticket_id) AS sold_seats,
-                COALESCE(SUM(sal.capacity), 0) AS possible_capacity
-            FROM screening sc
-            JOIN saloon sal
-              ON sc.theater_id = sal.theater_id
-             AND sc.saloon_number = sal.number
-            LEFT JOIN ticket t
-              ON sc.screening_id = t.screening_id
-            WHERE sc.start_time <= NOW()
+                (
+                    SELECT COUNT(t.ticket_id)
+                    FROM ticket t
+                    JOIN screening sc ON t.screening_id = sc.screening_id
+                ) AS sold_seats,
+                (
+                    SELECT COALESCE(SUM(sal.capacity), 0)
+                    FROM screening sc
+                    JOIN saloon sal
+                      ON sc.theater_id    = sal.theater_id
+                     AND sc.saloon_number = sal.number
+                ) AS possible_capacity
             """
         )
         occupancy_row = cursor.fetchone()
@@ -1320,21 +1334,22 @@ def fetch_revenue_by_theater():
     cursor = connection.cursor(dictionary=True)
 
     try:
+        # Subquery deduplicates on (theater_id, booking_id) so a booking with
+        # N tickets is counted once, not N times.
         cursor.execute(
             """
             SELECT
                 th.name AS theater_name,
-                COALESCE(SUM(b.total_amount), 0) AS revenue
+                COALESCE(SUM(paid.total_amount), 0) AS revenue
             FROM theater th
-            LEFT JOIN screening sc
-              ON th.theater_id = sc.theater_id
-            LEFT JOIN ticket tk
-              ON sc.screening_id = tk.screening_id
-            LEFT JOIN booking b
-              ON tk.booking_id = b.booking_id
-            LEFT JOIN payment p
-              ON b.booking_id = p.booking_id
-            WHERE p.status = 'Completed' OR p.status IS NULL
+            LEFT JOIN (
+                SELECT DISTINCT sc.theater_id, b.booking_id, b.total_amount
+                FROM ticket tk
+                JOIN screening sc ON tk.screening_id = sc.screening_id
+                JOIN booking   b  ON tk.booking_id   = b.booking_id
+                JOIN payment   p  ON b.booking_id    = p.booking_id
+                WHERE p.status IN ('Paid', 'Completed')
+            ) paid ON th.theater_id = paid.theater_id
             GROUP BY th.theater_id, th.name
             ORDER BY revenue DESC
             """
@@ -1549,11 +1564,13 @@ def fetch_vip_spenders():
             u.last_name,
             u.email,
             c.membership_tier,
-            COALESCE(SUM(b.total_amount), 0) AS total_spent,
-            COUNT(b.booking_id) AS visits
+            SUM(b.total_amount) AS total_spent,
+            COUNT(DISTINCT b.booking_id) AS visits
         FROM customer c
         JOIN user u ON c.user_id = u.user_id
-        LEFT JOIN booking b ON c.user_id = b.user_id
+        JOIN booking b ON c.user_id = b.user_id
+        JOIN payment p ON b.booking_id = p.booking_id
+        WHERE p.status IN ('Paid', 'Completed')
         GROUP BY u.user_id, u.first_name, u.last_name, u.email, c.membership_tier
         ORDER BY total_spent DESC
         LIMIT 10
