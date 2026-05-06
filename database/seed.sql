@@ -102,7 +102,8 @@ INSERT INTO USER (user_id, first_name, last_name, phone_number, email, password_
 (3, 'Charlie', 'Brown', '555-0003', 'charlie@email.com', 'hashed3'),
 (4, 'Diana', 'Prince', '555-0004', 'diana.admin@cinema.com', 'hashed4'),
 (5, 'Evan', 'Wright', '555-0005', 'evan.staff@cinema.com', 'hashed5'),
-(6, 'Fiona', 'Gallagher', '555-0006', 'fiona.new@cinema.com', 'hashed6');
+(6, 'Fiona', 'Gallagher', '555-0006', 'fiona.new@cinema.com', 'hashed6'),
+(7, 'Nolan', 'Grayson', '555-0007', 'admin@cinema.com', 'scrypt:32768:8:1$dM5c2ebqE3KvuxQN$9ded3e63555b9abc46c40b05226e5626a31862996db7e5bd64549bec8dfa989553f7483ca2f36d052597b4768b0c166e78d010ecee6d704171962a3fa4ef8285');
 
 -- Assign Customers
 INSERT INTO CUSTOMER (user_id, birth_date, loyalty_points, membership_tier) VALUES
@@ -114,7 +115,8 @@ INSERT INTO CUSTOMER (user_id, birth_date, loyalty_points, membership_tier) VALU
 INSERT INTO EMPLOYEE (user_id, role, salary, account_status, auth_level, work_shift, theater_id) VALUES
 (4, 'System Admin', 8500.00, 'Active', 3, 'All', NULL),                 -- Diana: Full Admin (Auth 3)
 (5, 'Ticket Counter', 3500.00, 'Active', 1, 'Morning', 1),              -- Evan: Active Staff at Mavibahçe
-(6, 'Usher', 3000.00, 'Pending', 1, 'Evening', 2);                      -- Fiona: Pending Admin Approval!
+(6, 'Usher', 3000.00, 'Pending', 1, 'Evening', 2),                    -- Fiona: Pending Admin Approval!
+(7, 'General Manager', 9000.00, 'Active', 3, 'All', NULL);             -- Nolan: Full Admin (Auth 3)
 
 -- ------------------------------------------------------------------------------
 -- 4. MOVIE CATALOG & METADATA (Discovery Flow)
