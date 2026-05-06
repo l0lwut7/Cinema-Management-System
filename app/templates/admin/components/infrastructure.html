@@ -1,5 +1,5 @@
 <!-- Infrastructure Panel -->
-<div id="panel-infrastructure" class="content-panel">
+<div id="panel-infrastructure" class="content-panel {% if initial_tab == 'infrastructure' %}active{% endif %}">
   <header class="mb-8">
     <h2 class="font-display text-3xl font-bold text-white tracking-wide">INFRASTRUCTURE & SCHEDULING</h2>
     <p class="text-slate-400 mt-1">Manage saloons, seats, and screenings</p>
@@ -57,17 +57,11 @@
             </div>
           </div>
           
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-slate-300 mb-2">Base Ticket Price ($) <span class="text-crimson">*</span></label>
-              <input type="number" id="screening-price" name="base_price" placeholder="e.g. 15.00" step="0.01" min="0" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400">
-              <p id="price-error" class="text-crimson text-xs mt-1 hidden">Please enter a valid price</p>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-slate-300 mb-2">Premium Seat Multiplier</label>
-              <input type="number" id="screening-premium-price" placeholder="e.g. 1.5" step="0.1" min="1" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400">
-              <p class="text-slate-400 text-xs mt-1">Multiplier for VIP seats</p>
-            </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-300 mb-2">Base Ticket Price ($) <span class="text-crimson">*</span></label>
+            <input type="text" id="screening-price" name="base_price" inputmode="decimal" placeholder="e.g. 15.00"
+                   class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400">
+            <p id="price-error" class="text-crimson text-xs mt-1 hidden">Please enter a valid price</p>
           </div>
           
           <div class="flex items-center gap-3">

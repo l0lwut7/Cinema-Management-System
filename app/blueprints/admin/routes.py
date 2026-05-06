@@ -133,7 +133,7 @@ def add_screening():
 
     if not movie_id or not saloon_value or not screening_date or not screening_time or not base_price:
         flash("Please fill all required screening fields.", "error")
-        return redirect(url_for("admin.dashboard", tab="catalog"))
+        return redirect(url_for("admin.dashboard", tab="infrastructure"))
 
     try:
         theater_id, saloon_number = saloon_value.split("|")
@@ -147,13 +147,17 @@ def add_screening():
         )
     except ValueError:
         flash("Invalid screening data.", "error")
-        return redirect(url_for("admin.dashboard", tab="catalog"))
+        return redirect(url_for("admin.dashboard", tab="infrastructure"))
+
+    if start_time <= datetime.now():
+        flash("Screening date and time must be in the future.", "error")
+        return redirect(url_for("admin.dashboard", tab="infrastructure"))
 
     connection = get_db_connection()
 
     if connection is None:
         flash("Database connection failed.", "error")
-        return redirect(url_for("admin.dashboard", tab="catalog"))
+        return redirect(url_for("admin.dashboard", tab="infrastructure"))
 
     cursor = connection.cursor(dictionary=True)
 
@@ -170,7 +174,7 @@ def add_screening():
 
         if not movie:
             flash("Selected movie does not exist.", "error")
-            return redirect(url_for("admin.dashboard", tab="catalog"))
+            return redirect(url_for("admin.dashboard", tab="infrastructure"))
 
         cursor.execute(
             """
@@ -184,7 +188,7 @@ def add_screening():
 
         if not saloon:
             flash("Selected saloon does not exist or is inactive.", "error")
-            return redirect(url_for("admin.dashboard", tab="catalog"))
+            return redirect(url_for("admin.dashboard", tab="infrastructure"))
 
         cursor.execute(
             """
@@ -203,6 +207,36 @@ def add_screening():
             )
         )
 
+        # Sync movie_run so this movie appears on customer-facing Now Showing /
+        # Booking pages. The discovery route joins movie_run to determine which
+        # movies are currently showing; without a matching row the new screening
+        # would be invisible to customers.
+        screening_date_only = start_time.date()
+        cursor.execute(
+            "SELECT start_date, end_date FROM movie_run WHERE movie_id = %s",
+            (movie_id,)
+        )
+        existing_run = cursor.fetchone()
+
+        if not existing_run:
+            cursor.execute(
+                """
+                INSERT INTO movie_run (movie_id, start_date, end_date)
+                VALUES (%s, %s, %s)
+                """,
+                (movie_id, screening_date_only, screening_date_only)
+            )
+        else:
+            cursor.execute(
+                """
+                UPDATE movie_run
+                SET start_date = LEAST(start_date, %s),
+                    end_date   = GREATEST(end_date, %s)
+                WHERE movie_id = %s
+                """,
+                (screening_date_only, screening_date_only, movie_id)
+            )
+
         connection.commit()
         flash("Screening added successfully.", "success")
 
@@ -214,7 +248,7 @@ def add_screening():
         cursor.close()
         connection.close()
 
-    return redirect(url_for("admin.dashboard", tab="catalog"))
+    return redirect(url_for("admin.dashboard", tab="infrastructure"))
 
 @admin_bp.route("/admin/movies/add", methods=["POST"], strict_slashes=False)
 def add_movie():
