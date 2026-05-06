@@ -1,5 +1,22 @@
 document.addEventListener('DOMContentLoaded', () => {
 
+    // ── Flash message: close button + 5-second auto-dismiss ──────────────────
+    document.querySelectorAll('.flash-message').forEach(msg => {
+        const closeBtn = msg.querySelector('.flash-close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                msg.style.transition = 'opacity 0.3s ease';
+                msg.style.opacity = '0';
+                setTimeout(() => msg.remove(), 300);
+            });
+        }
+        setTimeout(() => {
+            msg.style.transition = 'opacity 0.5s ease';
+            msg.style.opacity = '0';
+            setTimeout(() => msg.remove(), 500);
+        }, 5000);
+    });
+
     // Movie Edit Logic
 const movieForm = document.getElementById("movie-form");
 const movieFormTitle = document.getElementById("movie-form-title");
@@ -107,15 +124,15 @@ if (movieCancelButton) {
                 t.classList.remove('text-white');
                 t.classList.add('text-slate-300');
             });
-            
+
             // Add active class to clicked tab
             tab.classList.add('active');
             tab.classList.add('text-white');
             tab.classList.remove('text-slate-300');
-            
+
             // Hide all panels
             contentPanels.forEach(panel => panel.classList.remove('active'));
-            
+
             // Show corresponding panel
             const tabName = tab.dataset.tab;
             const panel = document.getElementById(`panel-${tabName}`);
@@ -124,6 +141,15 @@ if (movieCancelButton) {
             }
         });
     });
+
+    // Restore the correct tab from the URL ?tab= parameter (set by backend redirects)
+    const initialTab = (typeof ADMIN_INITIAL_TAB !== 'undefined' && ADMIN_INITIAL_TAB)
+        ? ADMIN_INITIAL_TAB
+        : 'analytics';
+    if (initialTab !== 'analytics') {
+        const targetTab = document.querySelector(`.sidebar-tab[data-tab="${initialTab}"]`);
+        if (targetTab) targetTab.click();
+    }
     
     // Infrastructure Sub-tabs
     const infraTabs = document.querySelectorAll('.infra-tab');
@@ -543,6 +569,45 @@ if (ctx) {
   const shiftInput = document.getElementById("employee-work-shift");
   const theaterInput = document.getElementById("employee-theater-id");
   const submitButton = document.getElementById("employee-submit-button");
+
+  // ── Input validators ─────────────────────────────────────────────────────
+  // Letters + spaces only, including Turkish characters (ç ğ ı ö ş ü İ etc.)
+  const lettersOnlyRe = /[^a-zA-ZçğışöüÇĞİÖŞÜ\s]/g;
+  [firstNameInput, lastNameInput].forEach(input => {
+      if (!input) return;
+      input.addEventListener('input', function () {
+          const pos = this.selectionStart;
+          const cleaned = this.value.replace(lettersOnlyRe, '');
+          if (cleaned !== this.value) {
+              this.value = cleaned;
+              this.setSelectionRange(pos - 1, pos - 1);
+          }
+      });
+  });
+
+  // Digits only — phone number
+  if (phoneInput) {
+      phoneInput.addEventListener('input', function () {
+          const pos = this.selectionStart;
+          const cleaned = this.value.replace(/[^0-9]/g, '');
+          if (cleaned !== this.value) {
+              this.value = cleaned;
+              this.setSelectionRange(pos - 1, pos - 1);
+          }
+      });
+  }
+
+  // Digits only — salary (no dots, commas, or letters)
+  if (salaryInput) {
+      salaryInput.addEventListener('input', function () {
+          const pos = this.selectionStart;
+          const cleaned = this.value.replace(/[^0-9]/g, '');
+          if (cleaned !== this.value) {
+              this.value = cleaned;
+              this.setSelectionRange(pos - 1, pos - 1);
+          }
+      });
+  }
 
   function openEmployeeModal() {
     employeeModal.classList.remove("hidden");

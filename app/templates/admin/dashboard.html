@@ -87,15 +87,16 @@
 
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
-      <div class="mb-6 space-y-3">
+      <div class="mb-6 space-y-3" id="flash-container">
         {% for category, message in messages %}
-          <div class="rounded-xl px-4 py-3 text-sm border
+          <div class="flash-message rounded-xl px-4 py-3 text-sm border flex items-center justify-between gap-4
                       {% if category == 'success' %}
                         bg-emerald/10 border-emerald/40 text-emerald
                       {% else %}
                         bg-crimson/10 border-crimson/40 text-crimson
                       {% endif %}">
-            {{ message }}
+            <span>{{ message }}</span>
+            <button type="button" class="flash-close shrink-0 opacity-60 hover:opacity-100 transition-opacity text-lg leading-none">&times;</button>
           </div>
         {% endfor %}
       </div>
