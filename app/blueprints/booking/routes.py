@@ -380,24 +380,17 @@ def create_booking():
         )
         consumable_total = 0
 
-        consumable_name_map = {
-            "popcorn": "Large Popcorn",
-            "soda": "Large Soda",
-            "candy": "Candy Box",
-            "hotdog": "Hot Dog"
-        }
-
         selected_consumable_rows = []
 
-        for item_key, quantity in selected_consumables.items():
+        for consumable_id, quantity in selected_consumables.items():
             quantity = int(quantity)
 
             if quantity <= 0:
                 continue
 
-            consumable_name = consumable_name_map.get(item_key)
-
-            if consumable_name is None:
+            try:
+                consumable_id = int(consumable_id)
+            except (ValueError, TypeError):
                 continue
 
             cursor.execute(
@@ -407,9 +400,9 @@ def create_booking():
                        unit_price,
                        stock_quantity
                 FROM consumable
-                WHERE name = %s
+                WHERE consumable_id = %s
                 """,
-                (consumable_name,)
+                (consumable_id,)
             )
 
             consumable = cursor.fetchone()
@@ -418,14 +411,14 @@ def create_booking():
                 connection.rollback()
                 return jsonify({
                     "success": False,
-                    "message": f"Consumable not found: {consumable_name}"
+                    "message": "Consumable not found"
                 }), 404
 
             if consumable["stock_quantity"] < quantity:
                 connection.rollback()
                 return jsonify({
                     "success": False,
-                    "message": f"Not enough stock for {consumable_name}"
+                    "message": f"Not enough stock for {consumable['name']}"
                 }), 409
 
             unit_price = float(consumable["unit_price"])
@@ -464,7 +457,50 @@ def create_booking():
                     "message": f"Seat {row_letter}{seat_number} is already occupied"
                 }), 409
 
-        # 3. Booking kaydı oluştur
+        # # 3. Ensure user exists in CUSTOMER table (migration safety)
+        # cursor.execute(
+        #     "SELECT user_id FROM customer WHERE user_id = %s",
+        #     (user_id,)
+        # )
+        # if cursor.fetchone() is None:
+        #     # User exists in USER but not CUSTOMER, add them
+        #     cursor.execute(
+        #         """
+        #         INSERT INTO customer (user_id, birth_date, loyalty_points, membership_tier)
+        #         VALUES (%s, NULL, 0, 'Standard')
+        #         """,
+        #         (user_id,)
+        #     )
+        
+        # 3. Ensure user exists in USER table first, then check/add to CUSTOMER table
+        cursor.execute(
+            "SELECT user_id FROM user WHERE user_id = %s",
+            (user_id,)
+        )
+        if cursor.fetchone() is None:
+            # The session has a user_id, but they don't exist in the database anymore.
+            # Clear the session or return an error.
+            session.clear()
+            return jsonify({
+                "success": False,
+                "message": "User account no longer exists. Please log in again."
+            }), 401
+
+        # Now safe to check if they are in the customer table
+        cursor.execute(
+            "SELECT user_id FROM customer WHERE user_id = %s",
+            (user_id,)
+        )
+        if cursor.fetchone() is None:
+            cursor.execute(
+                """
+                INSERT INTO customer (user_id, birth_date, loyalty_points, membership_tier)
+                VALUES (%s, NULL, 0, 'Standard')
+                """,
+                (user_id,)
+            )
+
+        # 4. Booking kaydı oluştur
         cursor.execute(
             """
             INSERT INTO booking

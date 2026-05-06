@@ -10,7 +10,7 @@ const state = {
   selectedSeats: [],
   seatLayout: {},
   tickets: { adult: 0, child: 0, senior: 0 },
-  consumables: { popcorn: 0, soda: 0, candy: 0, hotdog: 0 },
+  consumables: {}, // Dynamic: will be populated by consumable_id
 };
 const realScreenings = window.BOOKING_SCREENINGS || [];
 
@@ -19,44 +19,19 @@ const prices = {
   adult: 0,
   child: 0,
   senior: 0,
-  popcorn: 0,
-  soda: 0,
-  candy: 0,
-  hotdog: 0
 };
 
-
+const consumableMap = {}; // Maps consumable_id to name and price
 const realConsumables = window.BOOKING_CONSUMABLES || [];
 
-function resolveConsumableKey(name) {
-  const lname = (name || "").toLowerCase();
-  if (lname.includes("popcorn")) return "popcorn";
-  if (lname.includes("soda")) return "soda";
-  if (lname.includes("candy")) return "candy";
-  if (lname.includes("hot")) return "hotdog";
-  return null;
-}
-
+// Initialize consumables from server data
 realConsumables.forEach(item => {
-  const key = resolveConsumableKey(item.name);
-  if (!key) return;
-
-  const parsed = parseFloat(item.unit_price);
-  if (!isNaN(parsed)) {
-    prices[key] = parsed;
-  }
-});
-
-// Final pass: hydrate prices from data-price attributes on consumable buttons
-// (set by Jinja from the same DB values). Guarantees prices are always present.
-document.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll(".consumable-plus[data-item][data-price]").forEach(btn => {
-    const key = btn.dataset.item;
-    const parsed = parseFloat(btn.dataset.price);
-    if (key && !isNaN(parsed)) {
-      prices[key] = parsed;
-    }
-  });
+  const id = item.consumable_id;
+  consumableMap[id] = {
+    name: item.name,
+    price: parseFloat(item.unit_price)
+  };
+  state.consumables[id] = 0;
 });
 
 let occupiedSeats = [];
@@ -383,10 +358,13 @@ function updateTicketDisplay() {
 }
 
 function updateConsumableDisplay() {
-  document.getElementById('popcornCount').textContent = state.consumables.popcorn;
-  document.getElementById('sodaCount').textContent = state.consumables.soda;
-  document.getElementById('candyCount').textContent = state.consumables.candy;
-  document.getElementById('hotdogCount').textContent = state.consumables.hotdog;
+  // Update count for each consumable using consumable_id
+  Object.keys(state.consumables).forEach(consumableId => {
+    const countElement = document.getElementById(`consumable-${consumableId}-count`);
+    if (countElement) {
+      countElement.textContent = state.consumables[consumableId];
+    }
+  });
 }
 
 function updateTotals() {
@@ -395,11 +373,13 @@ function updateTotals() {
   state.tickets.child * prices.child +
   state.tickets.senior * prices.senior;
 
-  const consumableTotal =
-    state.consumables.popcorn * prices.popcorn +
-    state.consumables.soda * prices.soda +
-    state.consumables.candy * prices.candy +
-    state.consumables.hotdog * prices.hotdog;
+  // Calculate consumable total dynamically
+  let consumableTotal = 0;
+  Object.entries(state.consumables).forEach(([consumableId, quantity]) => {
+    if (consumableMap[consumableId]) {
+      consumableTotal += quantity * consumableMap[consumableId].price;
+    }
+  });
 
   const grandTotal = ticketTotal + consumableTotal + prices.serviceFee;
 
@@ -423,13 +403,15 @@ if (state.tickets.senior > 0) {
 }
   ticketSummary.innerHTML = ticketHtml || '<div class="text-sm text-slate-500">No tickets selected</div>';
 
-  // Update consumable summary
+  // Update consumable summary - dynamic
   const consumableSummary = document.getElementById('consumableSummary');
   let consumableHtml = '';
-  if (state.consumables.popcorn > 0) consumableHtml += `<div class="flex justify-between text-sm"><span class="text-slate-400">${state.consumables.popcorn}x Popcorn</span><span>$${(state.consumables.popcorn * prices.popcorn).toFixed(2)}</span></div>`;
-  if (state.consumables.soda > 0) consumableHtml += `<div class="flex justify-between text-sm"><span class="text-slate-400">${state.consumables.soda}x Soda</span><span>$${(state.consumables.soda * prices.soda).toFixed(2)}</span></div>`;
-  if (state.consumables.candy > 0) consumableHtml += `<div class="flex justify-between text-sm"><span class="text-slate-400">${state.consumables.candy}x Candy</span><span>$${(state.consumables.candy * prices.candy).toFixed(2)}</span></div>`;
-  if (state.consumables.hotdog > 0) consumableHtml += `<div class="flex justify-between text-sm"><span class="text-slate-400">${state.consumables.hotdog}x Hot Dog</span><span>$${(state.consumables.hotdog * prices.hotdog).toFixed(2)}</span></div>`;
+  Object.entries(state.consumables).forEach(([consumableId, quantity]) => {
+    if (quantity > 0 && consumableMap[consumableId]) {
+      const item = consumableMap[consumableId];
+      consumableHtml += `<div class="flex justify-between text-sm"><span class="text-slate-400">${quantity}x ${item.name}</span><span>$${(quantity * item.price).toFixed(2)}</span></div>`;
+    }
+  });
   consumableSummary.innerHTML = consumableHtml || '<div class="text-sm text-slate-500">No extras added</div>';
 
   // Enable/disable next button based on ticket count matching seats
@@ -465,12 +447,12 @@ document.querySelectorAll('.ticket-plus').forEach(btn => {
   });
 });
 
-// Consumable controls
+// Consumable controls - use consumable_id instead of item key
 document.querySelectorAll('.consumable-minus').forEach(btn => {
   btn.addEventListener('click', () => {
-    const item = btn.dataset.item;
-    if (state.consumables[item] > 0) {
-      state.consumables[item]--;
+    const consumableId = btn.dataset.consumableId;
+    if (state.consumables[consumableId] > 0) {
+      state.consumables[consumableId]--;
       updateConsumableDisplay();
       updateTotals();
     }
@@ -479,9 +461,9 @@ document.querySelectorAll('.consumable-minus').forEach(btn => {
 
 document.querySelectorAll('.consumable-plus').forEach(btn => {
   btn.addEventListener('click', () => {
-    const item = btn.dataset.item;
-    if (state.consumables[item] < 10) {
-      state.consumables[item]++;
+    const consumableId = btn.dataset.consumableId;
+    if (state.consumables[consumableId] < 10) {
+      state.consumables[consumableId]++;
       updateConsumableDisplay();
       updateTotals();
     }
@@ -504,31 +486,38 @@ document.getElementById('reviewShowtime').textContent = `${state.showtime} - ${s
 document.getElementById('reviewTheater').textContent = selectedTheaterText;
   document.getElementById('reviewSeats').textContent = state.selectedSeats.join(', ');
 
-  // Calculate total
+  // Calculate total - dynamic
 const ticketTotal =
   state.tickets.adult * prices.adult +
   state.tickets.child * prices.child +
   state.tickets.senior * prices.senior;
 
-const consumableTotal =
-    state.consumables.popcorn * prices.popcorn +
-    state.consumables.soda * prices.soda +
-    state.consumables.candy * prices.candy +
-    state.consumables.hotdog * prices.hotdog;
+let consumableTotal = 0;
+Object.entries(state.consumables).forEach(([consumableId, quantity]) => {
+  if (consumableMap[consumableId]) {
+    consumableTotal += quantity * consumableMap[consumableId].price;
+  }
+});
+
   const grandTotal = ticketTotal + consumableTotal + prices.serviceFee;
 
   document.getElementById('reviewTotal').textContent = `$${grandTotal.toFixed(2)}`;
 
-  // Update extras list
+  // Update extras list - dynamic
   const extrasList = document.getElementById('reviewExtrasList');
   let extrasHtml = '';
   if (state.tickets.adult > 0) extrasHtml += `<p class="text-sm text-slate-300">${state.tickets.adult}x Adult Ticket</p>`;
   if (state.tickets.child > 0) extrasHtml += `<p class="text-sm text-slate-300">${state.tickets.child}x Child Ticket</p>`;
   if (state.tickets.senior > 0) extrasHtml += `<p class="text-sm text-slate-300">${state.tickets.senior}x Senior Ticket</p>`;
-  if (state.consumables.popcorn > 0) extrasHtml += `<p class="text-sm text-slate-300">${state.consumables.popcorn}x Large Popcorn</p>`;
-  if (state.consumables.soda > 0) extrasHtml += `<p class="text-sm text-slate-300">${state.consumables.soda}x Large Soda</p>`;
-  if (state.consumables.candy > 0) extrasHtml += `<p class="text-sm text-slate-300">${state.consumables.candy}x Candy Box</p>`;
-  if (state.consumables.hotdog > 0) extrasHtml += `<p class="text-sm text-slate-300">${state.consumables.hotdog}x Hot Dog</p>`;
+  
+  // Display consumables dynamically
+  Object.entries(state.consumables).forEach(([consumableId, quantity]) => {
+    if (quantity > 0 && consumableMap[consumableId]) {
+      const item = consumableMap[consumableId];
+      extrasHtml += `<p class="text-sm text-slate-300">${quantity}x ${item.name}</p>`;
+    }
+  });
+  
   extrasList.innerHTML = extrasHtml || '<p class="text-sm text-slate-500">No extras</p>';
 }
 

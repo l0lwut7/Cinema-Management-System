@@ -88,8 +88,9 @@ INSERT INTO DEAL (deal_id, name, discount_percent, valid_until) VALUES
 
 INSERT INTO CONSUMABLE (consumable_id, name, unit_price, stock_quantity) VALUES
 (1, 'Large Popcorn', 8.50, 500),
-(2, 'Medium Soda', 5.00, 500),
-(3, 'Nachos', 7.00, 200);
+(2, 'Large Soda', 6.00, 500),
+(3, 'Candy Box', 7.50, 300),
+(4, 'Hot Dog', 9.00, 250);
 
 -- ------------------------------------------------------------------------------
 -- 3. IDENTITY & AUTHENTICATION (Auth Flow & Staff CMS)
