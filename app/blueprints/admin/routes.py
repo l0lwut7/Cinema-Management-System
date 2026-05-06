@@ -103,7 +103,10 @@ def dashboard():
         deals=fetch_deals(),
         vip_tier=get_vip_tier_info(),
         genres=fetch_genres(),
-        formats=fetch_formats()
+        formats=fetch_formats(),
+        theaters=fetch_theaters(),
+        initial_tab=request.args.get("tab", "analytics"),
+        current_admin_id=session.get("admin_id")
     )
 
 @admin_bp.route("/admin/api/analytics", strict_slashes=False)
@@ -130,7 +133,7 @@ def add_screening():
 
     if not movie_id or not saloon_value or not screening_date or not screening_time or not base_price:
         flash("Please fill all required screening fields.", "error")
-        return redirect(url_for("admin.dashboard"))
+        return redirect(url_for("admin.dashboard", tab="catalog"))
 
     try:
         theater_id, saloon_number = saloon_value.split("|")
@@ -144,13 +147,13 @@ def add_screening():
         )
     except ValueError:
         flash("Invalid screening data.", "error")
-        return redirect(url_for("admin.dashboard"))
+        return redirect(url_for("admin.dashboard", tab="catalog"))
 
     connection = get_db_connection()
 
     if connection is None:
         flash("Database connection failed.", "error")
-        return redirect(url_for("admin.dashboard"))
+        return redirect(url_for("admin.dashboard", tab="catalog"))
 
     cursor = connection.cursor(dictionary=True)
 
@@ -167,7 +170,7 @@ def add_screening():
 
         if not movie:
             flash("Selected movie does not exist.", "error")
-            return redirect(url_for("admin.dashboard"))
+            return redirect(url_for("admin.dashboard", tab="catalog"))
 
         cursor.execute(
             """
@@ -181,7 +184,7 @@ def add_screening():
 
         if not saloon:
             flash("Selected saloon does not exist or is inactive.", "error")
-            return redirect(url_for("admin.dashboard"))
+            return redirect(url_for("admin.dashboard", tab="catalog"))
 
         cursor.execute(
             """
@@ -211,7 +214,7 @@ def add_screening():
         cursor.close()
         connection.close()
 
-    return redirect(url_for("admin.dashboard"))
+    return redirect(url_for("admin.dashboard", tab="catalog"))
 
 @admin_bp.route("/admin/movies/add", methods=["POST"], strict_slashes=False)
 def add_movie():
@@ -230,20 +233,20 @@ def add_movie():
 
     if not title or not director or not duration_mins or not rating_age or not release_date:
         flash("Please fill all required movie fields.", "error")
-        return redirect(url_for("admin.dashboard"))
+        return redirect(url_for("admin.dashboard", tab="catalog"))
 
     try:
         duration_mins = int(duration_mins)
         rating_age = int(rating_age)
     except ValueError:
         flash("Duration and rating age must be valid numbers.", "error")
-        return redirect(url_for("admin.dashboard"))
+        return redirect(url_for("admin.dashboard", tab="catalog"))
 
     connection = get_db_connection()
 
     if connection is None:
         flash("Database connection failed.", "error")
-        return redirect(url_for("admin.dashboard"))
+        return redirect(url_for("admin.dashboard", tab="catalog"))
 
     cursor = connection.cursor(dictionary=True)
 
@@ -300,7 +303,7 @@ def add_movie():
         cursor.close()
         connection.close()
 
-    return redirect(url_for("admin.dashboard"))
+    return redirect(url_for("admin.dashboard", tab="catalog"))
 
 @admin_bp.route("/admin/employees/add", methods=["POST"], strict_slashes=False)
 def add_employee():
@@ -321,17 +324,17 @@ def add_employee():
 
     if not first_name or not last_name or not email or not password or not role or not auth_level:
         flash("Please fill all required employee fields.", "error")
-        return redirect(url_for("admin.dashboard"))
+        return redirect(url_for("admin.dashboard", tab="staff"))
 
     try:
         auth_level = int(auth_level)
     except ValueError:
         flash("Invalid auth level.", "error")
-        return redirect(url_for("admin.dashboard"))
+        return redirect(url_for("admin.dashboard", tab="staff"))
 
     if auth_level not in [1, 2, 3]:
         flash("Auth level must be 1, 2, or 3.", "error")
-        return redirect(url_for("admin.dashboard"))
+        return redirect(url_for("admin.dashboard", tab="staff"))
 
     salary_value = float(salary) if salary else 0.00
     theater_id_value = int(theater_id) if theater_id else None
@@ -341,7 +344,7 @@ def add_employee():
 
     if connection is None:
         flash("Database connection failed.", "error")
-        return redirect(url_for("admin.dashboard"))
+        return redirect(url_for("admin.dashboard", tab="staff"))
 
     cursor = connection.cursor(dictionary=True)
 
@@ -355,7 +358,7 @@ def add_employee():
 
         if existing_user:
             flash("A user with this email already exists.", "error")
-            return redirect(url_for("admin.dashboard"))
+            return redirect(url_for("admin.dashboard", tab="staff"))
 
         cursor.execute(
             """
@@ -404,7 +407,7 @@ def add_employee():
         cursor.close()
         connection.close()
 
-    return redirect(url_for("admin.dashboard"))
+    return redirect(url_for("admin.dashboard", tab="staff"))
 
 @admin_bp.route("/admin/employees/edit/<int:user_id>", methods=["POST"], strict_slashes=False)
 def edit_employee(user_id):
@@ -425,17 +428,17 @@ def edit_employee(user_id):
 
     if not first_name or not last_name or not email or not role or not auth_level:
         flash("Please fill all required employee fields.", "error")
-        return redirect(url_for("admin.dashboard"))
+        return redirect(url_for("admin.dashboard", tab="staff"))
 
     try:
         auth_level = int(auth_level)
     except ValueError:
         flash("Invalid auth level.", "error")
-        return redirect(url_for("admin.dashboard"))
+        return redirect(url_for("admin.dashboard", tab="staff"))
 
     if auth_level not in [1, 2, 3]:
         flash("Auth level must be 1, 2, or 3.", "error")
-        return redirect(url_for("admin.dashboard"))
+        return redirect(url_for("admin.dashboard", tab="staff"))
 
     salary_value = float(salary) if salary else 0.00
     theater_id_value = int(theater_id) if theater_id else None
@@ -447,7 +450,7 @@ def edit_employee(user_id):
 
     if connection is None:
         flash("Database connection failed.", "error")
-        return redirect(url_for("admin.dashboard"))
+        return redirect(url_for("admin.dashboard", tab="staff"))
 
     cursor = connection.cursor(dictionary=True)
 
@@ -465,7 +468,7 @@ def edit_employee(user_id):
 
         if existing_user:
             flash("Another user already uses this email.", "error")
-            return redirect(url_for("admin.dashboard"))
+            return redirect(url_for("admin.dashboard", tab="staff"))
 
         cursor.execute(
             """
@@ -520,23 +523,22 @@ def edit_employee(user_id):
         cursor.close()
         connection.close()
 
-    return redirect(url_for("admin.dashboard"))
+    return redirect(url_for("admin.dashboard", tab="staff"))
 
 @admin_bp.route("/admin/employees/deactivate/<int:user_id>", methods=["POST"], strict_slashes=False)
 def deactivate_employee(user_id):
     if "admin_id" not in session:
         return redirect(url_for("admin.login"))
 
-    # Admin kendini yanlışlıkla pasifleştirmesin
     if session.get("admin_id") == user_id:
-        flash("You cannot deactivate your own admin account.", "error")
-        return redirect(url_for("admin.dashboard"))
+        flash("You cannot deactivate your own account.", "error")
+        return redirect(url_for("admin.dashboard", tab="staff"))
 
     connection = get_db_connection()
 
     if connection is None:
         flash("Database connection failed.", "error")
-        return redirect(url_for("admin.dashboard"))
+        return redirect(url_for("admin.dashboard", tab="staff"))
 
     cursor = connection.cursor(dictionary=True)
 
@@ -561,7 +563,7 @@ def deactivate_employee(user_id):
         cursor.close()
         connection.close()
 
-    return redirect(url_for("admin.dashboard"))
+    return redirect(url_for("admin.dashboard", tab="staff"))
 
 def fetch_employees():
     connection = get_db_connection()
@@ -731,20 +733,20 @@ def edit_movie(movie_id):
 
     if not title or not director or not duration_mins or not rating_age or not release_date:
         flash("Please fill all required movie fields.", "error")
-        return redirect(url_for("admin.dashboard"))
+        return redirect(url_for("admin.dashboard", tab="catalog"))
 
     try:
         duration_mins = int(duration_mins)
         rating_age = int(rating_age)
     except ValueError:
         flash("Duration and rating age must be valid numbers.", "error")
-        return redirect(url_for("admin.dashboard"))
+        return redirect(url_for("admin.dashboard", tab="catalog"))
 
     connection = get_db_connection()
 
     if connection is None:
         flash("Database connection failed.", "error")
-        return redirect(url_for("admin.dashboard"))
+        return redirect(url_for("admin.dashboard", tab="catalog"))
 
     cursor = connection.cursor(dictionary=True)
 
@@ -762,7 +764,7 @@ def edit_movie(movie_id):
 
         if not existing_movie:
             flash("Movie not found.", "error")
-            return redirect(url_for("admin.dashboard"))
+            return redirect(url_for("admin.dashboard", tab="catalog"))
 
         cursor.execute(
             """
@@ -836,7 +838,7 @@ def edit_movie(movie_id):
         cursor.close()
         connection.close()
 
-    return redirect(url_for("admin.dashboard"))
+    return redirect(url_for("admin.dashboard", tab="catalog"))
 
 @admin_bp.route("/admin/consumables/add", methods=["POST"], strict_slashes=False)
 def add_consumable():
@@ -849,20 +851,20 @@ def add_consumable():
 
     if not name or not unit_price or not stock_quantity:
         flash("Please fill all required consumable fields.", "error")
-        return redirect(url_for("admin.dashboard"))
+        return redirect(url_for("admin.dashboard", tab="business"))
 
     try:
         unit_price = float(unit_price)
         stock_quantity = int(stock_quantity)
     except ValueError:
         flash("Price and stock quantity must be valid numbers.", "error")
-        return redirect(url_for("admin.dashboard"))
+        return redirect(url_for("admin.dashboard", tab="business"))
 
     connection = get_db_connection()
 
     if connection is None:
         flash("Database connection failed.", "error")
-        return redirect(url_for("admin.dashboard"))
+        return redirect(url_for("admin.dashboard", tab="business"))
 
     cursor = connection.cursor(dictionary=True)
 
@@ -880,7 +882,7 @@ def add_consumable():
 
         if existing_item:
             flash("This consumable already exists.", "error")
-            return redirect(url_for("admin.dashboard"))
+            return redirect(url_for("admin.dashboard", tab="business"))
 
         cursor.execute(
             """
@@ -903,7 +905,31 @@ def add_consumable():
         cursor.close()
         connection.close()
 
-    return redirect(url_for("admin.dashboard"))
+    return redirect(url_for("admin.dashboard", tab="business"))
+
+def fetch_theaters():
+    connection = get_db_connection()
+
+    if connection is None:
+        return []
+
+    cursor = connection.cursor(dictionary=True)
+
+    cursor.execute(
+        """
+        SELECT theater_id, name
+        FROM theater
+        ORDER BY name
+        """
+    )
+
+    rows = cursor.fetchall()
+
+    cursor.close()
+    connection.close()
+
+    return [{"id": row["theater_id"], "name": row["name"]} for row in rows]
+
 
 def fetch_genres():
     connection = get_db_connection()
@@ -1153,23 +1179,23 @@ def edit_deal(deal_id):
 
     if not name or not discount_percent or not valid_until:
         flash("Please fill all required deal fields.", "error")
-        return redirect(url_for("admin.dashboard"))
+        return redirect(url_for("admin.dashboard", tab="business"))
 
     try:
         discount_percent = float(discount_percent)
     except ValueError:
         flash("Discount percent must be a valid number.", "error")
-        return redirect(url_for("admin.dashboard"))
+        return redirect(url_for("admin.dashboard", tab="business"))
 
     if discount_percent < 0 or discount_percent > 100:
         flash("Discount percent must be between 0 and 100.", "error")
-        return redirect(url_for("admin.dashboard"))
+        return redirect(url_for("admin.dashboard", tab="business"))
 
     connection = get_db_connection()
 
     if connection is None:
         flash("Database connection failed.", "error")
-        return redirect(url_for("admin.dashboard"))
+        return redirect(url_for("admin.dashboard", tab="business"))
 
     cursor = connection.cursor(dictionary=True)
 
@@ -1187,7 +1213,7 @@ def edit_deal(deal_id):
 
         if not existing_deal:
             flash("Deal not found.", "error")
-            return redirect(url_for("admin.dashboard"))
+            return redirect(url_for("admin.dashboard", tab="business"))
 
         cursor.execute(
             """
@@ -1203,7 +1229,7 @@ def edit_deal(deal_id):
 
         if duplicate_deal:
             flash("Another deal already uses this name.", "error")
-            return redirect(url_for("admin.dashboard"))
+            return redirect(url_for("admin.dashboard", tab="business"))
 
         cursor.execute(
             """
@@ -1233,7 +1259,7 @@ def edit_deal(deal_id):
         cursor.close()
         connection.close()
 
-    return redirect(url_for("admin.dashboard"))
+    return redirect(url_for("admin.dashboard", tab="business"))
 
 def fetch_analytics_summary():
     connection = get_db_connection()
@@ -1385,20 +1411,20 @@ def edit_consumable(consumable_id):
 
     if not name or not unit_price or not stock_quantity:
         flash("Please fill all required consumable fields.", "error")
-        return redirect(url_for("admin.dashboard"))
+        return redirect(url_for("admin.dashboard", tab="business"))
 
     try:
         unit_price = float(unit_price)
         stock_quantity = int(stock_quantity)
     except ValueError:
         flash("Price and stock quantity must be valid numbers.", "error")
-        return redirect(url_for("admin.dashboard"))
+        return redirect(url_for("admin.dashboard", tab="business"))
 
     connection = get_db_connection()
 
     if connection is None:
         flash("Database connection failed.", "error")
-        return redirect(url_for("admin.dashboard"))
+        return redirect(url_for("admin.dashboard", tab="business"))
 
     cursor = connection.cursor(dictionary=True)
 
@@ -1416,7 +1442,7 @@ def edit_consumable(consumable_id):
 
         if not existing_item:
             flash("Consumable not found.", "error")
-            return redirect(url_for("admin.dashboard"))
+            return redirect(url_for("admin.dashboard", tab="business"))
 
         cursor.execute(
             """
@@ -1432,7 +1458,7 @@ def edit_consumable(consumable_id):
 
         if duplicate_item:
             flash("Another consumable already uses this name.", "error")
-            return redirect(url_for("admin.dashboard"))
+            return redirect(url_for("admin.dashboard", tab="business"))
 
         cursor.execute(
             """
@@ -1462,7 +1488,7 @@ def edit_consumable(consumable_id):
         cursor.close()
         connection.close()
 
-    return redirect(url_for("admin.dashboard"))
+    return redirect(url_for("admin.dashboard", tab="business"))
 
 def get_vip_tier_info():
     return {
@@ -1486,23 +1512,23 @@ def add_deal():
 
     if not name or not discount_percent or not valid_until:
         flash("Please fill all required deal fields.", "error")
-        return redirect(url_for("admin.dashboard"))
+        return redirect(url_for("admin.dashboard", tab="business"))
 
     try:
         discount_percent = float(discount_percent)
     except ValueError:
         flash("Discount percent must be a valid number.", "error")
-        return redirect(url_for("admin.dashboard"))
+        return redirect(url_for("admin.dashboard", tab="business"))
 
     if discount_percent < 0 or discount_percent > 100:
         flash("Discount percent must be between 0 and 100.", "error")
-        return redirect(url_for("admin.dashboard"))
+        return redirect(url_for("admin.dashboard", tab="business"))
 
     connection = get_db_connection()
 
     if connection is None:
         flash("Database connection failed.", "error")
-        return redirect(url_for("admin.dashboard"))
+        return redirect(url_for("admin.dashboard", tab="business"))
 
     cursor = connection.cursor(dictionary=True)
 
@@ -1520,7 +1546,7 @@ def add_deal():
 
         if existing_deal:
             flash("This deal already exists.", "error")
-            return redirect(url_for("admin.dashboard"))
+            return redirect(url_for("admin.dashboard", tab="business"))
 
         cursor.execute(
             """
@@ -1547,7 +1573,7 @@ def add_deal():
         cursor.close()
         connection.close()
 
-    return redirect(url_for("admin.dashboard"))
+    return redirect(url_for("admin.dashboard", tab="business"))
 
 def fetch_vip_spenders():
     connection = get_db_connection()
