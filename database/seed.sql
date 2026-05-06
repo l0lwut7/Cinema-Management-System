@@ -115,7 +115,7 @@ INSERT INTO CUSTOMER (user_id, birth_date, loyalty_points, membership_tier) VALU
 INSERT INTO EMPLOYEE (user_id, role, salary, account_status, auth_level, work_shift, theater_id) VALUES
 (4, 'System Admin', 8500.00, 'Active', 3, 'All', NULL),                 -- Diana: Full Admin (Auth 3)
 (5, 'Ticket Counter', 3500.00, 'Active', 1, 'Morning', 1),              -- Evan: Active Staff at Mavibahçe
-(6, 'Usher', 3000.00, 'Pending', 1, 'Evening', 2);                      -- Fiona: Pending Admin Approval!
+(6, 'Usher', 3000.00, 'Pending', 1, 'Evening', 2),                    -- Fiona: Pending Admin Approval!
 (7, 'General Manager', 9000.00, 'Active', 3, 'All', NULL);             -- Nolan: Full Admin (Auth 3)
 
 -- ------------------------------------------------------------------------------
