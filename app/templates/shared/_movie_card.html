@@ -38,7 +38,7 @@
         <h3 class="font-heading text-xl font-semibold mb-1">{{ movie.title }}</h3>
         <p class="text-cinema-muted text-sm mb-4">{{ movie.genres }}</p>
         {% if show_book_button %}
-            <a href="{{ movie.book_url }}" class="block w-full bg-cinema-primary hover:bg-red-700 text-white py-2.5 rounded-lg font-semibold transition-all text-center">Book Now</a>
+            <a href="{{ url_for('booking.booking', movie_id=movie.id) }}" class="block w-full bg-cinema-primary hover:bg-red-700 text-white py-2.5 rounded-lg font-semibold transition-all text-center">Book Now</a>
         {% else %}
             <a href="{{ movie.detail_url }}" class="block w-full bg-cinema-primary hover:bg-red-700 text-white py-2.5 rounded-lg font-semibold transition-all text-center">View Details</a>
         {% endif %}
