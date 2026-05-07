@@ -1663,14 +1663,15 @@ def fetch_analytics_summary(revenue_period="this_month", occupancy_period="this_
         revenue_row = cursor.fetchone()
         total_revenue = float(revenue_row["total_revenue"] or 0)
 
-        # Tickets Sold — join through booking to get creation date
+        # Tickets Sold — only count tickets from paid/completed bookings
         tkt_clause = _period_sql("b.created_at", tickets_period)
         cursor.execute(
             f"""
             SELECT COUNT(t.ticket_id) AS tickets_sold
             FROM ticket t
             JOIN booking b ON t.booking_id = b.booking_id
-            WHERE 1=1
+            INNER JOIN payment p ON b.booking_id = p.booking_id
+            WHERE p.status IN ('Paid', 'Completed')
             {tkt_clause}
             """
         )
