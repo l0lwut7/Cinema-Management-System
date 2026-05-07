@@ -1,5 +1,6 @@
-from flask import Blueprint, render_template, session, redirect, url_for, request, flash
+from flask import Blueprint, render_template, session, redirect, url_for, request, flash, jsonify
 from werkzeug.security import check_password_hash, generate_password_hash
+from datetime import datetime, timedelta
 
 from app.db import get_db_connection
 
@@ -179,37 +180,24 @@ def update_profile():
 def get_user_booking_stats(user_id):
     connection = get_db_connection()
     if connection is None:
-        return {
-            "total_bookings": 0,
-            "movies_watched": 0,
-            "total_spent": 0.00
-        }
+        return {"total_bookings": 0, "total_spent": 0.00}
 
     cursor = connection.cursor(dictionary=True)
-
     cursor.execute(
         """
         SELECT
-            COUNT(DISTINCT b.booking_id) AS total_bookings,
-            COALESCE(SUM(DISTINCT b.total_amount), 0) AS total_spent
+            COUNT(b.booking_id) AS total_bookings,
+            COALESCE(SUM(b.total_amount), 0) AS total_spent
         FROM booking b
-        LEFT JOIN ticket t
-            ON b.booking_id = t.booking_id
-        LEFT JOIN screening s
-            ON t.screening_id = s.screening_id
-        LEFT JOIN payment p
-            ON b.booking_id = p.booking_id
+        LEFT JOIN payment p ON b.booking_id = p.booking_id
         WHERE b.user_id = %s
           AND (p.status IS NULL OR p.status != 'Refunded')
         """,
         (user_id,)
     )
-
     stats = cursor.fetchone()
-
     cursor.close()
     connection.close()
-
     return {
         "total_bookings": stats["total_bookings"] or 0,
         "total_spent": float(stats["total_spent"] or 0)
@@ -223,10 +211,13 @@ def get_user_recent_bookings(user_id):
 
     cursor = connection.cursor(dictionary=True)
 
+    # Join via b.screening_id (snapshot) so movie/time info survives full refund ticket deletion.
+    # Remaining tickets shown via LEFT JOIN ticket.
     cursor.execute(
         """
         SELECT
             b.booking_id,
+            b.booking_code,
             b.created_at,
             b.total_amount,
             p.status AS payment_status,
@@ -240,27 +231,17 @@ def get_user_recent_bookings(user_id):
                 SEPARATOR ', '
             ) AS seats
         FROM booking b
-        JOIN ticket t
-            ON b.booking_id = t.booking_id
-        JOIN screening s
-            ON t.screening_id = s.screening_id
-        JOIN movie m
-            ON s.movie_id = m.movie_id
+        LEFT JOIN payment p ON b.booking_id = p.booking_id
+        LEFT JOIN screening s ON b.screening_id = s.screening_id
+        LEFT JOIN movie m ON s.movie_id = m.movie_id
         LEFT JOIN saloon sa
             ON s.theater_id = sa.theater_id
            AND s.saloon_number = sa.number
-        LEFT JOIN payment p
-            ON b.booking_id = p.booking_id
+        LEFT JOIN ticket t ON b.booking_id = t.booking_id
         WHERE b.user_id = %s
         GROUP BY
-            b.booking_id,
-            b.created_at,
-            b.total_amount,
-            p.status,
-            m.movie_id,
-            m.title,
-            s.start_time,
-            sa.type
+            b.booking_id, b.booking_code, b.created_at, b.total_amount,
+            p.status, m.movie_id, m.title, s.start_time, sa.type
         ORDER BY b.created_at DESC
         LIMIT 10
         """,
@@ -268,18 +249,17 @@ def get_user_recent_bookings(user_id):
     )
 
     bookings = cursor.fetchall()
-
     cursor.close()
     connection.close()
 
     for booking in bookings:
         start_time = booking["start_time"]
 
-        if hasattr(start_time, "strftime"):
+        if start_time and hasattr(start_time, "strftime"):
             booking["date_display"] = start_time.strftime("%b %d, %Y")
             booking["time_display"] = start_time.strftime("%I:%M %p").lstrip("0")
         else:
-            booking["date_display"] = str(start_time)
+            booking["date_display"] = "—"
             booking["time_display"] = ""
 
         payment_status = booking.get("payment_status")
@@ -288,7 +268,7 @@ def get_user_recent_bookings(user_id):
             booking["status"] = "Refunded"
             booking["status_class"] = "bg-gray-500/20 text-gray-400"
             booking["action"] = "none"
-        elif start_time and start_time > __import__("datetime").datetime.now():
+        elif start_time and start_time > datetime.now():
             booking["status"] = "Upcoming"
             booking["status_class"] = "bg-amber/20 text-amber"
             booking["action"] = "refund"
@@ -299,12 +279,12 @@ def get_user_recent_bookings(user_id):
 
         title = booking.get("movie_title") or "Movie"
         words = title.split()
-        if len(words) >= 2:
-            booking["movie_code"] = words[0][0].upper() + words[1][0].upper()
-        else:
-            booking["movie_code"] = title[:2].upper()
+        booking["movie_code"] = (
+            words[0][0].upper() + words[1][0].upper() if len(words) >= 2 else title[:2].upper()
+        )
 
         booking["total_amount"] = float(booking["total_amount"] or 0)
+        booking["booking_code"] = booking.get("booking_code") or booking["booking_id"]
 
     return bookings
 
@@ -380,86 +360,152 @@ def update_password():
         connection.close()
 
 
-@dashboard_bp.route("/dashboard/refund", methods=["POST"], strict_slashes=False)
-def process_refund():
+@dashboard_bp.route("/dashboard/booking-tickets/<int:booking_id>", strict_slashes=False)
+def get_booking_tickets(booking_id):
+    """Return the active ticket list for a booking owned by the current user."""
     if "user_id" not in session:
-        return {'success': False, 'message': 'Not authenticated'}, 401
+        return jsonify({"error": "Not authenticated"}), 401
+
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({"error": "Database error"}), 500
 
     try:
-        import json
-        from datetime import datetime, timedelta
-        
-        data = json.loads(request.data) if isinstance(request.data, bytes) else request.get_json()
-        booking_id = data.get('booking_id')
-        reason = data.get('reason')
+        cursor = conn.cursor(dictionary=True)
 
-        if not booking_id or not reason:
-            return {'success': False, 'message': 'Missing booking_id or reason'}, 400
+        cursor.execute(
+            """
+            SELECT b.booking_id, b.booking_code, b.total_amount,
+                   m.title AS movie_name, s.start_time, s.base_price
+            FROM booking b
+            JOIN screening s ON b.screening_id = s.screening_id
+            JOIN movie m ON s.movie_id = m.movie_id
+            WHERE b.booking_id = %s AND b.user_id = %s
+            """,
+            (booking_id, session["user_id"])
+        )
+        booking = cursor.fetchone()
 
-        connection = get_db_connection()
-        if connection is None:
-            return {'success': False, 'message': 'Database connection failed'}, 500
+        if not booking:
+            return jsonify({"error": "Booking not found"}), 404
 
-        cursor = connection.cursor(dictionary=True)
+        start = booking["start_time"]
+        one_hour_before = start - timedelta(hours=1)
+        if datetime.now() >= one_hour_before:
+            return jsonify({"error": "Refund window has closed (must request at least 1 hour before screening)"}), 403
 
-        try:
-            # Fetch booking and screening info
-            cursor.execute(
-                """
-                SELECT b.booking_id, b.user_id, s.start_time
-                FROM booking b
-                JOIN ticket t ON b.booking_id = t.booking_id
-                JOIN screening s ON t.screening_id = s.screening_id
-                WHERE b.booking_id = %s AND b.user_id = %s
-                LIMIT 1
-                """,
-                (booking_id, session["user_id"])
-            )
-            booking = cursor.fetchone()
+        cursor.execute(
+            """
+            SELECT ticket_code, row_letter, seat_number
+            FROM ticket
+            WHERE booking_id = %s
+            ORDER BY row_letter, seat_number
+            """,
+            (booking_id,)
+        )
+        tickets = [
+            {"ticket_code": t["ticket_code"], "seat": f"{t['row_letter']}{t['seat_number']}"}
+            for t in cursor.fetchall()
+        ]
 
-            if not booking:
-                return {'success': False, 'message': 'Booking not found'}, 404
+        return jsonify({
+            "booking_code":  booking.get("booking_code") or booking_id,
+            "movie":         booking["movie_name"],
+            "start_display": start.strftime("%b %d, %Y • %I:%M %p").lstrip("0") if hasattr(start, "strftime") else str(start),
+            "total_amount":  float(booking["total_amount"]),
+            "base_price":    float(booking["base_price"]),
+            "tickets":       tickets,
+        })
+    finally:
+        cursor.close()
+        conn.close()
 
-            start_time = booking["start_time"]
-            now = datetime.now()
-            one_hour_before = start_time - timedelta(hours=1)
 
-            # Check if refund is eligible: must be BEFORE 1 hour before screening
-            if now >= one_hour_before:
-                return {'success': False, 'message': 'Refund window has closed. Refunds must be requested at least 1 hour before the screening.'}, 403
+@dashboard_bp.route("/dashboard/refund", methods=["POST"], strict_slashes=False)
+def process_refund():
+    """Partial or full refund: accept a list of ticket_codes to cancel."""
+    if "user_id" not in session:
+        return jsonify({"success": False, "message": "Not authenticated"}), 401
 
-            # Update payment status to Refunded
-            cursor.execute(
-                """
-                UPDATE payment
-                SET status = 'Refunded'
-                WHERE booking_id = %s
-                """,
-                (booking_id,)
-            )
+    data = request.get_json()
+    ticket_codes = data.get("ticket_codes", []) if data else []
+    reason = (data.get("reason") or "").strip() if data else ""
 
-            # Update ticket type to indicate refunded
-            cursor.execute(
-                """
-                UPDATE ticket
-                SET ticket_type = 'Refunded'
-                WHERE booking_id = %s
-                """,
-                (booking_id,)
-            )
+    if not ticket_codes:
+        return jsonify({"success": False, "message": "No tickets selected"}), 400
 
-            connection.commit()
-            return {'success': True, 'message': 'Refund processed successfully'}, 200
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({"success": False, "message": "Database connection failed"}), 500
 
-        except Exception as e:
-            connection.rollback()
-            print(f"Refund processing error: {e}")
-            return {'success': False, 'message': 'Error processing refund'}, 500
+    cursor = None
+    try:
+        cursor = conn.cursor(dictionary=True)
 
-        finally:
-            cursor.close()
-            connection.close()
+        # Validate all tickets belong to this user's booking and check refund window
+        placeholders = ", ".join(["%s"] * len(ticket_codes))
+        cursor.execute(
+            f"""
+            SELECT t.ticket_id, t.ticket_code, t.booking_id,
+                   t.row_letter, t.seat_number, s.start_time, s.base_price
+            FROM ticket t
+            JOIN booking b ON t.booking_id = b.booking_id
+            JOIN screening s ON t.screening_id = s.screening_id
+            WHERE t.ticket_code IN ({placeholders}) AND b.user_id = %s
+            """,
+            (*ticket_codes, session["user_id"])
+        )
+        validated = cursor.fetchall()
+
+        if len(validated) != len(ticket_codes):
+            return jsonify({"success": False, "message": "One or more tickets not found or not yours"}), 404
+
+        # Refund window check — use the screening time from the first ticket
+        start_time     = validated[0]["start_time"]
+        one_hour_before = start_time - timedelta(hours=1)
+        if datetime.now() >= one_hour_before:
+            return jsonify({"success": False, "message": "Refund window has closed (must request at least 1 hour before screening)"}), 403
+
+        booking_id    = validated[0]["booking_id"]
+        base_price    = float(validated[0]["base_price"])
+        refund_amount = base_price * len(validated)
+
+        # Delete selected tickets (frees the seats for re-booking)
+        ids_to_delete = [t["ticket_id"] for t in validated]
+        del_ph = ", ".join(["%s"] * len(ids_to_delete))
+        cursor.execute(f"DELETE FROM ticket WHERE ticket_id IN ({del_ph})", ids_to_delete)
+
+        # Reduce booking total
+        cursor.execute(
+            "UPDATE booking SET total_amount = GREATEST(0, total_amount - %s) WHERE booking_id = %s",
+            (refund_amount, booking_id)
+        )
+
+        # If no tickets remain mark payment fully refunded
+        cursor.execute("SELECT COUNT(*) AS remaining FROM ticket WHERE booking_id = %s", (booking_id,))
+        remaining = cursor.fetchone()["remaining"]
+        if remaining == 0:
+            cursor.execute("UPDATE payment SET status = 'Refunded' WHERE booking_id = %s", (booking_id,))
+
+        conn.commit()
+        return jsonify({"success": True, "message": "Refund processed successfully"}), 200
 
     except Exception as e:
-        print(f"Refund endpoint error: {e}")
-        return {'success': False, 'message': 'Server error'}, 500
+        print(f"Customer refund error: {e}")
+        try:
+            conn.rollback()
+        except Exception:
+            pass
+        return jsonify({"success": False, "message": "Error processing refund"}), 500
+
+    finally:
+        if cursor:
+            try:
+                cursor.close()
+            except Exception:
+                pass
+        if conn:
+            try:
+                conn.close()
+            except Exception:
+                pass

@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, abort, jsonify, session, redirect, url_for
 from app.db import get_db_connection
+from app.utils import generate_booking_code, make_ticket_code
 
 
 
@@ -501,13 +502,14 @@ def create_booking():
             )
 
         # 4. Booking kaydı oluştur
+        booking_code = generate_booking_code(cursor)
         cursor.execute(
             """
             INSERT INTO booking
-            (user_id, deal_id, created_at, total_amount)
-            VALUES (%s, NULL, NOW(), %s)
+            (user_id, deal_id, created_at, total_amount, booking_code, screening_id)
+            VALUES (%s, NULL, NOW(), %s, %s, %s)
             """,
-            (user_id, total_amount)
+            (user_id, total_amount, booking_code, screening_id)
         )
 
         booking_id = cursor.lastrowid
@@ -542,6 +544,7 @@ def create_booking():
         for seat in selected_seats:
             row_letter = seat.get("row")
             seat_number = seat.get("number")
+            ticket_code = make_ticket_code(booking_code, row_letter, seat_number)
 
             cursor.execute(
                 """
@@ -554,9 +557,10 @@ def create_booking():
                     row_letter,
                     seat_number,
                     ticket_type,
+                    ticket_code,
                     scanned_at
                 )
-                VALUES (%s, %s, %s, %s, %s, %s, %s, NULL)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, NULL)
                 """,
                 (
                     booking_id,
@@ -565,7 +569,8 @@ def create_booking():
                     saloon_number,
                     row_letter,
                     seat_number,
-                    "Standard"
+                    "Standard",
+                    ticket_code,
                 )
             )
 

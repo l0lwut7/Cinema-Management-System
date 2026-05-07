@@ -56,30 +56,81 @@ function togglePassword(inputId, button) {
   }
 }
 
-// Refund Modal with dynamic booking info
-function showRefundModal(button) {
-  const bookingId = button.getAttribute('data-booking-id');
-  const movieTitle = button.getAttribute('data-movie-title');
-  const seats = button.getAttribute('data-seats');
-  const amount = button.getAttribute('data-amount');
-  const startTime = button.getAttribute('data-start-time');
+// ── Partial Refund Modal ──────────────────────────────────────────────────────
 
-  // Populate modal with booking data
+async function showRefundModal(button) {
+  const bookingId    = button.getAttribute('data-booking-id');
+  const movieTitle   = button.getAttribute('data-movie-title');
+  const movieCode    = button.getAttribute('data-movie-code');
+  const bookingCode  = button.getAttribute('data-booking-code');
+  const startTime    = button.getAttribute('data-start-time');
+
+  // Reset modal state
   document.getElementById('refund-booking-id').value = bookingId;
-  document.getElementById('modal-movie-title').textContent = movieTitle;
-  document.getElementById('modal-seats').textContent = `Seats: ${seats}`;
-  document.getElementById('modal-amount').textContent = `$${parseFloat(amount).toFixed(2)}`;
-  
+  document.getElementById('modal-movie-title').textContent  = movieTitle || '—';
+  document.getElementById('modal-movie-code').textContent   = movieCode  || '—';
+  document.getElementById('modal-booking-code').textContent = bookingCode ? `#${bookingCode}` : '—';
+
   if (startTime) {
     const dt = new Date(startTime);
-    const dateStr = dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    const timeStr = dt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-    document.getElementById('modal-datetime').textContent = `${dateStr} • ${timeStr}`;
+    document.getElementById('modal-datetime').textContent =
+      dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + ' • ' +
+      dt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
   }
+
+  const loadingEl   = document.getElementById('modal-loading');
+  const listEl      = document.getElementById('modal-ticket-list');
+  const formFieldsEl= document.getElementById('modal-form-fields');
+  const errorEl     = document.getElementById('modal-error');
+  const submitBtn   = document.getElementById('refund-submit-btn');
+  const checkboxes  = document.getElementById('modal-seat-checkboxes');
+
+  loadingEl.classList.remove('hidden');
+  listEl.classList.add('hidden');
+  formFieldsEl.classList.add('hidden');
+  errorEl.classList.add('hidden');
+  submitBtn.disabled = true;
+  if (checkboxes) checkboxes.innerHTML = '';
 
   const modal = document.getElementById('refund-modal');
   modal.classList.remove('hidden');
   modal.classList.add('flex');
+
+  try {
+    const res  = await fetch(`/dashboard/booking-tickets/${bookingId}`);
+    const data = await res.json();
+
+    loadingEl.classList.add('hidden');
+
+    if (!res.ok || data.error) {
+      errorEl.textContent = data.error || 'Could not load tickets.';
+      errorEl.classList.remove('hidden');
+      return;
+    }
+
+    if (!data.tickets || data.tickets.length === 0) {
+      errorEl.textContent = 'No active tickets found for this booking.';
+      errorEl.classList.remove('hidden');
+      return;
+    }
+
+    checkboxes.innerHTML = data.tickets.map(t => `
+      <label class="flex items-center gap-3 p-3 bg-cinema-bg rounded-xl cursor-pointer hover:bg-cinema-surfaceLight/30 transition-colors">
+        <input type="checkbox" name="refund_ticket" value="${t.ticket_code}"
+               onchange="updateRefundSubmitBtn()"
+               class="w-4 h-4 rounded border-white/20 bg-cinema-bg text-cinema-primary focus:ring-cinema-primary flex-shrink-0">
+        <span class="font-mono font-bold text-white text-sm">Seat ${t.seat}</span>
+        <span class="text-xs text-gray-500 ml-auto">${t.ticket_code}</span>
+      </label>`).join('');
+
+    listEl.classList.remove('hidden');
+    formFieldsEl.classList.remove('hidden');
+    document.getElementById('modal-select-all').checked = false;
+  } catch (err) {
+    loadingEl.classList.add('hidden');
+    errorEl.textContent = 'Network error: ' + err.message;
+    errorEl.classList.remove('hidden');
+  }
 }
 
 function hideRefundModal() {
@@ -88,40 +139,52 @@ function hideRefundModal() {
   modal.classList.remove('flex');
 }
 
-function submitRefund(event) {
+function toggleModalSelectAll(checked) {
+  document.querySelectorAll('input[name="refund_ticket"]').forEach(cb => { cb.checked = checked; });
+  updateRefundSubmitBtn();
+}
+
+function updateRefundSubmitBtn() {
+  const any = [...document.querySelectorAll('input[name="refund_ticket"]')].some(cb => cb.checked);
+  document.getElementById('refund-submit-btn').disabled = !any;
+}
+
+async function submitRefund(event) {
   event.preventDefault();
-  const bookingId = document.getElementById('refund-booking-id').value;
-  const reason = document.getElementById('refund-reason').value;
 
-  if (!reason) {
-    alert('Please select a refund reason.');
-    return;
-  }
+  const bookingId    = document.getElementById('refund-booking-id').value;
+  const reason       = document.getElementById('refund-reason').value;
+  const ticketCodes  = [...document.querySelectorAll('input[name="refund_ticket"]:checked')]
+                         .map(cb => cb.value);
 
-  fetch('/dashboard/refund', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      booking_id: bookingId,
-      reason: reason
-    })
-  })
-  .then(response => response.json())
-  .then(data => {
+  if (!reason) { alert('Please select a refund reason.'); return; }
+  if (!ticketCodes.length) { alert('Please select at least one seat to refund.'); return; }
+
+  const submitBtn = document.getElementById('refund-submit-btn');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Processing…';
+
+  try {
+    const res  = await fetch('/dashboard/refund', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ ticket_codes: ticketCodes, reason }),
+    });
+    const data = await res.json();
+
     if (data.success) {
       hideRefundModal();
-      alert('Refund requested successfully! You will receive confirmation via email.');
       location.reload();
     } else {
-      alert('Error: ' + (data.message || 'Could not process refund.'));
+      alert('Refund failed: ' + (data.message || 'Unknown error'));
+      submitBtn.disabled   = false;
+      submitBtn.textContent = 'Confirm Refund';
     }
-  })
-  .catch(error => {
-    console.error('Error:', error);
-    alert('An error occurred while processing your refund.');
-  });
+  } catch (err) {
+    alert('Network error: ' + err.message);
+    submitBtn.disabled   = false;
+    submitBtn.textContent = 'Confirm Refund';
+  }
 }
 
 // Dashboard Password Strength Indicator
