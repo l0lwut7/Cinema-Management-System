@@ -249,6 +249,29 @@ if (movieCancelButton) {
         setMovieFormToAddMode();
     });
 }
+
+// ── Upcoming Screenings: delete button ───────────────────────────────────────
+const upcomingScreeningsList = document.getElementById("upcoming-screenings-list");
+if (upcomingScreeningsList) {
+    upcomingScreeningsList.addEventListener("click", (e) => {
+        const deleteBtn = e.target.closest(".btn-delete-screening");
+        if (!deleteBtn) return;
+
+        const row = deleteBtn.closest(".screening-row");
+        if (!row) return;
+
+        const movieTitle = row.dataset.movie || "this screening";
+        const screeningId = row.dataset.id;
+
+        if (!confirm(`Are you sure you want to delete the screening for "${movieTitle}"? This action cannot be undone.`)) return;
+
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = `/admin/screenings/delete/${screeningId}`;
+        document.body.appendChild(form);
+        form.submit();
+    });
+}
     // Sidebar Navigation
     const sidebarTabs = document.querySelectorAll('.sidebar-tab');
     const contentPanels = document.querySelectorAll('.content-panel');
