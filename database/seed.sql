@@ -122,7 +122,7 @@ INSERT INTO EMPLOYEE (user_id, role, salary, account_status, auth_level, work_sh
 -- 4. MOVIE CATALOG & METADATA (Discovery Flow)
 -- ------------------------------------------------------------------------------
 -- Lookup Tables
-INSERT INTO GENRE (genre_id, name) VALUES (1, 'Sci-Fi'), (2, 'Action'), (3, 'Drama'), (4, 'Comedy');
+INSERT INTO GENRE (genre_id, name) VALUES (1, 'Sci-Fi'), (2, 'Action'), (3, 'Drama'), (4, 'Comedy'), (5, 'Horror'), (6, 'Fantasy'), (7, 'Romance'), (8, 'Thriller'), (9, 'Animation'), (10, 'Adventure');
 INSERT INTO FORMAT (format_id, name) VALUES (1, '2D'), (2, '3D'), (3, 'IMAX');
 
 -- Movie 1: "Vizyondaki" (Now Showing)

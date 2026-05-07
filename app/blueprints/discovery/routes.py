@@ -208,7 +208,7 @@ def fetch_now_showing_movies():
     cursor = connection.cursor(dictionary=True)
 
     query = """
-        SELECT DISTINCT
+        SELECT
             m.movie_id AS id,
             m.title,
             m.director,
@@ -216,12 +216,12 @@ def fetch_now_showing_movies():
             m.rating_age,
             m.release_date,
             m.summary AS synopsis,
+            m.poster_url,
             COALESCE(ROUND(AVG(r.rating), 1), 0) AS avg_rating
         FROM movie m
-        JOIN movie_run mr ON m.movie_id = mr.movie_id
         LEFT JOIN review r ON r.movie_id = m.movie_id
-        WHERE CURDATE() BETWEEN mr.start_date AND mr.end_date
-        GROUP BY m.movie_id, m.title, m.director, m.duration_mins, m.rating_age, m.release_date, m.summary
+        WHERE m.visibility_status = 'now_showing'
+        GROUP BY m.movie_id, m.title, m.director, m.duration_mins, m.rating_age, m.release_date, m.summary, m.poster_url
         ORDER BY m.release_date DESC
     """
 
@@ -231,6 +231,7 @@ def fetch_now_showing_movies():
     cursor.close()
     connection.close()
 
+    _fallback = "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1200&q=80"
     for movie in movies:
         movie["avg_rating"] = float(movie["avg_rating"] or 0)
         movie["rating"] = movie["avg_rating"]
@@ -240,7 +241,8 @@ def fetch_now_showing_movies():
         movie["runtime_label"] = str(movie["duration"]) + " min"
         movie["meta"] = movie["director"]
         movie["badge"] = "Now Showing"
-        movie["image_url"] = "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1200&q=80"
+        movie["image_url"] = movie.get("poster_url") or _fallback
+        movie["is_favorited"] = False
         movie["detail_url"] = url_for("discovery.movie_detail", movie_id=movie["id"])
 
     return movies
@@ -263,11 +265,12 @@ def fetch_coming_soon_movies():
             m.rating_age,
             m.release_date,
             m.summary AS synopsis,
+            m.poster_url,
             COALESCE(ROUND(AVG(r.rating), 1), 0) AS avg_rating
         FROM movie m
         LEFT JOIN review r ON r.movie_id = m.movie_id
-        WHERE m.release_date > CURDATE()
-        GROUP BY m.movie_id, m.title, m.director, m.duration_mins, m.rating_age, m.release_date, m.summary
+        WHERE m.visibility_status = 'coming_soon'
+        GROUP BY m.movie_id, m.title, m.director, m.duration_mins, m.rating_age, m.release_date, m.summary, m.poster_url
         ORDER BY m.release_date ASC
     """
 
@@ -277,6 +280,7 @@ def fetch_coming_soon_movies():
     cursor.close()
     connection.close()
 
+    _fallback = "https://images.unsplash.com/photo-1524985069026-dd778a71c7b4?w=1200&q=80"
     for movie in movies:
         movie["avg_rating"] = float(movie["avg_rating"] or 0)
         movie["rating"] = movie["avg_rating"]
@@ -286,7 +290,8 @@ def fetch_coming_soon_movies():
         movie["runtime_label"] = "TBA" if movie["duration"] is None else str(movie["duration"]) + " min"
         movie["meta"] = movie["director"]
         movie["badge"] = "Coming Soon"
-        movie["image_url"] = "https://images.unsplash.com/photo-1524985069026-dd778a71c7b4?w=1200&q=80"
+        movie["image_url"] = movie.get("poster_url") or _fallback
+        movie["is_favorited"] = False
         movie["detail_url"] = url_for("discovery.movie_detail", movie_id=movie["id"])
 
     return movies
@@ -309,13 +314,10 @@ def fetch_movie_by_id(movie_id):
             m.rating_age,
             m.release_date,
             m.summary AS synopsis,
+            m.poster_url,
+            m.visibility_status,
             GROUP_CONCAT(DISTINCT g.name SEPARATOR ', ') AS genres,
-            GROUP_CONCAT(DISTINCT f.name SEPARATOR ', ') AS format,
-            EXISTS(
-                SELECT 1 FROM movie_run mr
-                WHERE mr.movie_id = m.movie_id
-                  AND CURDATE() BETWEEN mr.start_date AND mr.end_date
-            ) AS is_now_showing
+            GROUP_CONCAT(DISTINCT f.name SEPARATOR ', ') AS format
         FROM movie m
         LEFT JOIN movie_genre mg ON m.movie_id = mg.movie_id
         LEFT JOIN genre g ON mg.genre_id = g.genre_id
@@ -334,17 +336,21 @@ def fetch_movie_by_id(movie_id):
     if movie is None:
         abort(404)
 
-    if movie.get("is_now_showing"):
+    vs = movie.get("visibility_status", "catalog_only")
+    if vs == "now_showing":
         movie["status"] = "Now Showing"
-    else:
+    elif vs == "coming_soon":
         movie["status"] = "Coming Soon"
+    else:
+        movie["status"] = "Catalog Only"
 
     movie["rating"] = 0
     movie["avg_rating"] = 0
     movie["runtime_label"] = str(movie["duration"]) + " min"
     movie["meta"] = movie["director"]
     movie["badge"] = movie["status"]
-    movie["image_url"] = "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1200&q=80"
+    movie["image_url"] = movie.get("poster_url") or "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1200&q=80"
+    movie["is_favorited"] = False
     movie["detail_url"] = url_for("discovery.movie_detail", movie_id=movie["id"])
 
     return movie
@@ -419,7 +425,11 @@ def get_base_context(active_page, title):
 def home():
     now_showing = get_now_showing_movies()
     coming_soon = get_coming_soon_movies()
-    featured_movie = now_showing[0]
+
+    # Use first now-showing movie as hero; fall back to first coming-soon movie.
+    # If both lists are empty the template gets None and renders without a hero.
+    all_movies = now_showing + coming_soon
+    featured_movie = all_movies[0] if all_movies else None
 
     context = get_base_context("home", "CineMax - Home")
     context["featured_movie"] = featured_movie

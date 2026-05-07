@@ -4,24 +4,27 @@
     <h2 class="font-display text-3xl font-bold text-white tracking-wide">CATALOG MANAGEMENT</h2>
     <p class="text-slate-400 mt-1">Manage movies, genres, and metadata</p>
   </header>
-  
+
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
     <!-- Movie Editor Form -->
     <div class="bg-slate-800 rounded-xl border border-slate-700 p-6">
 <h3 id="movie-form-title" class="font-display text-lg font-semibold text-white mb-6">MOVIE EDITOR</h3>
-<form id="movie-form" method="POST" action="{{ url_for('admin.add_movie') }}" class="space-y-6">        <!-- Poster Image Upload -->
+<form id="movie-form" method="POST" action="{{ url_for('admin.add_movie') }}" enctype="multipart/form-data" class="space-y-6">        <!-- Poster Image Upload -->
         <div class="flex items-center gap-6">
-          <label class="w-24 h-36 bg-slate-700 border-2 border-dashed border-slate-600 rounded-lg flex flex-col items-center justify-center text-slate-400 hover:text-white hover:border-slate-500 hover:bg-slate-700/50 transition-colors cursor-pointer group">
-            <svg class="w-8 h-8 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-            <span class="text-xs font-medium">Poster</span>
-            <input type="file" class="hidden" accept="image/*">
+          <label class="relative w-24 h-36 bg-slate-700 border-2 border-dashed border-slate-600 rounded-lg flex flex-col items-center justify-center text-slate-400 hover:text-white hover:border-slate-500 hover:bg-slate-700/50 transition-colors cursor-pointer group overflow-hidden">
+            <img id="movie-poster-preview" src="" alt="Poster preview" class="absolute inset-0 w-full h-full object-cover rounded-lg hidden">
+            <div id="movie-poster-placeholder" class="flex flex-col items-center justify-center pointer-events-none">
+              <svg class="w-8 h-8 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+              <span class="text-xs font-medium">Poster</span>
+            </div>
+            <input id="movie-poster-input" type="file" name="poster" class="hidden" accept="image/*">
           </label>
           <div class="flex-1">
             <label class="block text-sm font-medium text-slate-300 mb-2">Movie Title <span class="text-crimson">*</span></label>
 <input id="movie-title" type="text" name="title" required placeholder="Enter movie title"
        class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400">          </div>
         </div>
-        
+
         <div>
           <label class="block text-sm font-medium text-slate-300 mb-2">Genres <span class="text-crimson">*</span></label>
           <p class="text-slate-400 text-xs mb-3">Select all that apply</p>
@@ -37,12 +40,12 @@
   {% endfor %}
 </div>
         </div>
-        
+
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium text-slate-300 mb-2">Duration (min) <span class="text-crimson">*</span></label>
-<input id="movie-duration" type="number" name="duration_mins" required placeholder="e.g. 120"
-       class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400">          </div>
+<input id="movie-duration" type="text" inputmode="numeric" name="duration_mins" required placeholder="e.g. 120"
+       class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none">          </div>
           <div>
             <label class="block text-sm font-medium text-slate-300 mb-2">Available Formats</label>
             <div class="flex flex-wrap gap-2" id="format-chips">
@@ -69,10 +72,17 @@
 
   <div>
     <label class="block text-sm font-medium text-slate-300 mb-2">
-      Rating Age <span class="text-crimson">*</span>
+      Rating <span class="text-crimson">*</span>
     </label>
-    <input id="movie-rating-age" type="number" name="rating_age" required placeholder="e.g. 13"
-           class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400">
+    <div class="flex flex-wrap gap-2" id="rating-chips">
+      <button type="button" class="chip px-4 py-2 border border-slate-600 rounded-full text-sm text-slate-300 cursor-pointer" data-value="0">G</button>
+      <button type="button" class="chip px-4 py-2 border border-slate-600 rounded-full text-sm text-slate-300 cursor-pointer" data-value="7">PG</button>
+      <button type="button" class="chip px-4 py-2 border border-slate-600 rounded-full text-sm text-slate-300 cursor-pointer" data-value="13">PG-13</button>
+      <button type="button" class="chip px-4 py-2 border border-slate-600 rounded-full text-sm text-slate-300 cursor-pointer" data-value="17">R</button>
+      <button type="button" class="chip px-4 py-2 border border-slate-600 rounded-full text-sm text-slate-300 cursor-pointer" data-value="18">NC-17</button>
+    </div>
+    <input type="hidden" id="movie-rating-age" name="rating_age">
+    <p id="rating-error" class="text-crimson text-xs mt-1 hidden">Please select a rating</p>
   </div>
 
   <div>
@@ -83,12 +93,43 @@
            class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400">
   </div>
 </div>
-        
+
+        <!-- Visibility Status -->
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-2">
+            Visibility Status <span class="text-crimson">*</span>
+          </label>
+          <select id="movie-visibility-status" name="visibility_status"
+                  class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white">
+            <option value="catalog_only">Catalog Only — hidden from customers</option>
+            <option value="now_showing">Now Showing — appears on customer home &amp; Now Showing page</option>
+            <option value="coming_soon">Coming Soon — appears on Coming Soon page</option>
+          </select>
+        </div>
+
+        <!-- Cast Members -->
+        <div>
+          <label class="block text-sm font-medium text-slate-300 mb-2">Cast Members</label>
+          <div id="cast-inputs-container" class="space-y-2">
+            <div class="cast-input-row flex gap-2">
+              <input type="text" name="cast[]" placeholder="e.g. Timothée Chalamet"
+                     class="flex-1 bg-slate-700 border border-slate-600 rounded-lg px-4 py-2.5 text-white placeholder-slate-400 text-sm">
+            </div>
+          </div>
+          <button type="button" id="btn-add-cast"
+                  class="mt-2 flex items-center gap-1 text-sm text-sky hover:text-sky/80 font-medium transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            Add Cast Member
+          </button>
+        </div>
+
         <div>
           <label class="block text-sm font-medium text-slate-300 mb-2">Synopsis</label>
 <textarea id="movie-summary" name="summary" rows="4" placeholder="Enter movie synopsis..."
           class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 resize-none"></textarea>        </div>
-        
+
         <div class="flex gap-3">
 <button id="movie-submit-button" type="submit" class="btn-primary flex-1 px-6 py-3 rounded-lg text-white font-medium">
   Save Movie
@@ -98,16 +139,26 @@
 </button>        </div>
       </form>
     </div>
-    
+
     <!-- Movie List -->
     <div class="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
       <div class="p-6 border-b border-slate-700 flex items-center justify-between">
         <h3 class="font-display text-lg font-semibold text-white">MOVIE CATALOG</h3>
         <span class="text-slate-400 text-sm">{{ movies|length }} movies</span>
       </div>
-      <div class="divide-y divide-slate-700 max-h-[600px] overflow-y-auto">
+      <div class="divide-y divide-slate-700 max-h-[600px] overflow-y-auto" id="movie-catalog-list">
         {% for movie in movies %}
-<div class="movie-list-item p-4 flex items-center justify-between hover:bg-slate-700/50 transition-colors cursor-pointer"
+        {% if movie.visibility_status == 'now_showing' %}
+          {% set status_color = 'emerald' %}
+          {% set status_label = 'Now Showing' %}
+        {% elif movie.visibility_status == 'coming_soon' %}
+          {% set status_color = 'sky' %}
+          {% set status_label = 'Coming Soon' %}
+        {% else %}
+          {% set status_color = 'slate-500' %}
+          {% set status_label = 'Catalog Only' %}
+        {% endif %}
+<div class="movie-list-item p-4 flex items-center gap-4 hover:bg-slate-700/30 transition-colors"
      data-id="{{ movie.id }}"
      data-title="{{ movie.title }}"
      data-director="{{ movie.director }}"
@@ -116,22 +167,50 @@
      data-release-date="{{ movie.release_date }}"
      data-summary="{{ movie.summary }}"
      data-genre-ids="{{ movie.genre_ids }}"
-     data-format-ids="{{ movie.format_ids }}">          <div class="flex items-center gap-4">
-            <div class="w-12 h-16 bg-slate-600 rounded-lg flex items-center justify-center">
-              <svg class="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4"/>
-              </svg>
-            </div>
-            <div>
-              <p class="text-white font-medium">{{ movie.name }}</p>
-              <div class="flex gap-2 mt-1">
-                {% for genre_name, genre_color in movie.genres %}
-                <span class="px-2 py-0.5 bg-{{ genre_color }}/20 text-{{ genre_color }} rounded text-xs">{{ genre_name }}</span>
-                {% endfor %}
-              </div>
+     data-format-ids="{{ movie.format_ids }}"
+     data-cast="{{ movie.cast }}"
+     data-poster-url="{{ movie.poster_url }}"
+     data-visibility-status="{{ movie.visibility_status }}">
+          <!-- Thumbnail -->
+          <div class="w-10 h-14 bg-slate-600 rounded flex items-center justify-center overflow-hidden shrink-0">
+            {% if movie.poster_url %}
+            <img src="{{ movie.poster_url }}" alt="{{ movie.title }}" class="w-full h-full object-cover">
+            {% else %}
+            <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4"/>
+            </svg>
+            {% endif %}
+          </div>
+          <!-- Info -->
+          <div class="flex-1 min-w-0">
+            <p class="text-white font-medium truncate">{{ movie.name }}</p>
+            <div class="flex flex-wrap items-center gap-2 mt-1">
+              <span class="px-2 py-0.5 bg-{{ status_color }}/20 text-{{ status_color }} rounded text-xs font-medium">{{ status_label }}</span>
+              {% for genre_name, genre_color in movie.genres %}
+              <span class="px-2 py-0.5 bg-{{ genre_color }}/20 text-{{ genre_color }} rounded text-xs">{{ genre_name }}</span>
+              {% endfor %}
             </div>
           </div>
-          <span class="text-slate-400 text-sm">{{ movie.duration }}</span>
+          <!-- Duration + Action Buttons -->
+          <div class="flex items-center gap-1 shrink-0">
+            <span class="text-slate-400 text-sm mr-2">{{ movie.duration }}</span>
+            <button type="button"
+                    class="btn-edit-movie p-1.5 rounded text-slate-400 hover:text-sky hover:bg-sky/10 transition-colors"
+                    title="Edit movie">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+              </svg>
+            </button>
+            <button type="button"
+                    class="btn-delete-movie p-1.5 rounded text-slate-400 hover:text-crimson hover:bg-crimson/10 transition-colors"
+                    title="Delete movie">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+              </svg>
+            </button>
+          </div>
         </div>
         {% endfor %}
       </div>
