@@ -4,51 +4,54 @@
     <h2 class="font-display text-3xl font-bold text-white tracking-wide">ANALYTICS DASHBOARD</h2>
     <p class="text-slate-400 mt-1">Revenue, occupancy, and performance metrics</p>
   </header>
-  
+
   <!-- KPI Cards -->
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
     <div class="kpi-card bg-slate-800 rounded-xl p-6 border border-slate-700">
       <div class="flex items-center justify-between mb-4">
         <span class="text-slate-400 text-sm">Total Revenue</span>
-        <select class="bg-transparent text-xs text-slate-400 focus:outline-none cursor-pointer">
-          <option>Today</option>
-          <option selected>This Month</option>
-          <option>This Year</option>
+        <select id="revenue-filter"
+                class="bg-transparent text-xs text-slate-400 focus:outline-none cursor-pointer">
+          <option value="today"      {% if revenue_filter == 'today'      %}selected{% endif %}>Today</option>
+          <option value="this_month" {% if revenue_filter == 'this_month' %}selected{% endif %}>This Month</option>
+          <option value="this_year"  {% if revenue_filter == 'this_year'  %}selected{% endif %}>This Year</option>
         </select>
       </div>
       <p id="kpi-total-revenue" class="text-3xl font-bold text-white">{{ analytics_summary.total_revenue }}</p>
       <div class="flex items-center gap-2 mt-2">
-        <span class="text-slate-400 text-xs">All-time paid bookings</span>
+        <span id="revenue-subtitle" class="text-slate-400 text-xs">{{ analytics_summary.revenue_label }}</span>
       </div>
     </div>
 
     <div class="kpi-card bg-slate-800 rounded-xl p-6 border border-slate-700">
       <div class="flex items-center justify-between mb-4">
         <span class="text-slate-400 text-sm">Occupancy Rate</span>
-        <select class="bg-transparent text-xs text-slate-400 focus:outline-none cursor-pointer">
-          <option>Today</option>
-          <option selected>This Week</option>
-          <option>This Month</option>
+        <select id="occupancy-filter"
+                class="bg-transparent text-xs text-slate-400 focus:outline-none cursor-pointer">
+          <option value="today"      {% if occupancy_filter == 'today'      %}selected{% endif %}>Today</option>
+          <option value="this_week"  {% if occupancy_filter == 'this_week'  %}selected{% endif %}>This Week</option>
+          <option value="this_month" {% if occupancy_filter == 'this_month' %}selected{% endif %}>This Month</option>
         </select>
       </div>
       <p id="kpi-occupancy-rate" class="text-3xl font-bold text-white">{{ analytics_summary.occupancy_rate }}</p>
       <div class="flex items-center gap-2 mt-2">
-        <span class="text-slate-400 text-xs">Tickets sold vs seat capacity</span>
+        <span id="occupancy-subtitle" class="text-slate-400 text-xs">{{ analytics_summary.occupancy_label }}</span>
       </div>
     </div>
 
     <div class="kpi-card bg-slate-800 rounded-xl p-6 border border-slate-700">
       <div class="flex items-center justify-between mb-4">
         <span class="text-slate-400 text-sm">Tickets Sold</span>
-        <select class="bg-transparent text-xs text-slate-400 focus:outline-none cursor-pointer">
-          <option>Today</option>
-          <option>This Week</option>
-          <option selected>This Month</option>
+        <select id="tickets-filter"
+                class="bg-transparent text-xs text-slate-400 focus:outline-none cursor-pointer">
+          <option value="today"      {% if tickets_filter == 'today'      %}selected{% endif %}>Today</option>
+          <option value="this_week"  {% if tickets_filter == 'this_week'  %}selected{% endif %}>This Week</option>
+          <option value="this_month" {% if tickets_filter == 'this_month' %}selected{% endif %}>This Month</option>
         </select>
       </div>
       <p id="kpi-tickets-sold" class="text-3xl font-bold text-white">{{ analytics_summary.tickets_sold }}</p>
       <div class="flex items-center gap-2 mt-2">
-        <span class="text-slate-400 text-xs">Total tickets issued</span>
+        <span id="tickets-subtitle" class="text-slate-400 text-xs">{{ analytics_summary.tickets_label }}</span>
       </div>
     </div>
 
@@ -61,13 +64,13 @@
       <p class="text-slate-400 text-sm mt-2">Items with stock &le; 20 units</p>
     </div>
   </div>
-  
+
   <!-- Chart Section -->
   <div class="bg-slate-800 rounded-xl p-6 border border-slate-700 mb-8">
     <div class="flex items-center justify-between mb-6">
       <div>
         <h3 class="font-display text-xl font-semibold text-white">REVENUE BY THEATER</h3>
-        <p class="text-slate-400 text-sm">Last 7 Days</p>
+        <p class="text-slate-400 text-sm">All-time totals</p>
       </div>
       <button class="text-sky hover:text-sky/80 text-sm font-medium">Export CSV</button>
     </div>
@@ -78,7 +81,7 @@
 </script>
     </div>
   </div>
-  
+
   <!-- Top VIP Spenders Table -->
   <div class="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
     <div class="p-6 border-b border-slate-700 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -112,8 +115,8 @@
         </thead>
         <tbody id="spenders-tbody" class="divide-y divide-slate-700">
           {% for vip in vip_spenders %}
-          <tr class="table-row transition-colors spender-row" 
-              data-tier="{{ vip.tier|lower }}" 
+          <tr class="table-row transition-colors spender-row"
+              data-tier="{{ vip.tier|lower }}"
               data-amount="{{ vip.spent|replace('$', '')|replace(',', '')|float }}"
               data-visits="{{ vip.visits }}">
             <td class="px-6 py-4">
