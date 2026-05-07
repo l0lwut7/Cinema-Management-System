@@ -252,35 +252,51 @@ if (movieCancelButton) {
     // Sidebar Navigation
     const sidebarTabs = document.querySelectorAll('.sidebar-tab');
     const contentPanels = document.querySelectorAll('.content-panel');
-    
+
+    function activateTab(tabName) {
+        sidebarTabs.forEach(t => {
+            if (t.dataset.tab === tabName) {
+                t.classList.add('active', 'text-white');
+                t.classList.remove('text-slate-300');
+            } else {
+                t.classList.remove('active', 'text-white');
+                t.classList.add('text-slate-300');
+            }
+        });
+        contentPanels.forEach(panel => panel.classList.remove('active'));
+        const panel = document.getElementById(`panel-${tabName}`);
+        if (panel) panel.classList.add('active');
+    }
+
     sidebarTabs.forEach(tab => {
         tab.addEventListener('click', () => {
-            // Remove active class from all tabs
-            sidebarTabs.forEach(t => {
-                t.classList.remove('active');
-                t.classList.remove('text-white');
-                t.classList.add('text-slate-300');
-            });
-
-            // Add active class to clicked tab
-            tab.classList.add('active');
-            tab.classList.add('text-white');
-            tab.classList.remove('text-slate-300');
-
-            // Hide all panels
-            contentPanels.forEach(panel => panel.classList.remove('active'));
-
-            // Show corresponding panel
             const tabName = tab.dataset.tab;
-            const panel = document.getElementById(`panel-${tabName}`);
-            if (panel) {
-                panel.classList.add('active');
-            }
+            activateTab(tabName);
+
+            // Sync the URL without a page reload so refresh/back-button work correctly.
+            const url = new URL(window.location.href);
+            url.searchParams.set('tab', tabName);
+            window.history.pushState({ tab: tabName }, '', url.toString());
         });
     });
 
-    // Initial active tab is set server-side by Jinja (see dashboard.html).
-    // No JS click needed on load — doing so would cause a visible FOUC.
+    // Restore the correct tab when the user navigates back/forward.
+    window.addEventListener('popstate', (event) => {
+        const params = new URLSearchParams(window.location.search);
+        const tabName = (event.state && event.state.tab) || params.get('tab') || 'analytics';
+        activateTab(tabName);
+
+        // If landing back on analytics, sync the filter selects and refresh numbers.
+        if (tabName === 'analytics') {
+            const rf = params.get('revenue_filter')  || 'this_month';
+            const of = params.get('occupancy_filter') || 'this_week';
+            const tf = params.get('tickets_filter')  || 'this_month';
+            if (revenueFilterSelect)   revenueFilterSelect.value   = rf;
+            if (occupancyFilterSelect) occupancyFilterSelect.value = of;
+            if (ticketsFilterSelect)   ticketsFilterSelect.value   = tf;
+            fetchAnalyticsKPIs(rf, of, tf);
+        }
+    });
     
     // Infrastructure Sub-tabs
     const infraTabs = document.querySelectorAll('.infra-tab');
@@ -654,35 +670,89 @@ if (ctx) {
     });
 }
 
-    // Live analytics polling — refreshes KPI cards and chart every 30 seconds
-    function refreshAnalytics() {
-        fetch("/admin/api/analytics")
-            .then((res) => {
-                if (!res.ok) return;
-                return res.json();
-            })
+    // ── Analytics KPI filter selects ─────────────────────────────────────────
+    const revenueFilterSelect   = document.getElementById("revenue-filter");
+    const occupancyFilterSelect = document.getElementById("occupancy-filter");
+    const ticketsFilterSelect   = document.getElementById("tickets-filter");
+
+    const _periodLabels = {
+        today:      "Today",
+        this_week:  "This week",
+        this_month: "This month",
+        this_year:  "This year",
+        all_time:   "All time",
+    };
+
+    function _kpiSubtitleText(period, suffix) {
+        return (_periodLabels[period] || "All time") + " — " + suffix;
+    }
+
+    function fetchAnalyticsKPIs(revPeriod, occPeriod, tktPeriod) {
+        const params = new URLSearchParams({
+            revenue_filter:   revPeriod,
+            occupancy_filter: occPeriod,
+            tickets_filter:   tktPeriod,
+        });
+        fetch("/admin/api/analytics?" + params.toString())
+            .then((res) => { if (!res.ok) return null; return res.json(); })
             .then((data) => {
                 if (!data || data.error) return;
-
                 const { summary, chart } = data;
 
                 const elRevenue   = document.getElementById("kpi-total-revenue");
                 const elOccupancy = document.getElementById("kpi-occupancy-rate");
                 const elTickets   = document.getElementById("kpi-tickets-sold");
                 const elAlerts    = document.getElementById("kpi-inventory-alerts");
+                const elRevSub    = document.getElementById("revenue-subtitle");
+                const elOccSub    = document.getElementById("occupancy-subtitle");
+                const elTktSub    = document.getElementById("tickets-subtitle");
 
                 if (elRevenue)   elRevenue.textContent   = summary.total_revenue;
                 if (elOccupancy) elOccupancy.textContent = summary.occupancy_rate;
                 if (elTickets)   elTickets.textContent   = summary.tickets_sold;
                 if (elAlerts)    elAlerts.textContent    = summary.inventory_alerts;
+                if (elRevSub)    elRevSub.textContent    = _kpiSubtitleText(revPeriod, "paid bookings");
+                if (elOccSub)    elOccSub.textContent    = _kpiSubtitleText(occPeriod, "tickets vs capacity");
+                if (elTktSub)    elTktSub.textContent    = _kpiSubtitleText(tktPeriod, "tickets issued");
 
                 if (revenueChartInstance && chart) {
-                    revenueChartInstance.data.labels              = chart.labels || [];
-                    revenueChartInstance.data.datasets[0].data    = chart.values || [];
+                    revenueChartInstance.data.labels           = chart.labels || [];
+                    revenueChartInstance.data.datasets[0].data = chart.values || [];
                     revenueChartInstance.update();
                 }
             })
             .catch(() => {});
+    }
+
+    function _currentFilterValues() {
+        return {
+            rev: revenueFilterSelect?.value   || "this_month",
+            occ: occupancyFilterSelect?.value || "this_week",
+            tkt: ticketsFilterSelect?.value   || "this_month",
+        };
+    }
+
+    // Wire filter dropdowns — update KPIs and URL on change.
+    [revenueFilterSelect, occupancyFilterSelect, ticketsFilterSelect].forEach(sel => {
+        if (!sel) return;
+        sel.addEventListener("change", () => {
+            const { rev, occ, tkt } = _currentFilterValues();
+            fetchAnalyticsKPIs(rev, occ, tkt);
+
+            // Persist filter state in URL so refresh restores the same view.
+            const url = new URL(window.location.href);
+            url.searchParams.set("revenue_filter",   rev);
+            url.searchParams.set("occupancy_filter", occ);
+            url.searchParams.set("tickets_filter",   tkt);
+            window.history.pushState({ tab: "analytics" }, "", url.toString());
+        });
+    });
+
+    // Live analytics polling — refreshes KPIs and chart every 30 seconds
+    // using whichever filter values the user currently has selected.
+    function refreshAnalytics() {
+        const { rev, occ, tkt } = _currentFilterValues();
+        fetchAnalyticsKPIs(rev, occ, tkt);
     }
 
     setInterval(refreshAnalytics, 30000);

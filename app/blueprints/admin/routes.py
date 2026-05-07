@@ -104,14 +104,23 @@ def logout():
 
     return redirect(url_for("admin.login"))
 
+_VALID_PERIODS = {"today", "this_week", "this_month", "this_year", "all_time"}
+
+def _parse_period(value, default):
+    return value if value in _VALID_PERIODS else default
+
 @admin_bp.route("/admin/dashboard", strict_slashes=False)
 def dashboard():
     if "admin_id" not in session:
         return redirect(url_for("admin.login"))
 
+    revenue_filter  = _parse_period(request.args.get("revenue_filter"),  "this_month")
+    occupancy_filter = _parse_period(request.args.get("occupancy_filter"), "this_week")
+    tickets_filter  = _parse_period(request.args.get("tickets_filter"),  "this_month")
+
     return render_template(
         "admin/dashboard.html",
-        analytics_summary=fetch_analytics_summary(),
+        analytics_summary=fetch_analytics_summary(revenue_filter, occupancy_filter, tickets_filter),
         revenue_by_theater=fetch_revenue_by_theater(),
         vip_spenders=fetch_vip_spenders(),
         employees=fetch_employees(),
@@ -125,7 +134,10 @@ def dashboard():
         formats=fetch_formats(),
         theaters=fetch_theaters(),
         initial_tab=request.args.get("tab", "analytics"),
-        current_admin_id=session.get("admin_id")
+        current_admin_id=session.get("admin_id"),
+        revenue_filter=revenue_filter,
+        occupancy_filter=occupancy_filter,
+        tickets_filter=tickets_filter,
     )
 
 @admin_bp.route("/admin/api/analytics", strict_slashes=False)
@@ -133,8 +145,12 @@ def api_analytics():
     if "admin_id" not in session:
         return jsonify({"error": "Unauthorized"}), 401
 
+    revenue_filter  = _parse_period(request.args.get("revenue_filter"),  "this_month")
+    occupancy_filter = _parse_period(request.args.get("occupancy_filter"), "this_week")
+    tickets_filter  = _parse_period(request.args.get("tickets_filter"),  "this_month")
+
     return jsonify({
-        "summary": fetch_analytics_summary(),
+        "summary": fetch_analytics_summary(revenue_filter, occupancy_filter, tickets_filter),
         "chart": fetch_revenue_by_theater()
     })
 
@@ -1328,7 +1344,30 @@ def edit_deal(deal_id):
 
     return redirect(url_for("admin.dashboard", tab="business"))
 
-def fetch_analytics_summary():
+def _period_sql(col, period):
+    """Return a SQL AND-fragment for the given period, or '' for all-time.
+
+    Safe to interpolate: period is validated against _VALID_PERIODS before this is called.
+    """
+    if period == "today":
+        return f"AND DATE({col}) = CURDATE()"
+    if period == "this_week":
+        return f"AND {col} >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)"
+    if period == "this_month":
+        return f"AND YEAR({col}) = YEAR(CURDATE()) AND MONTH({col}) = MONTH(CURDATE())"
+    if period == "this_year":
+        return f"AND YEAR({col}) = YEAR(CURDATE())"
+    return ""
+
+_PERIOD_LABELS = {
+    "today":      "Today",
+    "this_week":  "This week",
+    "this_month": "This month",
+    "this_year":  "This year",
+    "all_time":   "All time",
+}
+
+def fetch_analytics_summary(revenue_period="this_month", occupancy_period="this_week", tickets_period="this_month"):
     connection = get_db_connection()
 
     if connection is None:
@@ -1336,34 +1375,43 @@ def fetch_analytics_summary():
             "total_revenue": "$0.00",
             "tickets_sold": 0,
             "inventory_alerts": 0,
-            "occupancy_rate": "0.0%"
+            "occupancy_rate": "0.0%",
+            "revenue_label": "No data",
+            "occupancy_label": "No data",
+            "tickets_label": "No data",
         }
 
     cursor = connection.cursor(dictionary=True)
 
     try:
+        rev_clause = _period_sql("b.created_at", revenue_period)
         cursor.execute(
-            """
+            f"""
             SELECT COALESCE(SUM(b.total_amount), 0) AS total_revenue
             FROM booking b
             INNER JOIN payment p ON b.booking_id = p.booking_id
             WHERE p.status IN ('Paid', 'Completed')
+            {rev_clause}
             """
         )
         revenue_row = cursor.fetchone()
         total_revenue = float(revenue_row["total_revenue"] or 0)
 
-        # Tickets Sold
+        # Tickets Sold — join through booking to get creation date
+        tkt_clause = _period_sql("b.created_at", tickets_period)
         cursor.execute(
-            """
-            SELECT COUNT(*) AS tickets_sold
-            FROM ticket
+            f"""
+            SELECT COUNT(t.ticket_id) AS tickets_sold
+            FROM ticket t
+            JOIN booking b ON t.booking_id = b.booking_id
+            WHERE 1=1
+            {tkt_clause}
             """
         )
         tickets_row = cursor.fetchone()
         tickets_sold = int(tickets_row["tickets_sold"] or 0)
 
-        # Inventory Alerts: stock <= 20
+        # Inventory Alerts: stock <= 20 — no time filter (always all-time)
         cursor.execute(
             """
             SELECT COUNT(*) AS inventory_alerts
@@ -1374,17 +1422,18 @@ def fetch_analytics_summary():
         inventory_row = cursor.fetchone()
         inventory_alerts = int(inventory_row["inventory_alerts"] or 0)
 
-        # Occupancy Rate: booked tickets vs total capacity across ALL scheduled
-        # screenings. Two independent subqueries prevent the fan-trap where joining
+        # Occupancy Rate: filter both subqueries by screening start_time.
+        # Two independent subqueries prevent the fan-trap where joining
         # tickets to screenings would multiply sal.capacity by the ticket count.
-        # No time filter — future screenings matter too (shows booking performance).
+        occ_clause = _period_sql("sc.start_time", occupancy_period)
         cursor.execute(
-            """
+            f"""
             SELECT
                 (
                     SELECT COUNT(t.ticket_id)
                     FROM ticket t
                     JOIN screening sc ON t.screening_id = sc.screening_id
+                    WHERE 1=1 {occ_clause}
                 ) AS sold_seats,
                 (
                     SELECT COALESCE(SUM(sal.capacity), 0)
@@ -1392,6 +1441,7 @@ def fetch_analytics_summary():
                     JOIN saloon sal
                       ON sc.theater_id    = sal.theater_id
                      AND sc.saloon_number = sal.number
+                    WHERE 1=1 {occ_clause}
                 ) AS possible_capacity
             """
         )
@@ -1404,11 +1454,18 @@ def fetch_analytics_summary():
         if possible_capacity > 0:
             occupancy_rate = (sold_seats / possible_capacity) * 100
 
+        rev_label  = _PERIOD_LABELS.get(revenue_period, "All time") + " — paid bookings"
+        occ_label  = _PERIOD_LABELS.get(occupancy_period, "All time") + " — tickets vs capacity"
+        tkt_label  = _PERIOD_LABELS.get(tickets_period, "All time") + " — tickets issued"
+
         return {
-            "total_revenue": f"${total_revenue:,.2f}",
-            "tickets_sold": tickets_sold,
+            "total_revenue":    f"${total_revenue:,.2f}",
+            "tickets_sold":     tickets_sold,
             "inventory_alerts": inventory_alerts,
-            "occupancy_rate": f"{occupancy_rate:.1f}%"
+            "occupancy_rate":   f"{occupancy_rate:.1f}%",
+            "revenue_label":    rev_label,
+            "occupancy_label":  occ_label,
+            "tickets_label":    tkt_label,
         }
 
     finally:
