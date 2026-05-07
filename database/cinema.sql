@@ -89,7 +89,9 @@ CREATE TABLE IF NOT EXISTS MOVIE (
     duration_mins INT NOT NULL,
     rating_age VARCHAR(10),
     release_date DATE,
-    summary TEXT
+    summary TEXT,
+    poster_url VARCHAR(500) NULL,
+    visibility_status ENUM('now_showing', 'coming_soon', 'catalog_only') NOT NULL DEFAULT 'catalog_only'
 );
 
 -- The MOVIE_CAST table allows for a many-to-many relationship between movies and their cast members, as a movie can have multiple cast members and a cast member can be in multiple movies. The cast_name is stored as a VARCHAR, but in a more complex system, you might want to have a separate CAST_MEMBER table with its own unique ID and additional attributes (like date of birth, biography, etc.) for better data management and integrity.

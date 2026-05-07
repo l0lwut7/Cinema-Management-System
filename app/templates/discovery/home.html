@@ -6,7 +6,9 @@
 <div class="max-w-7xl mx-auto px-6 py-8">
     <div class="reveal-on-scroll relative h-[500px] overflow-hidden rounded-2xl mb-12">
         <div class="absolute inset-0 bg-gradient-to-r from-cinema-bg via-cinema-bg/80 to-transparent z-10"></div>
+        {% if featured_movie %}
         <img src="{{ featured_movie.image_url }}" alt="Cinema" class="absolute inset-0 w-full h-full object-cover">
+        {% endif %}
         <div class="relative z-20 max-w-7xl mx-auto px-6 h-full flex items-center">
             <div class="max-w-xl">
                 <h1 class="font-heading text-5xl md:text-6xl font-bold mb-4 leading-tight">EXPERIENCE CINEMA LIKE NEVER BEFORE</h1>

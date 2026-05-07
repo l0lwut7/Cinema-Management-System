@@ -1,7 +1,26 @@
+import os
+import time as _time
+
 from flask import Blueprint, render_template, session, redirect, url_for, request, flash, jsonify
 from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.utils import secure_filename
 from datetime import datetime
 from app.db import get_db_connection
+
+_POSTER_FOLDER = os.path.join(os.path.dirname(__file__), '..', '..', 'static', 'uploads', 'posters')
+_ALLOWED_IMAGE_EXT = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+
+def _save_poster(file):
+    """Save an uploaded poster file; return the URL path or None."""
+    if not file or not file.filename:
+        return None
+    ext = file.filename.rsplit('.', 1)[-1].lower() if '.' in file.filename else ''
+    if ext not in _ALLOWED_IMAGE_EXT:
+        return None
+    os.makedirs(_POSTER_FOLDER, exist_ok=True)
+    fname = f"{secure_filename(file.filename.rsplit('.', 1)[0])}_{int(_time.time())}.{ext}"
+    file.save(os.path.join(_POSTER_FOLDER, fname))
+    return f"/static/uploads/posters/{fname}"
 
 
 admin_bp = Blueprint("admin", __name__)
@@ -264,6 +283,10 @@ def add_movie():
 
     genre_ids = request.form.getlist("genre_ids")
     format_ids = request.form.getlist("format_ids")
+    cast_members = [c.strip() for c in request.form.getlist("cast[]") if c.strip()]
+    visibility_status = request.form.get("visibility_status", "catalog_only").strip()
+    if visibility_status not in ("now_showing", "coming_soon", "catalog_only"):
+        visibility_status = "catalog_only"
 
     if not title or not director or not duration_mins or not rating_age or not release_date:
         flash("Please fill all required movie fields.", "error")
@@ -275,6 +298,8 @@ def add_movie():
     except ValueError:
         flash("Duration and rating age must be valid numbers.", "error")
         return redirect(url_for("admin.dashboard", tab="catalog"))
+
+    poster_url = _save_poster(request.files.get("poster"))
 
     connection = get_db_connection()
 
@@ -288,42 +313,31 @@ def add_movie():
         cursor.execute(
             """
             INSERT INTO movie
-                (title, director, duration_mins, rating_age, release_date, summary)
+                (title, director, duration_mins, rating_age, release_date, summary, poster_url, visibility_status)
             VALUES
-                (%s, %s, %s, %s, %s, %s)
+                (%s, %s, %s, %s, %s, %s, %s, %s)
             """,
-            (
-                title,
-                director,
-                duration_mins,
-                rating_age,
-                release_date,
-                summary
-            )
+            (title, director, duration_mins, rating_age, release_date, summary, poster_url, visibility_status)
         )
 
         movie_id = cursor.lastrowid
 
         for genre_id in genre_ids:
             cursor.execute(
-                """
-                INSERT INTO movie_genre
-                    (movie_id, genre_id)
-                VALUES
-                    (%s, %s)
-                """,
+                "INSERT INTO movie_genre (movie_id, genre_id) VALUES (%s, %s)",
                 (movie_id, genre_id)
             )
 
         for format_id in format_ids:
             cursor.execute(
-                """
-                INSERT INTO movie_format
-                    (movie_id, format_id)
-                VALUES
-                    (%s, %s)
-                """,
+                "INSERT INTO movie_format (movie_id, format_id) VALUES (%s, %s)",
                 (movie_id, format_id)
+            )
+
+        for cast_name in cast_members:
+            cursor.execute(
+                "INSERT INTO movie_cast (movie_id, cast_name) VALUES (%s, %s)",
+                (movie_id, cast_name)
             )
 
         connection.commit()
@@ -695,14 +709,18 @@ def fetch_movies_for_admin():
             m.rating_age,
             m.release_date,
             m.summary,
+            m.poster_url,
+            m.visibility_status,
             GROUP_CONCAT(DISTINCT g.name SEPARATOR ', ') AS genre_names,
             GROUP_CONCAT(DISTINCT g.genre_id SEPARATOR ',') AS genre_ids,
-            GROUP_CONCAT(DISTINCT f.format_id SEPARATOR ',') AS format_ids
+            GROUP_CONCAT(DISTINCT f.format_id SEPARATOR ',') AS format_ids,
+            GROUP_CONCAT(DISTINCT mc.cast_name SEPARATOR ',') AS cast_names
         FROM movie m
         LEFT JOIN movie_genre mg ON m.movie_id = mg.movie_id
         LEFT JOIN genre g ON mg.genre_id = g.genre_id
         LEFT JOIN movie_format mf ON m.movie_id = mf.movie_id
         LEFT JOIN format f ON mf.format_id = f.format_id
+        LEFT JOIN movie_cast mc ON m.movie_id = mc.movie_id
         GROUP BY
             m.movie_id,
             m.title,
@@ -710,7 +728,9 @@ def fetch_movies_for_admin():
             m.duration_mins,
             m.rating_age,
             m.release_date,
-            m.summary
+            m.summary,
+            m.poster_url,
+            m.visibility_status
         ORDER BY m.movie_id DESC
         """
     )
@@ -743,9 +763,12 @@ def fetch_movies_for_admin():
             "rating_age": row["rating_age"],
             "release_date": release_date_value,
             "summary": row["summary"] or "",
+            "poster_url": row["poster_url"] or "",
             "genres": genres,
             "genre_ids": row["genre_ids"] or "",
-            "format_ids": row["format_ids"] or ""
+            "format_ids": row["format_ids"] or "",
+            "cast": row["cast_names"] or "",
+            "visibility_status": row["visibility_status"] or "catalog_only"
         })
 
     return movies
@@ -764,6 +787,10 @@ def edit_movie(movie_id):
 
     genre_ids = request.form.getlist("genre_ids")
     format_ids = request.form.getlist("format_ids")
+    cast_members = [c.strip() for c in request.form.getlist("cast[]") if c.strip()]
+    visibility_status = request.form.get("visibility_status", "catalog_only").strip()
+    if visibility_status not in ("now_showing", "coming_soon", "catalog_only"):
+        visibility_status = "catalog_only"
 
     if not title or not director or not duration_mins or not rating_age or not release_date:
         flash("Please fill all required movie fields.", "error")
@@ -776,6 +803,8 @@ def edit_movie(movie_id):
         flash("Duration and rating age must be valid numbers.", "error")
         return redirect(url_for("admin.dashboard", tab="catalog"))
 
+    new_poster_url = _save_poster(request.files.get("poster"))
+
     connection = get_db_connection()
 
     if connection is None:
@@ -786,11 +815,7 @@ def edit_movie(movie_id):
 
     try:
         cursor.execute(
-            """
-            SELECT movie_id
-            FROM movie
-            WHERE movie_id = %s
-            """,
+            "SELECT movie_id, poster_url FROM movie WHERE movie_id = %s",
             (movie_id,)
         )
 
@@ -800,65 +825,38 @@ def edit_movie(movie_id):
             flash("Movie not found.", "error")
             return redirect(url_for("admin.dashboard", tab="catalog"))
 
+        poster_url = new_poster_url if new_poster_url else existing_movie["poster_url"]
+
         cursor.execute(
             """
             UPDATE movie
-            SET
-                title = %s,
-                director = %s,
-                duration_mins = %s,
-                rating_age = %s,
-                release_date = %s,
-                summary = %s
+            SET title = %s, director = %s, duration_mins = %s,
+                rating_age = %s, release_date = %s, summary = %s,
+                poster_url = %s, visibility_status = %s
             WHERE movie_id = %s
             """,
-            (
-                title,
-                director,
-                duration_mins,
-                rating_age,
-                release_date,
-                summary,
-                movie_id
-            )
+            (title, director, duration_mins, rating_age, release_date, summary, poster_url, visibility_status, movie_id)
         )
 
-        cursor.execute(
-            """
-            DELETE FROM movie_genre
-            WHERE movie_id = %s
-            """,
-            (movie_id,)
-        )
-
+        cursor.execute("DELETE FROM movie_genre WHERE movie_id = %s", (movie_id,))
         for genre_id in genre_ids:
             cursor.execute(
-                """
-                INSERT INTO movie_genre
-                    (movie_id, genre_id)
-                VALUES
-                    (%s, %s)
-                """,
+                "INSERT INTO movie_genre (movie_id, genre_id) VALUES (%s, %s)",
                 (movie_id, genre_id)
             )
 
-        cursor.execute(
-            """
-            DELETE FROM movie_format
-            WHERE movie_id = %s
-            """,
-            (movie_id,)
-        )
-
+        cursor.execute("DELETE FROM movie_format WHERE movie_id = %s", (movie_id,))
         for format_id in format_ids:
             cursor.execute(
-                """
-                INSERT INTO movie_format
-                    (movie_id, format_id)
-                VALUES
-                    (%s, %s)
-                """,
+                "INSERT INTO movie_format (movie_id, format_id) VALUES (%s, %s)",
                 (movie_id, format_id)
+            )
+
+        cursor.execute("DELETE FROM movie_cast WHERE movie_id = %s", (movie_id,))
+        for cast_name in cast_members:
+            cursor.execute(
+                "INSERT INTO movie_cast (movie_id, cast_name) VALUES (%s, %s)",
+                (movie_id, cast_name)
             )
 
         connection.commit()
@@ -867,6 +865,41 @@ def edit_movie(movie_id):
     except Exception as error:
         connection.rollback()
         flash(f"Movie could not be updated: {error}", "error")
+
+    finally:
+        cursor.close()
+        connection.close()
+
+    return redirect(url_for("admin.dashboard", tab="catalog"))
+
+@admin_bp.route("/admin/movies/delete/<int:movie_id>", methods=["POST"], strict_slashes=False)
+def delete_movie(movie_id):
+    if "admin_id" not in session:
+        return redirect(url_for("admin.login"))
+
+    connection = get_db_connection()
+
+    if connection is None:
+        flash("Database connection failed.", "error")
+        return redirect(url_for("admin.dashboard", tab="catalog"))
+
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+        cursor.execute("SELECT movie_id FROM movie WHERE movie_id = %s", (movie_id,))
+        movie = cursor.fetchone()
+
+        if not movie:
+            flash("Movie not found.", "error")
+            return redirect(url_for("admin.dashboard", tab="catalog"))
+
+        cursor.execute("DELETE FROM movie WHERE movie_id = %s", (movie_id,))
+        connection.commit()
+        flash("Movie deleted successfully.", "success")
+
+    except Exception as error:
+        connection.rollback()
+        flash(f"Movie could not be deleted: {error}", "error")
 
     finally:
         cursor.close()

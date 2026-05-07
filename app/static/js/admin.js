@@ -28,11 +28,20 @@ const movieDirectorInput = document.getElementById("movie-director");
 const movieDurationInput = document.getElementById("movie-duration");
 const movieRatingAgeInput = document.getElementById("movie-rating-age");
 const movieReleaseDateInput = document.getElementById("movie-release-date");
+const ratingChips = document.querySelectorAll("#rating-chips .chip");
+const moviePosterInput = document.getElementById("movie-poster-input");
+const moviePosterPreview = document.getElementById("movie-poster-preview");
+const moviePosterPlaceholder = document.getElementById("movie-poster-placeholder");
 const movieSummaryInput = document.getElementById("movie-summary");
 
-const movieItems = document.querySelectorAll(".movie-list-item");
+const castContainer = document.getElementById("cast-inputs-container");
+const btnAddCast = document.getElementById("btn-add-cast");
+const MAX_CAST = 5;
+
+const movieCatalogList = document.getElementById("movie-catalog-list");
 const genreCheckboxes = document.querySelectorAll(".movie-genre-checkbox");
 const formatCheckboxes = document.querySelectorAll(".movie-format-checkbox");
+const movieVisibilityStatusSelect = document.getElementById("movie-visibility-status");
 
 function clearMovieChipSelection() {
     document.querySelectorAll("#genre-chips .chip, #format-chips .chip").forEach((chip) => {
@@ -44,6 +53,11 @@ function clearMovieChipSelection() {
             checkbox.checked = false;
         }
     });
+    ratingChips.forEach(chip => {
+        chip.classList.remove("selected", "text-white");
+        chip.classList.add("text-slate-300");
+    });
+    if (movieRatingAgeInput) movieRatingAgeInput.value = "";
 }
 
 function setMovieFormToAddMode() {
@@ -55,6 +69,18 @@ function setMovieFormToAddMode() {
 
     if (movieFormTitle) movieFormTitle.textContent = "MOVIE EDITOR";
     if (movieSubmitButton) movieSubmitButton.textContent = "Save Movie";
+
+    clearCastInputs();
+
+    if (movieVisibilityStatusSelect) movieVisibilityStatusSelect.value = "catalog_only";
+
+    if (moviePosterPreview) {
+        moviePosterPreview.src = '';
+        moviePosterPreview.classList.add('hidden');
+    }
+    if (moviePosterPlaceholder) {
+        moviePosterPlaceholder.classList.remove('hidden');
+    }
 }
 
 function markSelectedMovieChips(selectedGenreIds, selectedFormatIds) {
@@ -79,33 +105,144 @@ function markSelectedMovieChips(selectedGenreIds, selectedFormatIds) {
     });
 }
 
-movieItems.forEach((item) => {
-    item.addEventListener("click", () => {
-        const movieId = item.dataset.id;
-
-        movieForm.action = `/admin/movies/edit/${movieId}`;
-
-        movieTitleInput.value = item.dataset.title || "";
-        movieDirectorInput.value = item.dataset.director || "";
-        movieDurationInput.value = item.dataset.duration || "";
-        movieRatingAgeInput.value = item.dataset.ratingAge || "";
-        movieReleaseDateInput.value = item.dataset.releaseDate || "";
-        movieSummaryInput.value = item.dataset.summary || "";
-
-        const selectedGenreIds = item.dataset.genreIds
-            ? item.dataset.genreIds.split(",")
-            : [];
-
-        const selectedFormatIds = item.dataset.formatIds
-            ? item.dataset.formatIds.split(",")
-            : [];
-
-        markSelectedMovieChips(selectedGenreIds, selectedFormatIds);
-
-        if (movieFormTitle) movieFormTitle.textContent = "EDIT MOVIE";
-        if (movieSubmitButton) movieSubmitButton.textContent = "Update Movie";
+function selectRatingChip(value) {
+    const strVal = String(value);
+    ratingChips.forEach(chip => {
+        if (chip.dataset.value === strVal) {
+            chip.classList.add("selected", "text-white");
+            chip.classList.remove("text-slate-300");
+        } else {
+            chip.classList.remove("selected", "text-white");
+            chip.classList.add("text-slate-300");
+        }
     });
-});
+    if (movieRatingAgeInput) movieRatingAgeInput.value = strVal;
+}
+
+// ── Cast member dynamic inputs ────────────────────────────────────────────────
+function _castRowCount() {
+    return castContainer ? castContainer.querySelectorAll('.cast-input-row').length : 0;
+}
+
+function _updateCastBtn() {
+    if (!btnAddCast) return;
+    if (_castRowCount() >= MAX_CAST) {
+        btnAddCast.classList.add('hidden');
+    } else {
+        btnAddCast.classList.remove('hidden');
+    }
+}
+
+function addCastInput(value = '') {
+    if (!castContainer || _castRowCount() >= MAX_CAST) return;
+    const row = document.createElement('div');
+    row.className = 'cast-input-row flex gap-2';
+    row.innerHTML =
+        `<input type="text" name="cast[]" value="${value.replace(/"/g, '&quot;')}" placeholder="e.g. Actor Name"
+                class="flex-1 bg-slate-700 border border-slate-600 rounded-lg px-4 py-2.5 text-white placeholder-slate-400 text-sm">` +
+        `<button type="button" class="btn-remove-cast shrink-0 px-3 py-2 text-slate-400 hover:text-crimson transition-colors text-xl leading-none" title="Remove">&times;</button>`;
+    row.querySelector('.btn-remove-cast').addEventListener('click', () => {
+        row.remove();
+        _updateCastBtn();
+    });
+    castContainer.appendChild(row);
+    _updateCastBtn();
+}
+
+function clearCastInputs() {
+    if (!castContainer) return;
+    castContainer.innerHTML =
+        `<div class="cast-input-row flex gap-2">` +
+        `<input type="text" name="cast[]" placeholder="e.g. Timothée Chalamet"` +
+        ` class="flex-1 bg-slate-700 border border-slate-600 rounded-lg px-4 py-2.5 text-white placeholder-slate-400 text-sm">` +
+        `</div>`;
+    _updateCastBtn();
+}
+
+function populateMovieFormForEdit(item) {
+    const movieId = item.dataset.id;
+
+    movieForm.action = `/admin/movies/edit/${movieId}`;
+
+    movieTitleInput.value = item.dataset.title || "";
+    movieDirectorInput.value = item.dataset.director || "";
+    movieDurationInput.value = item.dataset.duration || "";
+    selectRatingChip(item.dataset.ratingAge || "");
+    movieReleaseDateInput.value = item.dataset.releaseDate || "";
+    movieSummaryInput.value = item.dataset.summary || "";
+
+    const selectedGenreIds = item.dataset.genreIds
+        ? item.dataset.genreIds.split(",")
+        : [];
+
+    const selectedFormatIds = item.dataset.formatIds
+        ? item.dataset.formatIds.split(",")
+        : [];
+
+    markSelectedMovieChips(selectedGenreIds, selectedFormatIds);
+
+    // Populate cast inputs
+    const castData = item.dataset.cast || "";
+    clearCastInputs();
+    if (castData) {
+        const castMembers = castData.split(",").map(c => c.trim()).filter(Boolean);
+        if (castMembers.length > 0) {
+            castContainer.querySelector('.cast-input-row input').value = castMembers[0];
+            for (let i = 1; i < castMembers.length; i++) {
+                addCastInput(castMembers[i]);
+            }
+        }
+    }
+
+    // Populate visibility status
+    if (movieVisibilityStatusSelect) {
+        movieVisibilityStatusSelect.value = item.dataset.visibilityStatus || "catalog_only";
+    }
+
+    // Show existing poster in the preview
+    const existingPosterUrl = item.dataset.posterUrl || "";
+    if (existingPosterUrl && moviePosterPreview && moviePosterPlaceholder) {
+        moviePosterPreview.src = existingPosterUrl;
+        moviePosterPreview.classList.remove('hidden');
+        moviePosterPlaceholder.classList.add('hidden');
+    } else if (moviePosterPreview && moviePosterPlaceholder) {
+        moviePosterPreview.src = '';
+        moviePosterPreview.classList.add('hidden');
+        moviePosterPlaceholder.classList.remove('hidden');
+    }
+
+    if (movieFormTitle) movieFormTitle.textContent = "EDIT MOVIE";
+    if (movieSubmitButton) movieSubmitButton.textContent = "Update Movie";
+
+    // Scroll the form into view on small screens
+    movieForm.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+// Event delegation on the catalog list for Edit and Delete buttons
+if (movieCatalogList) {
+    movieCatalogList.addEventListener("click", (e) => {
+        const editBtn = e.target.closest(".btn-edit-movie");
+        const deleteBtn = e.target.closest(".btn-delete-movie");
+
+        if (editBtn) {
+            const item = editBtn.closest(".movie-list-item");
+            if (item) populateMovieFormForEdit(item);
+            return;
+        }
+
+        if (deleteBtn) {
+            const item = deleteBtn.closest(".movie-list-item");
+            if (!item) return;
+            const movieTitle = item.dataset.title || "this movie";
+            if (!confirm(`Are you sure you want to delete "${movieTitle}"? This action cannot be undone.`)) return;
+            const form = document.createElement("form");
+            form.method = "POST";
+            form.action = `/admin/movies/delete/${item.dataset.id}`;
+            document.body.appendChild(form);
+            form.submit();
+        }
+    });
+}
 
 if (movieCancelButton) {
     movieCancelButton.addEventListener("click", () => {
@@ -190,6 +327,42 @@ if (movieCancelButton) {
                 val = val.slice(0, dotIndex + 1) + val.slice(dotIndex + 1).replace(/\./g, '');
             }
             this.value = val;
+        });
+    }
+
+    // ── Rating chips (single-select) ─────────────────────────────────────────
+    ratingChips.forEach(chip => {
+        chip.addEventListener('click', () => selectRatingChip(chip.dataset.value));
+    });
+
+    // ── Cast: "Add Cast Member" button ────────────────────────────────────────
+    if (btnAddCast) {
+        btnAddCast.addEventListener('click', () => addCastInput());
+    }
+
+    // ── Duration: digits only ────────────────────────────────────────────────
+    if (movieDurationInput) {
+        movieDurationInput.addEventListener('input', function () {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+    }
+
+    // ── Poster: local file preview via FileReader ─────────────────────────────
+    if (moviePosterInput) {
+        moviePosterInput.addEventListener('change', function () {
+            const file = this.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                if (moviePosterPreview) {
+                    moviePosterPreview.src = e.target.result;
+                    moviePosterPreview.classList.remove('hidden');
+                }
+                if (moviePosterPlaceholder) {
+                    moviePosterPlaceholder.classList.add('hidden');
+                }
+            };
+            reader.readAsDataURL(file);
         });
     }
 
