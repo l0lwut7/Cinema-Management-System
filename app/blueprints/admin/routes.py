@@ -11,6 +11,12 @@ from app.db import get_db_connection
 _POSTER_FOLDER = os.path.join(os.path.dirname(__file__), '..', '..', 'static', 'uploads', 'posters')
 _ALLOWED_IMAGE_EXT = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 
+SALOON_LAYOUTS = {
+    "small":  {"label": "Standard Small",  "capacity": 40,  "rows": 4,  "cols": 10, "type": "Standard"},
+    "medium": {"label": "Standard Medium", "capacity": 80,  "rows": 8,  "cols": 10, "type": "Standard"},
+    "large":  {"label": "IMAX Large",      "capacity": 150, "rows": 10, "cols": 15, "type": "IMAX"},
+}
+
 def _round_up_half_hour(dt):
     """Round a datetime UP to the nearest :00 or :30 boundary.
 
@@ -145,6 +151,7 @@ def dashboard():
         genres=fetch_genres(),
         formats=fetch_formats(),
         theaters=fetch_theaters(),
+        saloon_layouts=SALOON_LAYOUTS,
         initial_tab=request.args.get("tab", "analytics"),
         current_admin_id=session.get("admin_id"),
         revenue_filter=revenue_filter,
@@ -376,6 +383,161 @@ def delete_screening(screening_id):
     except Exception as error:
         connection.rollback()
         flash(f"Screening could not be deleted: {error}", "error")
+
+    finally:
+        cursor.close()
+        connection.close()
+
+    return redirect(url_for("admin.dashboard", tab="infrastructure"))
+
+@admin_bp.route("/admin/saloons/add", methods=["POST"], strict_slashes=False)
+def add_saloon():
+    if "admin_id" not in session:
+        return redirect(url_for("admin.login"))
+
+    theater_id = request.form.get("theater_id", "").strip()
+    layout_key = request.form.get("layout", "").strip()
+
+    if not theater_id or layout_key not in SALOON_LAYOUTS:
+        flash("Please select a theater and a valid layout template.", "error")
+        return redirect(url_for("admin.dashboard", tab="infrastructure"))
+
+    try:
+        theater_id = int(theater_id)
+    except ValueError:
+        flash("Invalid theater selection.", "error")
+        return redirect(url_for("admin.dashboard", tab="infrastructure"))
+
+    layout = SALOON_LAYOUTS[layout_key]
+    connection = get_db_connection()
+
+    if connection is None:
+        flash("Database connection failed.", "error")
+        return redirect(url_for("admin.dashboard", tab="infrastructure"))
+
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+        cursor.execute("SELECT theater_id FROM theater WHERE theater_id = %s", (theater_id,))
+        if not cursor.fetchone():
+            flash("Selected theater does not exist.", "error")
+            return redirect(url_for("admin.dashboard", tab="infrastructure"))
+
+        cursor.execute(
+            "SELECT COALESCE(MAX(number), 0) + 1 AS next_number FROM saloon WHERE theater_id = %s",
+            (theater_id,)
+        )
+        next_number = cursor.fetchone()["next_number"]
+
+        cursor.execute(
+            """
+            INSERT INTO saloon (theater_id, number, capacity, type, is_active, `rows`, `cols`)
+            VALUES (%s, %s, %s, %s, TRUE, %s, %s)
+            """,
+            (theater_id, next_number, layout["capacity"], layout["type"], layout["rows"], layout["cols"])
+        )
+
+        row_letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        for r in range(layout["rows"]):
+            row_letter = row_letters[r]
+            for c in range(1, layout["cols"] + 1):
+                cursor.execute(
+                    """
+                    INSERT INTO seat (theater_id, saloon_number, row_letter, number, type)
+                    VALUES (%s, %s, %s, %s, 'Standard')
+                    """,
+                    (theater_id, next_number, row_letter, c)
+                )
+
+        connection.commit()
+        flash(
+            f"Saloon {next_number} created with {layout['capacity']} seats "
+            f"({layout['rows']} rows × {layout['cols']} cols).",
+            "success"
+        )
+
+    except Exception as error:
+        connection.rollback()
+        flash(f"Saloon could not be created: {error}", "error")
+
+    finally:
+        cursor.close()
+        connection.close()
+
+    return redirect(url_for("admin.dashboard", tab="infrastructure"))
+
+@admin_bp.route("/admin/saloons/delete/<int:theater_id>/<int:saloon_number>", methods=["POST"], strict_slashes=False)
+def delete_saloon(theater_id, saloon_number):
+    if "admin_id" not in session:
+        return redirect(url_for("admin.login"))
+
+    connection = get_db_connection()
+
+    if connection is None:
+        flash("Database connection failed.", "error")
+        return redirect(url_for("admin.dashboard", tab="infrastructure"))
+
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+        cursor.execute(
+            "SELECT theater_id, number FROM saloon WHERE theater_id = %s AND number = %s",
+            (theater_id, saloon_number)
+        )
+        if not cursor.fetchone():
+            flash("Saloon not found.", "error")
+            return redirect(url_for("admin.dashboard", tab="infrastructure"))
+
+        # A. Future screenings in this saloon
+        cursor.execute(
+            """
+            SELECT screening_id FROM screening
+            WHERE theater_id = %s AND saloon_number = %s AND start_time > NOW()
+            """,
+            (theater_id, saloon_number)
+        )
+        future_screening_ids = [r["screening_id"] for r in cursor.fetchall()]
+        screening_count = len(future_screening_ids)
+        refund_count = 0
+
+        if future_screening_ids:
+            # B. Bookings that have tickets for those screenings
+            ph = ",".join(["%s"] * len(future_screening_ids))
+            cursor.execute(
+                f"SELECT DISTINCT booking_id FROM ticket WHERE screening_id IN ({ph})",
+                tuple(future_screening_ids)
+            )
+            booking_ids = [r["booking_id"] for r in cursor.fetchall()]
+            refund_count = len(booking_ids)
+
+            # C. Mark those payments as Refunded
+            if booking_ids:
+                ph_b = ",".join(["%s"] * len(booking_ids))
+                cursor.execute(
+                    f"UPDATE payment SET status = 'Refunded' WHERE booking_id IN ({ph_b})",
+                    tuple(booking_ids)
+                )
+
+        # D+E. Delete saloon — cascades to SEAT, SCREENING → TICKET automatically
+        cursor.execute(
+            "DELETE FROM saloon WHERE theater_id = %s AND number = %s",
+            (theater_id, saloon_number)
+        )
+
+        connection.commit()
+
+        if screening_count > 0:
+            flash(
+                f"Saloon deleted. {screening_count} future screening(s) cancelled "
+                f"and {refund_count} booking(s) marked as refunded.",
+                "success"
+            )
+        else:
+            flash("Saloon deleted successfully.", "success")
+
+    except Exception as error:
+        connection.rollback()
+        flash(f"Saloon could not be deleted: {error}", "error")
 
     finally:
         cursor.close()
@@ -1175,7 +1337,9 @@ def fetch_saloons():
             s.number,
             s.capacity,
             s.type,
-            s.is_active
+            s.is_active,
+            s.rows,
+            s.cols
         FROM saloon s
         JOIN theater t ON s.theater_id = t.theater_id
         ORDER BY s.theater_id, s.number
@@ -1191,12 +1355,15 @@ def fetch_saloons():
 
     for row in rows:
         is_active = bool(row["is_active"])
+        rows_count = int(row["rows"] or 0)
+        cols_count = int(row["cols"] or 0)
+        layout_info = f" · {rows_count}r×{cols_count}c" if rows_count and cols_count else ""
 
         saloons.append({
             "theater_id": row["theater_id"],
             "number": row["number"],
             "name": f"{row['theater_name']} - Saloon {row['number']}",
-            "info": f"{row['capacity']} seats • {row['type']}",
+            "info": f"{row['capacity']} seats • {row['type']}{layout_info}",
             "status": "Active" if is_active else "Maintenance",
             "status_color": "emerald" if is_active else "amber"
         })

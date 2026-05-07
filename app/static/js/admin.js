@@ -272,6 +272,34 @@ if (upcomingScreeningsList) {
         form.submit();
     });
 }
+    // ── Saloon Management: delete button ─────────────────────────────────────────
+    const saloonGrid = document.getElementById("saloon-grid");
+    if (saloonGrid) {
+        saloonGrid.addEventListener("click", (e) => {
+            const deleteBtn = e.target.closest(".btn-delete-saloon");
+            if (!deleteBtn) return;
+
+            const card = deleteBtn.closest("[data-theater-id]");
+            if (!card) return;
+
+            const saloonName = card.dataset.saloonName || "this saloon";
+            const theaterId = card.dataset.theaterId;
+            const saloonNumber = card.dataset.saloonNumber;
+
+            if (!confirm(
+                `WARNING: Deleting ${saloonName} will permanently cancel all associated ` +
+                `future screenings and automatically refund any purchased tickets. ` +
+                `Are you absolutely sure?`
+            )) return;
+
+            const form = document.createElement("form");
+            form.method = "POST";
+            form.action = `/admin/saloons/delete/${theaterId}/${saloonNumber}`;
+            document.body.appendChild(form);
+            form.submit();
+        });
+    }
+
     // Sidebar Navigation
     const sidebarTabs = document.querySelectorAll('.sidebar-tab');
     const contentPanels = document.querySelectorAll('.content-panel');

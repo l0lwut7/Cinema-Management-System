@@ -64,6 +64,8 @@ CREATE TABLE IF NOT EXISTS SALOON (
     capacity INT NOT NULL,
     type VARCHAR(50),
     is_active BOOLEAN DEFAULT TRUE,
+    rows INT NOT NULL DEFAULT 0,
+    cols INT NOT NULL DEFAULT 0,
     PRIMARY KEY (theater_id, number),
     FOREIGN KEY (theater_id) REFERENCES THEATER(theater_id) ON DELETE CASCADE
 );
