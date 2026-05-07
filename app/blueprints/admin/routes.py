@@ -4,11 +4,23 @@ import time as _time
 from flask import Blueprint, render_template, session, redirect, url_for, request, flash, jsonify
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
-from datetime import datetime
+from datetime import datetime, timedelta
+from math import ceil
 from app.db import get_db_connection
 
 _POSTER_FOLDER = os.path.join(os.path.dirname(__file__), '..', '..', 'static', 'uploads', 'posters')
 _ALLOWED_IMAGE_EXT = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+
+def _round_up_half_hour(dt):
+    """Round a datetime UP to the nearest :00 or :30 boundary.
+
+    Examples
+    --------
+    16:00 → 16:00   16:01 → 16:30   16:30 → 16:30   16:31 → 17:00
+    """
+    total_mins = dt.hour * 60 + dt.minute
+    rounded = ceil(total_mins / 30) * 30
+    return dt.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(minutes=rounded)
 
 def _save_poster(file):
     """Save an uploaded poster file; return the URL path or None."""
@@ -197,9 +209,10 @@ def add_screening():
     cursor = connection.cursor(dictionary=True)
 
     try:
+        # ── 1. Validate movie exists and is schedulable ───────────────────────
         cursor.execute(
             """
-            SELECT movie_id
+            SELECT movie_id, visibility_status, duration_mins
             FROM movie
             WHERE movie_id = %s
             """,
@@ -211,6 +224,15 @@ def add_screening():
             flash("Selected movie does not exist.", "error")
             return redirect(url_for("admin.dashboard", tab="infrastructure"))
 
+        if movie["visibility_status"] == "coming_soon":
+            flash(
+                "Cannot schedule screenings for a 'Coming Soon' movie. "
+                "Change its visibility to 'Now Showing' or 'Catalog Only' first.",
+                "error"
+            )
+            return redirect(url_for("admin.dashboard", tab="infrastructure"))
+
+        # ── 2. Validate saloon is active ──────────────────────────────────────
         cursor.execute(
             """
             SELECT theater_id, number
@@ -225,6 +247,44 @@ def add_screening():
             flash("Selected saloon does not exist or is inactive.", "error")
             return redirect(url_for("admin.dashboard", tab="infrastructure"))
 
+        # ── 3. Overlap detection with 30-minute rounding rule ─────────────────
+        # Compute the blocked window for the new screening.
+        new_end_raw = start_time + timedelta(minutes=int(movie["duration_mins"]))
+        new_blocked_until = _round_up_half_hour(new_end_raw)
+
+        # Fetch all existing screenings in the same saloon on the same calendar day.
+        cursor.execute(
+            """
+            SELECT s.start_time, m.duration_mins
+            FROM screening s
+            JOIN movie m ON s.movie_id = m.movie_id
+            WHERE s.theater_id = %s
+              AND s.saloon_number = %s
+              AND DATE(s.start_time) = %s
+            """,
+            (theater_id, saloon_number, start_time.date())
+        )
+        existing_screenings = cursor.fetchall()
+
+        for ex in existing_screenings:
+            ex_start = ex["start_time"]
+            ex_end_raw = ex_start + timedelta(minutes=int(ex["duration_mins"]))
+            ex_blocked_until = _round_up_half_hour(ex_end_raw)
+
+            # Standard interval overlap: [A_start, A_end) ∩ [B_start, B_end) ≠ ∅
+            # iff A_start < B_end AND B_start < A_end
+            if start_time < ex_blocked_until and ex_start < new_blocked_until:
+                flash(
+                    f"Saloon conflict: an existing screening runs from "
+                    f"{ex_start.strftime('%H:%M')} and blocks the saloon until "
+                    f"{ex_blocked_until.strftime('%H:%M')} "
+                    f"(movie duration + 30-min rounding). "
+                    f"The earliest next slot is {ex_blocked_until.strftime('%H:%M')}.",
+                    "error"
+                )
+                return redirect(url_for("admin.dashboard", tab="infrastructure"))
+
+        # ── 4. Insert screening ───────────────────────────────────────────────
         cursor.execute(
             """
             INSERT INTO screening
@@ -242,10 +302,7 @@ def add_screening():
             )
         )
 
-        # Sync movie_run so this movie appears on customer-facing Now Showing /
-        # Booking pages. The discovery route joins movie_run to determine which
-        # movies are currently showing; without a matching row the new screening
-        # would be invisible to customers.
+        # Keep movie_run in sync for backward compatibility.
         screening_date_only = start_time.date()
         cursor.execute(
             "SELECT start_date, end_date FROM movie_run WHERE movie_id = %s",
@@ -278,6 +335,47 @@ def add_screening():
     except Exception as error:
         connection.rollback()
         flash(f"Screening could not be added: {error}", "error")
+
+    finally:
+        cursor.close()
+        connection.close()
+
+    return redirect(url_for("admin.dashboard", tab="infrastructure"))
+
+@admin_bp.route("/admin/screenings/delete/<int:screening_id>", methods=["POST"], strict_slashes=False)
+def delete_screening(screening_id):
+    if "admin_id" not in session:
+        return redirect(url_for("admin.login"))
+
+    connection = get_db_connection()
+
+    if connection is None:
+        flash("Database connection failed.", "error")
+        return redirect(url_for("admin.dashboard", tab="infrastructure"))
+
+    cursor = connection.cursor(dictionary=True)
+
+    try:
+        cursor.execute(
+            "SELECT screening_id FROM screening WHERE screening_id = %s",
+            (screening_id,)
+        )
+        screening = cursor.fetchone()
+
+        if not screening:
+            flash("Screening not found.", "error")
+            return redirect(url_for("admin.dashboard", tab="infrastructure"))
+
+        cursor.execute(
+            "DELETE FROM screening WHERE screening_id = %s",
+            (screening_id,)
+        )
+        connection.commit()
+        flash("Screening deleted successfully.", "success")
+
+    except Exception as error:
+        connection.rollback()
+        flash(f"Screening could not be deleted: {error}", "error")
 
     finally:
         cursor.close()
@@ -1141,6 +1239,7 @@ def fetch_upcoming_screenings():
 
     for row in rows:
         screenings.append({
+            "id": row["screening_id"],
             "movie": row["movie_title"],
             "status": "Scheduled",
             "status_color": "sky",
