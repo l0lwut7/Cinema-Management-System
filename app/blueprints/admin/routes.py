@@ -18,18 +18,11 @@ SALOON_LAYOUTS = {
 }
 
 def _round_up_half_hour(dt):
-    """Round a datetime UP to the nearest :00 or :30 boundary.
-
-    Examples
-    --------
-    16:00 → 16:00   16:01 → 16:30   16:30 → 16:30   16:31 → 17:00
-    """
     total_mins = dt.hour * 60 + dt.minute
     rounded = ceil(total_mins / 30) * 30
     return dt.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(minutes=rounded)
 
 def _save_poster(file):
-    """Save an uploaded poster file; return the URL path or None."""
     if not file or not file.filename:
         return None
     ext = file.filename.rsplit('.', 1)[-1].lower() if '.' in file.filename else ''
@@ -216,7 +209,6 @@ def add_screening():
     cursor = connection.cursor(dictionary=True)
 
     try:
-        # ── 1. Validate movie exists and is schedulable ───────────────────────
         cursor.execute(
             """
             SELECT movie_id, visibility_status, duration_mins
@@ -239,7 +231,6 @@ def add_screening():
             )
             return redirect(url_for("admin.dashboard", tab="infrastructure"))
 
-        # ── 2. Validate saloon is active ──────────────────────────────────────
         cursor.execute(
             """
             SELECT theater_id, number
@@ -254,12 +245,9 @@ def add_screening():
             flash("Selected saloon does not exist or is inactive.", "error")
             return redirect(url_for("admin.dashboard", tab="infrastructure"))
 
-        # ── 3. Overlap detection with 30-minute rounding rule ─────────────────
-        # Compute the blocked window for the new screening.
         new_end_raw = start_time + timedelta(minutes=int(movie["duration_mins"]))
         new_blocked_until = _round_up_half_hour(new_end_raw)
 
-        # Fetch all existing screenings in the same saloon on the same calendar day.
         cursor.execute(
             """
             SELECT s.start_time, m.duration_mins
@@ -278,8 +266,6 @@ def add_screening():
             ex_end_raw = ex_start + timedelta(minutes=int(ex["duration_mins"]))
             ex_blocked_until = _round_up_half_hour(ex_end_raw)
 
-            # Standard interval overlap: [A_start, A_end) ∩ [B_start, B_end) ≠ ∅
-            # iff A_start < B_end AND B_start < A_end
             if start_time < ex_blocked_until and ex_start < new_blocked_until:
                 flash(
                     f"Saloon conflict: an existing screening runs from "
@@ -291,7 +277,6 @@ def add_screening():
                 )
                 return redirect(url_for("admin.dashboard", tab="infrastructure"))
 
-        # ── 4. Insert screening ───────────────────────────────────────────────
         cursor.execute(
             """
             INSERT INTO screening
@@ -309,7 +294,6 @@ def add_screening():
             )
         )
 
-        # Keep movie_run in sync for backward compatibility.
         screening_date_only = start_time.date()
         cursor.execute(
             "SELECT start_date, end_date FROM movie_run WHERE movie_id = %s",
@@ -488,7 +472,6 @@ def delete_saloon(theater_id, saloon_number):
             flash("Saloon not found.", "error")
             return redirect(url_for("admin.dashboard", tab="infrastructure"))
 
-        # A. Future screenings in this saloon
         cursor.execute(
             """
             SELECT screening_id FROM screening
@@ -501,7 +484,6 @@ def delete_saloon(theater_id, saloon_number):
         refund_count = 0
 
         if future_screening_ids:
-            # B. Bookings that have tickets for those screenings
             ph = ",".join(["%s"] * len(future_screening_ids))
             cursor.execute(
                 f"SELECT DISTINCT booking_id FROM ticket WHERE screening_id IN ({ph})",
@@ -510,7 +492,6 @@ def delete_saloon(theater_id, saloon_number):
             booking_ids = [r["booking_id"] for r in cursor.fetchall()]
             refund_count = len(booking_ids)
 
-            # C. Mark those payments as Refunded
             if booking_ids:
                 ph_b = ",".join(["%s"] * len(booking_ids))
                 cursor.execute(
@@ -518,7 +499,6 @@ def delete_saloon(theater_id, saloon_number):
                     tuple(booking_ids)
                 )
 
-        # D+E. Delete saloon — cascades to SEAT, SCREENING → TICKET automatically
         cursor.execute(
             "DELETE FROM saloon WHERE theater_id = %s AND number = %s",
             (theater_id, saloon_number)

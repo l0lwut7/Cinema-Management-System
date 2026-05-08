@@ -426,8 +426,6 @@ def home():
     now_showing = get_now_showing_movies()
     coming_soon = get_coming_soon_movies()
 
-    # Use first now-showing movie as hero; fall back to first coming-soon movie.
-    # If both lists are empty the template gets None and renders without a hero.
     all_movies = now_showing + coming_soon
     featured_movie = all_movies[0] if all_movies else None
 

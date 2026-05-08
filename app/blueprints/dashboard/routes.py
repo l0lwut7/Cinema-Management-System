@@ -211,8 +211,6 @@ def get_user_recent_bookings(user_id):
 
     cursor = connection.cursor(dictionary=True)
 
-    # Join via b.screening_id (snapshot) so movie/time info survives full refund ticket deletion.
-    # Remaining tickets shown via LEFT JOIN ticket.
     cursor.execute(
         """
         SELECT
@@ -362,7 +360,6 @@ def update_password():
 
 @dashboard_bp.route("/dashboard/booking-tickets/<int:booking_id>", strict_slashes=False)
 def get_booking_tickets(booking_id):
-    """Return the active ticket list for a booking owned by the current user."""
     if "user_id" not in session:
         return jsonify({"error": "Not authenticated"}), 401
 
@@ -423,7 +420,6 @@ def get_booking_tickets(booking_id):
 
 @dashboard_bp.route("/dashboard/refund", methods=["POST"], strict_slashes=False)
 def process_refund():
-    """Partial or full refund: accept a list of ticket_codes to cancel."""
     if "user_id" not in session:
         return jsonify({"success": False, "message": "Not authenticated"}), 401
 
@@ -442,7 +438,6 @@ def process_refund():
     try:
         cursor = conn.cursor(dictionary=True)
 
-        # Validate all tickets belong to this user's booking and check refund window
         placeholders = ", ".join(["%s"] * len(ticket_codes))
         cursor.execute(
             f"""
@@ -460,7 +455,6 @@ def process_refund():
         if len(validated) != len(ticket_codes):
             return jsonify({"success": False, "message": "One or more tickets not found or not yours"}), 404
 
-        # Refund window check — use the screening time from the first ticket
         start_time     = validated[0]["start_time"]
         one_hour_before = start_time - timedelta(hours=1)
         if datetime.now() >= one_hour_before:
@@ -470,18 +464,15 @@ def process_refund():
         base_price    = float(validated[0]["base_price"])
         refund_amount = base_price * len(validated)
 
-        # Delete selected tickets (frees the seats for re-booking)
         ids_to_delete = [t["ticket_id"] for t in validated]
         del_ph = ", ".join(["%s"] * len(ids_to_delete))
         cursor.execute(f"DELETE FROM ticket WHERE ticket_id IN ({del_ph})", ids_to_delete)
 
-        # Reduce booking total
         cursor.execute(
             "UPDATE booking SET total_amount = GREATEST(0, total_amount - %s) WHERE booking_id = %s",
             (refund_amount, booking_id)
         )
 
-        # If no tickets remain mark payment fully refunded
         cursor.execute("SELECT COUNT(*) AS remaining FROM ticket WHERE booking_id = %s", (booking_id,))
         remaining = cursor.fetchone()["remaining"]
         if remaining == 0:

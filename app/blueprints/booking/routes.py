@@ -458,36 +458,17 @@ def create_booking():
                     "message": f"Seat {row_letter}{seat_number} is already occupied"
                 }), 409
 
-        # # 3. Ensure user exists in CUSTOMER table (migration safety)
-        # cursor.execute(
-        #     "SELECT user_id FROM customer WHERE user_id = %s",
-        #     (user_id,)
-        # )
-        # if cursor.fetchone() is None:
-        #     # User exists in USER but not CUSTOMER, add them
-        #     cursor.execute(
-        #         """
-        #         INSERT INTO customer (user_id, birth_date, loyalty_points, membership_tier)
-        #         VALUES (%s, NULL, 0, 'Standard')
-        #         """,
-        #         (user_id,)
-        #     )
-        
-        # 3. Ensure user exists in USER table first, then check/add to CUSTOMER table
         cursor.execute(
             "SELECT user_id FROM user WHERE user_id = %s",
             (user_id,)
         )
         if cursor.fetchone() is None:
-            # The session has a user_id, but they don't exist in the database anymore.
-            # Clear the session or return an error.
             session.clear()
             return jsonify({
                 "success": False,
                 "message": "User account no longer exists. Please log in again."
             }), 401
 
-        # Now safe to check if they are in the customer table
         cursor.execute(
             "SELECT user_id FROM customer WHERE user_id = %s",
             (user_id,)
@@ -501,7 +482,6 @@ def create_booking():
                 (user_id,)
             )
 
-        # 4. Booking kaydı oluştur
         booking_code = generate_booking_code(cursor)
         cursor.execute(
             """
@@ -540,7 +520,6 @@ def create_booking():
                 )
             )
 
-        # 4. Her seçilen koltuk için ticket kaydı oluştur
         for seat in selected_seats:
             row_letter = seat.get("row")
             seat_number = seat.get("number")
@@ -574,7 +553,6 @@ def create_booking():
                 )
             )
 
-        # 5. Payment kaydı oluştur
         cursor.execute(
             """
             INSERT INTO payment

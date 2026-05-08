@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // ── Flash message: close button + 5-second auto-dismiss ──────────────────
     document.querySelectorAll('.flash-message').forEach(msg => {
         const closeBtn = msg.querySelector('.flash-close');
         if (closeBtn) {
@@ -17,7 +16,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 5000);
     });
 
-    // Movie Edit Logic
 const movieForm = document.getElementById("movie-form");
 const movieFormTitle = document.getElementById("movie-form-title");
 const movieSubmitButton = document.getElementById("movie-submit-button");
@@ -119,7 +117,6 @@ function selectRatingChip(value) {
     if (movieRatingAgeInput) movieRatingAgeInput.value = strVal;
 }
 
-// ── Cast member dynamic inputs ────────────────────────────────────────────────
 function _castRowCount() {
     return castContainer ? castContainer.querySelectorAll('.cast-input-row').length : 0;
 }
@@ -181,7 +178,6 @@ function populateMovieFormForEdit(item) {
 
     markSelectedMovieChips(selectedGenreIds, selectedFormatIds);
 
-    // Populate cast inputs
     const castData = item.dataset.cast || "";
     clearCastInputs();
     if (castData) {
@@ -194,12 +190,10 @@ function populateMovieFormForEdit(item) {
         }
     }
 
-    // Populate visibility status
     if (movieVisibilityStatusSelect) {
         movieVisibilityStatusSelect.value = item.dataset.visibilityStatus || "catalog_only";
     }
 
-    // Show existing poster in the preview
     const existingPosterUrl = item.dataset.posterUrl || "";
     if (existingPosterUrl && moviePosterPreview && moviePosterPlaceholder) {
         moviePosterPreview.src = existingPosterUrl;
@@ -218,7 +212,6 @@ function populateMovieFormForEdit(item) {
     movieForm.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-// Event delegation on the catalog list for Edit and Delete buttons
 if (movieCatalogList) {
     movieCatalogList.addEventListener("click", (e) => {
         const editBtn = e.target.closest(".btn-edit-movie");
@@ -250,7 +243,6 @@ if (movieCancelButton) {
     });
 }
 
-// ── Upcoming Screenings: delete button ───────────────────────────────────────
 const upcomingScreeningsList = document.getElementById("upcoming-screenings-list");
 if (upcomingScreeningsList) {
     upcomingScreeningsList.addEventListener("click", (e) => {
@@ -272,7 +264,6 @@ if (upcomingScreeningsList) {
         form.submit();
     });
 }
-    // ── Saloon Management: delete button ─────────────────────────────────────────
     const saloonGrid = document.getElementById("saloon-grid");
     if (saloonGrid) {
         saloonGrid.addEventListener("click", (e) => {
@@ -300,7 +291,6 @@ if (upcomingScreeningsList) {
         });
     }
 
-    // Sidebar Navigation
     const sidebarTabs = document.querySelectorAll('.sidebar-tab');
     const contentPanels = document.querySelectorAll('.content-panel');
 
@@ -331,13 +321,11 @@ if (upcomingScreeningsList) {
         });
     });
 
-    // Restore the correct tab when the user navigates back/forward.
     window.addEventListener('popstate', (event) => {
         const params = new URLSearchParams(window.location.search);
         const tabName = (event.state && event.state.tab) || params.get('tab') || 'analytics';
         activateTab(tabName);
 
-        // If landing back on analytics, sync the filter selects and refresh numbers.
         if (tabName === 'analytics') {
             const rf = params.get('revenue_filter')  || 'this_month';
             const of = params.get('occupancy_filter') || 'this_week';
@@ -349,19 +337,16 @@ if (upcomingScreeningsList) {
         }
     });
     
-    // Infrastructure Sub-tabs
     const infraTabs = document.querySelectorAll('.infra-tab');
     const infraContents = document.querySelectorAll('.infra-content');
     
     infraTabs.forEach(tab => {
         tab.addEventListener('click', () => {
-            // Reset all tabs
             infraTabs.forEach(t => {
                 t.classList.remove('bg-crimson', 'text-white');
                 t.classList.add('bg-slate-700', 'text-slate-300');
             });
 
-            // Activate clicked tab
             tab.classList.remove('bg-slate-700', 'text-slate-300');
             tab.classList.add('bg-crimson', 'text-white');
 
