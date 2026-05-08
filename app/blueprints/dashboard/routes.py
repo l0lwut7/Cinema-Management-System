@@ -21,6 +21,7 @@ def get_user_favorite_movies(user_id):
             m.rating_age,
             m.release_date,
             m.summary AS synopsis,
+            m.poster_url,
             GROUP_CONCAT(DISTINCT g.name SEPARATOR ', ') AS genres,
             GROUP_CONCAT(DISTINCT f.name SEPARATOR ', ') AS format
         FROM CUSTOMER_FAVORITE_MOVIE cfm
@@ -41,7 +42,6 @@ def get_user_favorite_movies(user_id):
     for movie in movies:
         movie["runtime_label"] = str(movie["duration"]) + " min" if movie["duration"] else "TBA"
         movie["avg_rating"] = 0
-        movie["image_url"] = "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1200&q=80"
         movie["is_favorited"] = True
 
     return movies

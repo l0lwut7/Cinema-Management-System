@@ -1987,7 +1987,9 @@ def fetch_vip_spenders():
         JOIN user u ON c.user_id = u.user_id
         JOIN booking b ON c.user_id = b.user_id
         JOIN payment p ON b.booking_id = p.booking_id
+        LEFT JOIN employee e ON c.user_id = e.user_id
         WHERE p.status IN ('Paid', 'Completed')
+          AND e.user_id IS NULL
         GROUP BY u.user_id, u.first_name, u.last_name, u.email, c.membership_tier
         ORDER BY total_spent DESC
         LIMIT 10
