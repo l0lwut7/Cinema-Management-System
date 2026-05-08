@@ -6,17 +6,17 @@
 USE cinema_db;
 
 -- 1. booking_code: random 6-digit display ID, set by the application on INSERT.
-ALTER TABLE BOOKING ADD COLUMN IF NOT EXISTS booking_code INT UNIQUE;
+ALTER TABLE BOOKING ADD COLUMN booking_code INT UNIQUE;
 
 -- 2. screening_id snapshot so booking history can display movie/time info
 --    even after all tickets are deleted during a full refund.
-ALTER TABLE BOOKING ADD COLUMN IF NOT EXISTS screening_id INT NULL;
+ALTER TABLE BOOKING ADD COLUMN screening_id INT NULL;
 ALTER TABLE BOOKING
     ADD CONSTRAINT fk_booking_screening_snap
     FOREIGN KEY (screening_id) REFERENCES SCREENING(screening_id) ON DELETE SET NULL;
 
 -- 3. ticket_code: human-readable composite ID (e.g. "162253A4").
-ALTER TABLE TICKET ADD COLUMN IF NOT EXISTS ticket_code VARCHAR(20) UNIQUE;
+ALTER TABLE TICKET ADD COLUMN ticket_code VARCHAR(20) UNIQUE;
 
 -- 4. Backfill booking_code for existing rows (offset keeps values in 6-digit range).
 UPDATE BOOKING SET booking_code = 100000 + booking_id WHERE booking_code IS NULL;

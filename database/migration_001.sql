@@ -6,7 +6,7 @@ USE cinema_db;
 
 -- Add poster_url column (IF NOT EXISTS supported in MySQL 8+ via
 -- a conditional; for older MySQL use the two-step pattern below)
-ALTER TABLE MOVIE ADD COLUMN IF NOT EXISTS poster_url VARCHAR(500) NULL;
+ALTER TABLE MOVIE ADD COLUMN poster_url VARCHAR(500) NULL;
 
 -- Add the 6 new genres.  INSERT IGNORE skips rows whose `name`
 -- already exists (the UNIQUE constraint on genre.name protects us).
@@ -17,4 +17,3 @@ INSERT IGNORE INTO GENRE (name) VALUES
     ('Thriller'),
     ('Animation'),
     ('Adventure');
-c
