@@ -5,6 +5,6 @@
 USE cinema_db;
 
 ALTER TABLE MOVIE
-    ADD COLUMN IF NOT EXISTS visibility_status
+    ADD COLUMN visibility_status
         ENUM('now_showing', 'coming_soon', 'catalog_only')
         NOT NULL DEFAULT 'catalog_only';
