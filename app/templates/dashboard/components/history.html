@@ -70,17 +70,25 @@
         </thead>
         {% if recent_bookings %}
   {% for booking in recent_bookings %}
-    <tr class="booking-row hover:bg-cinema-surfaceLight/30 transition-colors" data-status="{{ booking.status.lower() }}" data-date="{{ booking.start_time.isoformat() if booking.start_time else '' }}" data-price="{{ booking.total_amount }}">
+    <tr class="booking-row hover:bg-cinema-surfaceLight/30 transition-colors"
+        data-status="{{ booking.status.lower() }}"
+        data-date="{{ booking.start_time.isoformat() if booking.start_time else '' }}"
+        data-price="{{ booking.total_amount }}">
       <td class="px-6 py-4">
-        <a href="{{ url_for('discovery.movie_detail', movie_id=booking.movie_id) }}" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
-          <div class="w-12 h-16 rounded-lg bg-gradient-to-br from-cinema-primary to-amber flex items-center justify-center text-xs font-bold">
+        <div class="flex items-center gap-3">
+          {% if booking.movie_id %}
+          <a href="{{ url_for('discovery.movie_detail', movie_id=booking.movie_id) }}" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
+          {% endif %}
+          <div class="w-12 h-16 rounded-lg bg-gradient-to-br from-cinema-primary to-amber flex items-center justify-center text-xs font-bold flex-shrink-0">
             {{ booking.movie_code }}
           </div>
           <div>
-            <p class="font-medium">{{ booking.movie_title }}</p>
+            <p class="font-medium">{{ booking.movie_title or 'Refunded Booking' }}</p>
             <p class="text-sm text-gray-400">{{ booking.saloon_type or 'Standard' }}</p>
+            <p class="text-xs text-gray-600 font-mono mt-0.5">#{{ booking.booking_code }}</p>
           </div>
-        </a>
+          {% if booking.movie_id %}</a>{% endif %}
+        </div>
       </td>
 
       <td class="px-6 py-4">
@@ -88,7 +96,7 @@
         <p class="text-sm text-gray-400">{{ booking.time_display }}</p>
       </td>
 
-      <td class="px-6 py-4">{{ booking.seats }}</td>
+      <td class="px-6 py-4">{{ booking.seats or '—' }}</td>
 
       <td class="px-6 py-4 font-semibold">
         ${{ "%.2f"|format(booking.total_amount) }}
@@ -102,18 +110,21 @@
 
       <td class="px-6 py-4">
         {% if booking.action == "refund" %}
-  <button class="refund-btn text-amber hover:text-amber-300 text-sm font-medium transition-colors" data-booking-id="{{ booking.booking_id }}" data-start-time="{{ booking.start_time.isoformat() if booking.start_time else '' }}" data-movie-title="{{ booking.movie_title }}" data-seats="{{ booking.seats }}" data-amount="{{ booking.total_amount }}" onclick="showRefundModal(this)" title="Available up to 1 hour before screening">
-    Request Refund
-  </button>
-{% elif booking.action == "ticket" %}
-  <button class="text-gray-400 hover:text-white text-sm transition-colors">
-    View Ticket
-  </button>
-{% else %}
-  <button class="text-gray-500 text-sm cursor-not-allowed">
-    —
-  </button>
-{% endif %}
+        <button class="refund-btn text-amber hover:text-amber-300 text-sm font-medium transition-colors"
+                data-booking-id="{{ booking.booking_id }}"
+                data-booking-code="{{ booking.booking_code }}"
+                data-start-time="{{ booking.start_time.isoformat() if booking.start_time else '' }}"
+                data-movie-title="{{ booking.movie_title }}"
+                data-movie-code="{{ booking.movie_code }}"
+                onclick="showRefundModal(this)"
+                title="Available up to 1 hour before screening">
+          Refund Seats
+        </button>
+        {% elif booking.action == "ticket" %}
+        <button class="text-gray-400 hover:text-white text-sm transition-colors">View Ticket</button>
+        {% else %}
+        <span class="text-gray-500 text-sm">—</span>
+        {% endif %}
       </td>
     </tr>
   {% endfor %}

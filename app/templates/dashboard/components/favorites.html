@@ -11,7 +11,11 @@
         <div class="favorite-card group relative bg-cinema-surface rounded-xl overflow-hidden border border-white/5 hover:border-cinema-primary/50 transition-all">
           <a href="{{ url_for('discovery.movie_detail', movie_id=movie.id) }}" class="block aspect-[2/3] bg-slate-700 relative">
             <div class="absolute inset-0 bg-gradient-to-t from-cinema-bg/90 via-transparent to-transparent"></div>
-            <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1200&q=80')] bg-cover bg-center opacity-80"></div>
+            {% if movie.poster_url %}
+            <img src="{{ movie.poster_url }}" alt="{{ movie.title }}" class="absolute inset-0 w-full h-full object-cover opacity-80">
+            {% else %}
+            <div class="absolute inset-0 bg-cover bg-center opacity-80" style="background-image: url('https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=600&q=60')"></div>
+            {% endif %}
             <button type="button"
                     class="favorite-btn absolute top-3 right-3 w-10 h-10 bg-cinema-bg/80 backdrop-blur rounded-full flex items-center justify-center hover:bg-cinema-primary transition-all z-20"
                     data-movie-id="{{ movie.id }}"
