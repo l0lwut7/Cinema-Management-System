@@ -98,3 +98,27 @@ If your issue touches SQL/schema:
 
 ## Contributing
 Contribution workflow, branch naming, and merge-conflict-safe structure rules are documented in `CONTRIBUTING.md`.
+
+## 📸 App Preview
+
+<table>
+  <tr>
+    <td><b>Main Screen</b></td>
+    <td><b>Now Showing</b></td>
+  </tr>
+  <tr>
+    <td><img src="https://github.com/user-attachments/assets/cd269b47-be0a-4948-ba52-1699065f30fc" width="400"></td>
+    <td><img src="https://github.com/user-attachments/assets/9ddca7f9-013a-410a-8c80-fb285de847e1" width="400"></td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td><b>Theatres</b></td>
+    <td><b>Login Page</b></td>
+  </tr>
+  <tr>
+    <td><img src="https://github.com/user-attachments/assets/87fc9c27-6d3a-4a22-8208-2998884c7b45" width="400"></td>
+    <td><img src="https://github.com/user-attachments/assets/2f980b65-13c3-4332-a763-3663b75e087f" width="400"></td>
+  </tr>
+</table>
